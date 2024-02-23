@@ -1,0 +1,12 @@
+name: corrupcion_chile
+title: corrupcion_chile
+username: bastianoleah
+account: bastianoleah
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11049199
+bundleId: 8289781
+url: https://bastianoleah.shinyapps.io/corrupcion_chile/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
