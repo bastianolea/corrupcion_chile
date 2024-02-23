@@ -18,8 +18,10 @@ _Otras fuentes de datos:_
 
 [La aplicación web está disponible en shinyapps.io](https://bastianoleah.shinyapps.io/corrupcion_chile/), o bien, puedes clonar este repositorio en tu equipo para usarla por medio de RStudio.
 
-![Corrupción en Chile, visualizador interactivo de datos 1](otros/pantallazo_corrupcion_chile.jpg)
-![Corrupción en Chile, visualizador interactivo de datos 2](otros/pantallazo_corrupcion_chile_2.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 1](otros/pantallazo_corrupcion_chile_a.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 2](otros/pantallazo_corrupcion_chile_b.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 3](otros/pantallazo_corrupcion_chile_d.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 4](otros/pantallazo_corrupcion_chile_c.jpg)
 
 ---- 
 
