@@ -83,7 +83,8 @@ ui <- fluidPage(
         
         titlePanel(h1("Corrupción en Chile"), 
                    windowTitle = "Corrupción en Chile"),
-        p("Visualizador interactivo de datos sobre casos de corrupción en Chile.", style = "margin-bottom: 8px; font-size: 90%;"),
+        p("Visualizador interactivo de datos sobre casos de corrupción en Chile.", 
+          style = "margin-bottom: 8px; font-size: 90%;"),
         em(tags$a("Bastián Olea Herrera", 
                   href = "http://bastian.olea.biz",
                   target = "_blank")),
@@ -94,11 +95,13 @@ ui <- fluidPage(
   ##intro ----
   fluidRow(
     column(12, style = "margin-top: -26px;",
-           p("Se denomina", strong("Corrupción"), "al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
-             Agentes del Estado, políticos o empresarios suelen ser sus perpetradores, debido a sus posiciones privilegiadas, capacidad de negociación y redes de contactos."),
-           p("La corrupción ha copado los medios comunicacionales en los últimos meses. Sin embargo, la información que deciden presentar u omitir, y el modo mismo en que la exponen, es generalmente tendencioso."),
            
-           p("Este visualizador compila datos abiertos sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile, especificando montos, responsables y sus sectores políticos."),
+           markdown("Se denomina **Corrupción** al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
+             Agentes del Estado, políticos o empresarios suelen ser sus perpetradores, debido a sus posiciones privilegiadas, capacidad de negociación y redes de contactos."),
+           
+           markdown("La corrupción ha copado los medios comunicacionales en los últimos meses. Sin embargo, la información que los medios deciden presentar u omitir, y el modo mismo en que la exponen, es generalmente tendencioso."),
+           
+           markdown("Este visualizador compila [datos abiertos](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile, especificando montos, responsables y sus sectores políticos."),
            
            hr()
     )
