@@ -279,9 +279,16 @@ ui <- fluidPage(
            h2("Alcaldes y municipios implicados en casos de corrupción"),
            p("Tabla con todos los casos de corrupción que conciernen a municipios o alcaldías de Chile."),
            
-           div(style = "max-height: 600px; overflow-y: scroll;",
+           shinyWidgets::pickerInput("sector_alcaldias", 
+                                     label = em("Sector político:"),
+                                     choices = c("Todos", "Derecha", "Izquierda"), 
+                                     selected = "Todos", multiple = F,
+                                     inline = T, width = "fit"
+           ),
+           
+           # div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_alcaldías")
-           )
+           # )
     )
   ),
   
@@ -1027,10 +1034,24 @@ server <- function(input, output, session) {
   
   ## tabla alcaldías ----
   output$tabla_alcaldías <- render_gt({
+    
+    if (input$sector_alcaldias == "Todos") {
+      filtro_sector <- c("Derecha", "Izquierda")
+      } else {
+        filtro_sector <- input$sector_alcaldias
+        # filtro_sector <- "Derecha"
+        # filtro_sector <- "Izquierda"
+      }
+    
+    # browser()
+    
     corrupcion_años() |> 
       filter(alcalde == "Alcaldías") |> 
+      filter(sector %in% filtro_sector) |> 
       select(comuna,  partido, sector, monto, año,
              fuente1, fuente2, fuente3) |> 
+      # count(sector)
+      mutate(sector = factor(sector, c("Izquierda", "Derecha"))) |> 
       mutate(
         fuente = case_when(!is.na(fuente3) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3})"),
                            !is.na(fuente2) ~ glue::glue("[1]({fuente1}), [2]({fuente2})"),
@@ -1050,10 +1071,14 @@ server <- function(input, output, session) {
                 style = list(
                   cell_fill(color = color_detalle),
                   cell_text(style = "italic"))) |> 
+      # tab_style(locations = cells_body(columns = fuente),
+      #           style = list(
+      #             cell_text(color = color_detalle2))) |> 
       data_color(columns = c(sector), 
-                 method = "factor",
-                 levels = c("Izquierda", "Derecha"), 
-                 palette = c(color_izquierda, color_derecha)) |> 
+                 method = "factor", domain = c("Derecha", "Izquierda"), ordered = T, 
+                 levels = c("Derecha", "Izquierda"),
+                 palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda)
+                 ) |> 
       data_color(columns = c(sector), 
                  method = "factor", apply_to = "text",
                  levels = c("Izquierda", "Derecha", "Ninguno"), 
@@ -1067,7 +1092,7 @@ server <- function(input, output, session) {
         monto = "Monto defraudado",
         fuente = "Fuentes"
       ) |> 
-      tab_options(table.font.color = color_texto, table.font.color.light = color_texto,
+      tab_options(table.font.color = color_texto, table.font.color.light = color_texto, 
                   table_body.hlines.color = color_detalle2,
                   table_body.vlines.color = color_detalle2,
                   column_labels.border.top.color = color_fondo, column_labels.border.bottom.color = color_detalle2, 
