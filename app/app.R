@@ -61,6 +61,7 @@ ui <- fluidPage(
                                     Shiny.onInputChange("dimension", dimension);
                                 });
                             ')),
+
   
   css("
                        h1 { font-size: 180%; font-weight: bold; }
@@ -95,6 +96,8 @@ ui <- fluidPage(
   ##intro ----
   fluidRow(
     column(12, style = "margin-top: -26px;",
+           
+           verbatimTextOutput("posicion_vertical"),
            
            markdown("Se denomina **Corrupción** al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
              Agentes del Estado, políticos o empresarios suelen ser sus perpetradores, debido a sus posiciones privilegiadas, capacidad de negociación y redes de contactos."),
@@ -438,14 +441,18 @@ server <- function(input, output, session) {
   #   ancho_ventana()
   #   })
   
+  #scroll ----
+  
+  
+  
   
   # gráfico montos divididos ----
   alto_grafico_montos <- reactive({
     casos = length(unique(corrupcion_escalado()$caso))
-    message("casos en gráfico montos: ", casos)
+    # message("casos en gráfico montos: ", casos)
     # alto = 58 * casos
     alto = 86 * casos
-    message("alto gráfico montos: ", alto)
+    # message("alto gráfico montos: ", alto)
     return(alto)
   })
   
