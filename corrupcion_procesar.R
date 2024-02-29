@@ -1,9 +1,12 @@
+# este script lee el excel con los datos, los limpia y los guarda en otros formatos para usarlos en la app
+# hay que ejecutarlo cada vez que se guardan datos nuevos en la planilla de datos, para que lleguen a la app
+
 library(dplyr)
 library(ggplot2)
 library(stringr)
 library(tidyr)
 library(forcats)
-library(ggimage)
+
 
 options(scipen = 9999)
 

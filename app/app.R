@@ -434,7 +434,8 @@ server <- function(input, output, session) {
       filter(!is.na(año)) |> 
       filter(año >= input$años[1],
              año <= input$años[2])
-  })
+  }) |> 
+    bindCache(input$años)
   
   rango_años <- reactive({
     paste0(input$años[1], " y ",
@@ -464,7 +465,8 @@ server <- function(input, output, session) {
     
     # return(corrupcion_escalado_filtrado)
     corrupcion_escalados_años
-  })
+  }) |> 
+    bindCache(input$años)
   
   
   #ancho de ventana ----
@@ -698,17 +700,33 @@ server <- function(input, output, session) {
   
   #gráfico torta partido ----
   output$torta_partido <- renderPlot({
-    datos <- corrupcion_años() |> 
+    
+    datos_partidos <- corrupcion_años() |> 
       count(partido) |>
-      tidyr::separate(partido, into = c("partido1", "partido2", "partido3")) |> 
+      tidyr::separate(partido, into = c("partido1", "partido2", "partido3"), sep = ", ") |> 
       tidyr::pivot_longer(cols = starts_with("partido"), values_to = "partido") |> 
       filter(!is.na(partido) & partido != "") |> 
       select(-name) |> 
-      tidyr::uncount(weights = n) |> 
-      count(partido) |> 
+      tidyr::uncount(weights = n)
+    
+    # si un partido solo sale una vez, mandarlo a "otros"
+    datos_partidos_reduc <- datos_partidos |> 
+      group_by(partido) |> 
+      mutate(n = n()) |>
+      rowwise() |> 
+      mutate(partido_reduc = if_else(n == 1, "Otros", partido)) |> 
+      select(-n) |> 
+      ungroup()
+    
+    datos <- datos_partidos_reduc |> 
+      # count(partido) |> 
+      count(partido_reduc) |>
+      rename(partido = partido_reduc) |> 
       arrange(desc(partido)) |> 
       mutate(prop = n / sum(n) *100) %>%
       mutate(ypos = cumsum(prop)- 0.5 * prop)
+    
+    # browser()
     
     # dev.new()
     datos |> 
