@@ -1,0 +1,14 @@
+#colores
+color_fondo = "#191919"
+color_destacado = "#268053"
+color_texto = "#8eccad"
+color_enlaces = "#b1ddc7"
+color_detalle = "#1d1e1d"
+color_detalle2 = "#1a422e"
+color_fondo2 = "#1f2322"
+color_complementario = "#da9700"
+color_negativo = "#802626"
+degradado_verde <- colorRampPalette(c("#628875", "#19663f", "#1a422e"))
+
+color_derecha = "#294a66" #"#38658b"
+color_izquierda = "#722a2a" #"#943636"
