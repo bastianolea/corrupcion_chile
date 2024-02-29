@@ -20,6 +20,7 @@ color_texto = "#8eccad"
 color_enlaces = "#b1ddc7"
 color_detalle = "#1d1e1d"
 color_detalle2 = "#1a422e"
+color_fondo2 = "#1f2322"
 color_complementario = "#da9700"
 color_negativo = "#802626"
 degradado_verde <- colorRampPalette(c("#628875", "#19663f", "#1a422e"))
@@ -299,9 +300,9 @@ ui <- fluidPage(
            h2("Fundaciones involucradas o investigadas por corrupción"),
            p("Tabla con todos los casos de corrupción que involucran a fundaciones."),
            
-           div(style = "max-height: 600px; overflow-y: scroll;",
+           # div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_fundaciones")
-           )
+           # )
     )
   ),
   
@@ -457,14 +458,15 @@ server <- function(input, output, session) {
       filter(año >= input$años[1],
              año <= input$años[2])
     
-    # #filtrar top 15 casos
-    # casos <- unique(corrupcion_escalados_años$caso)
+    # browser()
+    #filtrar top de casos
+    casos <- unique(corrupcion_escalados_años$caso)
     # 
-    # corrupcion_escalado_filtrado <- corrupcion_escalados_años |> 
-    #   filter(caso %in% casos[1:20])
+    corrupcion_escalado_filtrado <- corrupcion_escalados_años |>
+      filter(caso %in% casos[1:20])
     
-    # return(corrupcion_escalado_filtrado)
-    corrupcion_escalados_años
+    # corrupcion_escalados_años
+    corrupcion_escalado_filtrado
   }) |> 
     bindCache(input$años)
   
@@ -482,7 +484,8 @@ server <- function(input, output, session) {
   alto_grafico_montos <- reactive({
     casos = length(unique(corrupcion_escalado()$caso))
     message("casos en gráfico montos: ", casos)
-    alto = 58 * casos
+    # alto = 58 * casos
+    alto = 86 * casos
     message("alto gráfico montos: ", alto)
     return(alto)
   })
@@ -509,13 +512,13 @@ server <- function(input, output, session) {
     req(alto_grafico_montos())
     
     ### opciones
-    expansion_y = 0.5 #espacio entre borde de cada faceta de cada caso y sus valores
+    expansion_y = 0.4 #espacio entre borde de cada faceta de cada caso y sus valores
     expansion_x = 0.15 #espacio entre valor máximo y borde derecho del gráfico
     espaciado_y = 4 #espacio entre facetas
-    texto_eje_y = opt_texto_plot+4 #texto casos
+    texto_eje_y = opt_texto_plot+1 #texto casos
     texto_montos = opt_texto_geom #texto montos
     tamaño_punto = 10 #tamaño de círculos
-    corte_etiqueta_casos = 30 #caracteres antes del corte de línea de etiquetas y
+    corte_etiqueta_casos = 28 #caracteres antes del corte de línea de etiquetas y
     
     # browser()
     grafico <- corrupcion_escalado() |> 
@@ -544,7 +547,7 @@ server <- function(input, output, session) {
                                        size = texto_eje_y, color = color_texto,
                                        margin = margin(r = 7)),
             axis.text.x = element_blank(),
-            panel.background = element_rect(fill = "#1f2322", linewidth = 0),
+            panel.background = element_rect(fill = color_detalle, linewidth = 0),
             panel.grid = element_blank(),
             panel.spacing.y = unit(espaciado_y, "mm"),
             legend.text = element_text(color = color_texto, size = 18, hjust = 0, margin = margin(t = 0, b = 0, r = 10)),
@@ -559,6 +562,13 @@ server <- function(input, output, session) {
       grafico <- grafico +
         scale_color_manual(values = color_destacado) +
         theme(legend.position = "none")
+    }
+    
+    #si color es por sector político
+    if (input$variable_color == "sector") {
+      grafico <- grafico +
+        scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
+                                      "Ninguno" = color_destacado))
     }
     
     plot(grafico)
