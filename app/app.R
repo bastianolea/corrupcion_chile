@@ -105,16 +105,29 @@ ui <- fluidPage(
   ),
   
   fluidRow(
-    column(12, align = "center", style = "max-height: 100px;",
-           style = "padding: 20px; padding-top: 0px; max-width: 450px; margin: auto;",
-           # h1("Título", style = "font-family: IBM Plex Mono;"),
+    column(12, align = "center", #style = "max-height: 100px;",
+           style = "padding: 20px; padding-top: 0px; padding-bottom: 0px;
+           max-width: 450px; margin: auto;",
            
-           sliderInput("años",
-                       "Seleccionar rango de años:",
-                       step = 1, sep = "",
-                       min = min(corrupcion$año, na.rm=T),
-                       max = max(corrupcion$año, na.rm=T),
-                       value = c(2010, 2024), width = "100%"
+           
+           em("Selecciona un rango de años:"),
+           
+           # sliderInput("años",
+           #             "Seleccionar rango de años:",
+           #             step = 1, sep = "",
+           #             min = min(corrupcion$año, na.rm=T),
+           #             max = max(corrupcion$año, na.rm=T), 
+           #             dragRange = F,
+           #             value = c(2010, 2024), width = "100%"
+           # ),
+           
+           div(style = "margin-top: 12px;display: inline-block;",
+             pickerInput("desde", label = "Desde",
+                         choices = 2010:2024, selected = 2010, 
+                         multiple = F, inline = T),
+             pickerInput("hasta", label = "Hasta",
+                         choices = 2010:2024, selected = 2024,
+                         multiple = F, inline = T)
            )
     )
   ),
@@ -362,20 +375,29 @@ ui <- fluidPage(
 
 # server ----
 server <- function(input, output, session) {
+ 
+  # año_min_0 <- reactive(input$años[1])
+  # año_max_0 <- reactive(input$años[2])
+  # 
+  # año_min <- año_min_0 %>% debounce(2000, priority = 200)
+  # año_max <- año_max_0 %>% debounce(2000, priority = 200)
+  
+  año_min <- reactive(as.numeric(input$desde))
+  año_max <- reactive(as.numeric(input$hasta))
   
   # datos ----
+ 
   ## datos año ----
   corrupcion_años <- reactive({
     corrupcion |> 
       filter(!is.na(año)) |> 
-      filter(año >= input$años[1],
-             año <= input$años[2])
-  }) |> 
-    bindCache(input$años)
+      filter(año >= año_min(),
+             año <= año_max())
+  })
   
   rango_años <- reactive({
-    paste0(input$años[1], " y ",
-           input$años[2], ",")
+    paste0(año_min(), " y ",
+           año_max(), ",")
   })
   
   output$rango_años_barras <- renderText(rango_años())
@@ -390,8 +412,8 @@ server <- function(input, output, session) {
     
     corrupcion_escalados_años <- corrupcion_escalados |> 
       filter(!is.na(año)) |> 
-      filter(año >= input$años[1],
-             año <= input$años[2])
+      filter(año >= año_min(),
+             año <= año_max())
     
     # browser()
     #filtrar top de casos
@@ -402,8 +424,7 @@ server <- function(input, output, session) {
     
     # corrupcion_escalados_años
     corrupcion_escalado_filtrado
-  }) |> 
-    bindCache(input$años)
+  })
   
   
   #ancho de ventana ----
@@ -508,7 +529,7 @@ server <- function(input, output, session) {
     
     plot(grafico)
   }, height = reactive(alto_grafico_montos()), res = 72) #|> 
-  # bindCache(input$variable_color, input$años[1], input$años[2])
+  # bindCache(input$variable_color, año_min(), año_max())
   
   
   
@@ -546,7 +567,7 @@ server <- function(input, output, session) {
       geom_text(aes(label = n, y = n-0.25), vjust = 1, color = color_enlaces,
                 size = opt_texto_geom) +
       scale_y_continuous(breaks = 1:20, expand = expansion(c(0, 0.1))) +
-      scale_x_continuous(breaks = input$años[1]:input$años[2]) +
+      scale_x_continuous(breaks = año_min():año_max()) +
       theme(panel.grid.minor = element_blank(),
             panel.grid.major.x = element_blank()) +
       labs(y = "casos de corrupción anuales", x = NULL) +
@@ -560,8 +581,8 @@ server <- function(input, output, session) {
     
     datos_cep <- cep_corrupcion |> 
       filter(variable %in% input$cep) |> 
-      filter(year(fecha) >= input$años[1],
-             year(fecha) <= input$años[2])
+      filter(year(fecha) >= año_min(),
+             year(fecha) <= año_max())
     
     if (length(input$cep) > 1) {
       p <- datos_cep |>  
@@ -593,8 +614,8 @@ server <- function(input, output, session) {
     # browser()
     
     cpi <- cpi_corrupcion |> 
-      filter(año >= input$años[1],
-             año <= input$años[2]) 
+      filter(año >= año_min(),
+             año <= año_max()) 
     
     cpi |> 
       ggplot(aes(año, cpi)) +
@@ -695,8 +716,7 @@ server <- function(input, output, session) {
   # gráfico comparación de objetos ----
   
   
-  observeEvent(input$años,
-               {
+  observeEvent(año_min() | año_max(), {
                  updatePickerInput(session, "caso_elegido_comparar",
                                    choices = unique(as.character(corrupcion_años()$caso))
                  )
