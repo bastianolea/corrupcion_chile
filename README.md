@@ -6,6 +6,13 @@ La corrupción ha copado los medios comunicacionales en los últimos meses. Sin 
 
 Este visualizador compila datos abiertos sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile.
 
+## Casos de corrupción en municipios
+
+![Municipios y/o alcaldes involucrados en casos de corrupción en Chile, con su partido y sector político](tabla_corrupcion_municipalidades_chile.png)
+
+### Metodología
+Los datos son organizados en una planilla con sus respectivas fuentes y la información disponible en casa caso. Accede a la carpeta `datos` para revisarlos.
+
 ### Fuente de los datos
 Los datos están siendo compilados manualmente en este repositorio, por lo que se trata de una aplicación en constante proceso. Si quieres complementar los datos existentes, ayudar con correcciones, agregar casos nuevos, o hacer cualquier comentario, puedes encontrar los datos en el [repositorio](https://github.com/bastianolea/corrupcion_chile), o bien, [contactarme](http://bastian.olea.biz) por alguno de los medios disponibles en mi sitio web.
 
@@ -22,6 +29,18 @@ _Otras fuentes de datos:_
 ![Corrupción en Chile, visualizador interactivo de datos 2](otros/pantallazo_corrupcion_chile_b.jpg)
 ![Corrupción en Chile, visualizador interactivo de datos 3](otros/pantallazo_corrupcion_chile_c.jpg)
 ![Corrupción en Chile, visualizador interactivo de datos 4](otros/pantallazo_corrupcion_chile_d.jpg)
+
+
+### Sobre la app
+El sistema de análisis de datos está programado en R, y la app misma está desarrollada en Shiny, un paquete de R para el desarrollo de aplicaciones web interactivas.
+
+Algunas peculiaridades de la app:
+
+- **Gráfico de barras conformadas por puntos, y divisibles en múltiples barras por caso:** Se aplica un procesamiento peculiar a los datos de montos de corrupción para generar el gráfico de pseudo-barras, que usa puntos en lugar de barras. Por un lado, se deben transformar los montos a una escala común, donde cada unidad es representada por un punto, para así obtener un gráfico de pictogramas. El escalamiento es sencillo, y en este caso se hace entre 1 y 15, donde el mayor monto sería representado por 15 círculos. Pero luego, y ya que algunos montos son demasiado grandes en comparación con otros, estas barras constituidas por círculos son divididas en múltiples barras, para que las barras grandes no ocupen tanto espacio en el gráfico. Dado que esta no es una funcionalidad nativa al paquete de visualización de datos que se usa, `ggplot2`, usamos ingenisamente el sistema de facetas para que cada caso se ubique en una faceta del gráfico, y así puedan haber múltiples barras que correspondan a un solo caso. Finalmente, se realizan varios procedimientos para que las etiquetas, nombres de los casos, y otros elementos queden correctamente alineadas con estas barras triples, dado que de lo contrario un caso con tres barras tendría su nombre puesto tres veces.
+
+- **Gráfico de comparación de montos en su equivalente a precios de otras cosas, que mantiene sus proporciones:** El gráfico que permite comparar montos de casos de corrupción con su equivalente en vehículos, propiedades o incluso hospitales, tiene la particularidad de que presenta cientos o miles de cuadraditos pequeños. Sin embargo, estos cuadraditos siempre se ven equidistantes y ordenados, sin importar el ancho de la ventana del usuario. Esto se hace definiendo una cantidad de cuadraditos por fila, y luego se calcula cuantos pixeles usarían esa cantidad de cuadraditos en el tamaño de ventana del usuario, para usar esa proporción al momento de definir el largo del gráfico. De esa forma, los cuadraditos usarán el tamaño de la ventana o pantalla del usuario para un efecto más impactante, pero siempre se verán ordenados.
+
+- **Carga de elementos en base al desplazamiento del usuario:** Dado que se decidió que la aplicación sea larga hacia abajo, resulta que hay demasiados elementos por cargarse al abrir el sitio, sobre todo algunos gráficos y tablas que son de tamaño considerable. Para agilizar la carga del sitio, se implementó código en JavaScript que permite obtener la posición vertical del usuario en la ventana como un input para Shiny; es decir, podemos saber si el usuario está en la parte superior de la app, o si se ha desplazado hacia abajo. De este modo, solamente cargamos los elementos grandes al final del sitio si el usuario ha hecho scroll lo suficiente como para ver dichos elementos.
 
 ---- 
 

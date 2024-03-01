@@ -33,6 +33,8 @@ cpi_corrupcion <- readRDS("corruption_perception_index_chile.rds")
 precios <- readRDS("precios_objetos.rds")
 
 #funciones ----
+source("funciones.R")
+
 css <- function(text) {
   tags$style(glue(text, .open = "{{", .close = "}}"))
 }
@@ -52,23 +54,12 @@ ui <- fluidPage(
   ),
   
   useShinyjs(),
+  
+  # función para obtener la posición vertical de desplazamiento del usuario usando javascript
   js_get_vertical_position(),
   
-  # #ancho de ventana
+  # función para obtener el ancho de ventana usando javascript
   js_get_window_width(),
-  # tags$head(tags$script('
-  #                               var dimension = [0, 0];
-  #                               $(document).on("shiny:connected", function(e) {
-  #                                   dimension[0] = window.innerWidth;
-  #                                   dimension[1] = window.innerHeight;
-  #                                   Shiny.onInputChange("dimension", dimension);
-  #                               });
-  #                               $(window).resize(function(e) {
-  #                                   dimension[0] = window.innerWidth;
-  #                                   dimension[1] = window.innerHeight;
-  #                                   Shiny.onInputChange("dimension", dimension);
-  #                               });
-  #                           ')),
 
   
   css("
@@ -198,7 +189,7 @@ ui <- fluidPage(
                     href = "https://www.transparency.org/en/cpi/2023/index/chl", target = "_blank"),
              "es un ranking de 180 países sobre los niveles percibidos de corrupción en el sector público, que usa una escala de 0 a 100, donde 0 es altamente corrupto."),
            p("En su última medición, correspondiente al año 2023, el índice indica que", 
-             strong("la corrupción en Chile aumentó,"), "bajando de 67 a 66 puntos"),
+             strong("la corrupción en Chile aumentó,"), "bajando de 67 a 66 puntos."),
            
            plotOutput("grafico_cpi") |> withSpinner(color = color_destacado, type = 8),
            
@@ -390,8 +381,7 @@ ui <- fluidPage(
 
 # server ----
 server <- function(input, output, session) {
- 
-  source("funciones.R")
+  
   
   # año_min_0 <- reactive(input$años[1])
   # año_max_0 <- reactive(input$años[2])
@@ -453,18 +443,13 @@ server <- function(input, output, session) {
   #   })
   
   #scroll ----
-  # js_set_input_vertical_position()
-  # write scroll position into shiny input
+  # guardar posición de desplazamiento como input
     observeEvent(input$y_offset, {
       runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
     })
   
-  # get input and check if its valid before using it
+  # obtener input de desplazamiento y revisarlo para que sea válido
   vertical <- reactive({
-    # req(length(input$y_offset) > 0,
-    #     is.numeric(input$y_offset)
-    # )
-    
     if (length(input$y_offset) > 0) {
     return(input$y_offset[1])
     } else {
@@ -472,11 +457,9 @@ server <- function(input, output, session) {
     }
   })
   
-  # debounce input, so that you dont get it updated dozens of time per second. 
-  # instead, settle in the value it gets 500 milliseconds after the scrolling stops
-  vertical_position <- vertical |> debounce(500)
+  # hacer que el input solo se actualice 500 milisegundos después de terminar el scrolling
+  vertical_position <- vertical |> debounce(200)
   
-  # print a message in console with vertical screen position
   observe({
     message("vertical scroll position debounced: ", vertical_position())
   })
@@ -558,12 +541,13 @@ server <- function(input, output, session) {
       ggplot(aes(año, cpi)) +
       geom_line(linewidth = 2, alpha = .4) +
       geom_point(size = 7, alpha = .9) +
-      geom_text(aes(label = cpi), color = color_fondo, size = opt_texto_geom, face = "IBM Plex Mono") +
+      # geom_text(aes(label = cpi), color = color_fondo, size = opt_texto_geom, face = "IBM Plex Mono") +
       geom_point(aes(y = cpi + 0.5, shape = cambio, fill = cambio, color = cambio),
                  size = 4, alpha = 1) +
       scale_shape_manual(values = c("baja" = 25, "sube" = 24, "igual" = NA)) +
       scale_fill_manual(values = c("baja" = color_negativo, "sube" = color_destacado, "igual" = NA), aesthetics = c("color", "fill")) +
       scale_x_continuous(breaks = cpi$año) +
+      scale_y_continuous(breaks = 66:73) +
       theme(legend.position = "none") +
       theme(
         panel.grid.minor.x = element_blank(),
@@ -1081,7 +1065,7 @@ server <- function(input, output, session) {
   output$tabla_alcaldías <- render_gt({
     
     if (input$sector_alcaldias == "Todos") {
-      filtro_sector <- c("Derecha", "Izquierda")
+      filtro_sector <- c("Derecha", "Izquierda", "Ninguno")
       } else {
         filtro_sector <- input$sector_alcaldias
         # filtro_sector <- "Derecha"
@@ -1093,10 +1077,10 @@ server <- function(input, output, session) {
     corrupcion_años() |> 
       filter(alcalde == "Alcaldías") |> 
       filter(sector %in% filtro_sector) |> 
-      select(comuna,  partido, sector, monto, año,
+      select(comuna,  partido, responsable, sector, monto, año,
              fuente1, fuente2, fuente3) |> 
       # count(sector)
-      mutate(sector = factor(sector, c("Izquierda", "Derecha"))) |> 
+      mutate(sector = factor(sector, c("Izquierda", "Derecha", "Ninguno"))) |> 
       mutate(
         fuente = case_when(!is.na(fuente3) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3})"),
                            !is.na(fuente2) ~ glue::glue("[1]({fuente1}), [2]({fuente2})"),
@@ -1120,20 +1104,28 @@ server <- function(input, output, session) {
       #           style = list(
       #             cell_text(color = color_detalle2))) |> 
       data_color(columns = c(sector), 
-                 method = "factor", domain = c("Derecha", "Izquierda"), ordered = T, 
-                 levels = c("Derecha", "Izquierda"),
-                 palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda)
+                 method = "factor", 
+                 domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T, 
+                 levels = c("Derecha", "Izquierda", "Ninguno"),
+                 palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Ninguno" = color_fondo)
                  ) |> 
-      data_color(columns = c(sector), 
+      # data_color(columns = c(sector),
+      #            method = "factor", apply_to = "text",
+      #            domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T,
+      #            levels = c("Izquierda", "Derecha", "Ninguno"),
+      #            palette = c("white", "white", color_texto)) |>
+      #color partido
+      data_color(columns = c(partido, sector), 
                  method = "factor", apply_to = "text",
-                 levels = c("Izquierda", "Derecha", "Ninguno"), 
-                 palette = c("white", "white", color_texto)) |> 
+                 levels = c("Ninguno"),
+                 palette = color_detalle2, na_color = color_texto) |> 
       fmt_number(columns = monto, sep_mark = ".", decimals = 0) |> 
       cols_label(
         comuna = "Municipio",
         año = "Año",
         partido = "Partido político",
         sector = "Sector político",
+        responsable = "Alcalde",
         monto = "Monto defraudado",
         fuente = "Fuentes"
       ) |> 

@@ -66,3 +66,4 @@ tabla |> gtsave(filename = "tabla_corrupcion_municipalidades_chile.png")
 
 
 corrupcion_municipios |> count(partido) |> arrange(desc(n))
+corrupcion_municipios |> count(sector) |> arrange(desc(n))
