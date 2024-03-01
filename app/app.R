@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyWidgets)
 library(shinycssloaders)
+library(shinyjs)
 
 library(dplyr)
 library(ggplot2)
@@ -15,6 +16,8 @@ library(showtext)
 library(bslib)
 source("colores.R")
 thematic_shiny(font = "auto", bg = color_fondo, fg = color_texto, accent = color_destacado)
+
+
 
 #opciones
 options(scipen = 99999)
@@ -39,6 +42,7 @@ css <- function(text) {
 ui <- fluidPage(
   title = "Corrupción en Chile", 
   lang = "es",
+  
   theme = bslib::bs_theme(
     bg = color_fondo, fg = color_texto, primary = color_destacado,
     base_font = font_link(
@@ -47,20 +51,24 @@ ui <- fluidPage(
     )
   ),
   
-  #ancho de ventana
-  tags$head(tags$script('
-                                var dimension = [0, 0];
-                                $(document).on("shiny:connected", function(e) {
-                                    dimension[0] = window.innerWidth;
-                                    dimension[1] = window.innerHeight;
-                                    Shiny.onInputChange("dimension", dimension);
-                                });
-                                $(window).resize(function(e) {
-                                    dimension[0] = window.innerWidth;
-                                    dimension[1] = window.innerHeight;
-                                    Shiny.onInputChange("dimension", dimension);
-                                });
-                            ')),
+  useShinyjs(),
+  js_get_vertical_position(),
+  
+  # #ancho de ventana
+  js_get_window_width(),
+  # tags$head(tags$script('
+  #                               var dimension = [0, 0];
+  #                               $(document).on("shiny:connected", function(e) {
+  #                                   dimension[0] = window.innerWidth;
+  #                                   dimension[1] = window.innerHeight;
+  #                                   Shiny.onInputChange("dimension", dimension);
+  #                               });
+  #                               $(window).resize(function(e) {
+  #                                   dimension[0] = window.innerWidth;
+  #                                   dimension[1] = window.innerHeight;
+  #                                   Shiny.onInputChange("dimension", dimension);
+  #                               });
+  #                           ')),
 
   
   css("
@@ -279,14 +287,15 @@ ui <- fluidPage(
            p("Seleccione una opción para distinguir con un color distinto cada caso de corrupción según variables como partido político, sector político, fundaciones involucradas, y otras."),
            p("El gráfico indica los mayores casos de corrupción entre los años",
              em(textOutput("rango_años_montos", inline = T)),
-             "y los puntos son unidades ilustrativas para comparar visualmente las magnitudes")
+             "y los puntos son unidades ilustrativas para comparar visualmente las magnitudes.")
     ),
     column(12, align = "center", 
            #style = "height: 900px;",
            div(
-             style = "min-height: 900px; width: 900px;",
+             style = "min-height: 900px; width: 800px;",
              # min-width: 830px; max-width: 1024px;",
-             htmlOutput("ui_montos", fill = TRUE) |> withSpinner(color = color_destacado, type = 8),
+             htmlOutput("ui_montos", fill = TRUE) |> 
+               withSpinner(color = color_destacado, type = 8, proxy.height = 400),
              # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
              
              hr()
@@ -382,6 +391,8 @@ ui <- fluidPage(
 # server ----
 server <- function(input, output, session) {
  
+  source("funciones.R")
+  
   # año_min_0 <- reactive(input$años[1])
   # año_max_0 <- reactive(input$años[2])
   # 
@@ -442,126 +453,42 @@ server <- function(input, output, session) {
   #   })
   
   #scroll ----
+  # js_set_input_vertical_position()
+  # write scroll position into shiny input
+    observeEvent(input$y_offset, {
+      runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
+    })
   
-  
-  
-  
-  # gráfico montos divididos ----
-  alto_grafico_montos <- reactive({
-    casos = length(unique(corrupcion_escalado()$caso))
-    # message("casos en gráfico montos: ", casos)
-    # alto = 58 * casos
-    alto = 86 * casos
-    # message("alto gráfico montos: ", alto)
-    return(alto)
-  })
-  
-  #etiquetas de texto para los millones 
-  monto_etiqueta <- reactive({
-    corrupcion_escalado() |> 
-      group_by(caso) |> 
-      filter(monto_escalera == monto_escalado) |> 
-      filter(nchar(as.character(division_monto_etiqueta)) > 3) |> 
-      select(caso, monto, monto_etiqueta, monto_escalera, division_monto_etiqueta) |> 
-      mutate(monto_etiqueta = str_trim(monto_etiqueta),
-             monto_etiqueta = ifelse(monto >= 10000000000,
-                                     str_wrap(monto_etiqueta, 6),
-                                     monto_etiqueta)
-      )
-  })
-  
-  
-  output$grafico_montos <- renderPlot({
-    message("gráfico montos...")
-    req(nrow(corrupcion_escalado()) > 0)
-    req(monto_etiqueta())
-    req(alto_grafico_montos())
+  # get input and check if its valid before using it
+  vertical <- reactive({
+    # req(length(input$y_offset) > 0,
+    #     is.numeric(input$y_offset)
+    # )
     
-    ### opciones
-    expansion_y = 0.4 #espacio entre borde de cada faceta de cada caso y sus valores
-    expansion_x = 0.15 #espacio entre valor máximo y borde derecho del gráfico
-    espaciado_y = 4 #espacio entre facetas
-    texto_eje_y = opt_texto_plot+1 #texto casos
-    texto_montos = opt_texto_geom #texto montos
-    tamaño_punto = 10 #tamaño de círculos
-    corte_etiqueta_casos = 28 #caracteres antes del corte de línea de etiquetas y
-    
-    # browser()
-    grafico <- corrupcion_escalado() |> 
-      ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
-                 color = .data[[input$variable_color]])) + 
-      #puntos
-      geom_point(size = tamaño_punto) +
-      #signo peso en puntos
-      geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.8) +
-      #etiquetas millones
-      geom_text(data = monto_etiqueta(),
-                aes(label = monto_etiqueta, x = monto_escalera+0.65), 
-                color = color_texto, size = texto_montos, hjust = 0, fontface = "italic", lineheight = 0.85) +
-      #escala vertical
-      scale_y_discrete(labels = ~str_remove(.x, " \\d+") |> str_wrap(corte_etiqueta_casos), #cortar línea de etiquetas eje y
-                       expand = expansion(expansion_y)) + #apretar columnas horizontales de puntos
-      scale_x_continuous(expand = expansion(c(0.04, expansion_x))) +
-      coord_cartesian(clip = "off") +
-      facet_grid(rows = vars(caso),
-                 scales = "free_y", space = 'free', switch = "y", as.table = FALSE) +
-      theme_minimal() +
-      theme(strip.background = element_blank(),
-            strip.text = element_blank(),
-            axis.title = element_blank(),
-            axis.text.y = element_text(family = "IBM Plex Mono", face = "bold",
-                                       size = texto_eje_y, color = color_texto,
-                                       margin = margin(r = 7)),
-            axis.text.x = element_blank(),
-            panel.background = element_rect(fill = color_detalle, linewidth = 0),
-            panel.grid = element_blank(),
-            panel.spacing.y = unit(espaciado_y, "mm"),
-            legend.text = element_text(color = color_texto, size = 18, hjust = 0, margin = margin(t = 0, b = 0, r = 10)),
-            legend.title = element_blank(),
-            plot.margin = unit(c(0, 0, 0,  1), "cm")) +
-      theme(legend.position = "top", legend.direction = "horizontal", 
-            legend.margin = margin(t = 0, b = -3),
-            legend.text = element_text(family = "IBM Plex Mono", size = 10))
-    
-    #sin escala si no se divide el gráfico por colores
-    if (input$variable_color == "ninguno") {
-      grafico <- grafico +
-        scale_color_manual(values = color_destacado) +
-        theme(legend.position = "none")
+    if (length(input$y_offset) > 0) {
+    return(input$y_offset[1])
+    } else {
+      return(0)
     }
-    
-    #si color es por sector político
-    if (input$variable_color == "sector") {
-      grafico <- grafico +
-        scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
-                                      "Ninguno" = color_destacado))
-    }
-    
-    plot(grafico)
-  }, height = reactive(alto_grafico_montos()), res = 72) #|> 
-  # bindCache(input$variable_color, año_min(), año_max())
-  
-  
-  
-  # output$div_montos <- renderUI({
-  #   # browser()
-  #   alto <- 64 * length(unique(corrupcion_escalado()$caso))
-  #   output <- plotOutput("grafico_montos", width = 800, height = alto)
-  #   return(output)
-  # })
-  
-  ### ui montos ----
-  output$ui_montos <- renderUI({
-    req(nrow(corrupcion_escalado()) > 0)
-    req(monto_etiqueta())
-    req(alto_grafico_montos())
-    
-    message("rendering ui gráfico montos...")
-    
-    # plotOutput("grafico_comparacion",
-    plotOutput("grafico_montos", width = 900, 
-               height = alto_grafico_montos()) |> withSpinner(color = color_destacado, type = 8)
   })
+  
+  # debounce input, so that you dont get it updated dozens of time per second. 
+  # instead, settle in the value it gets 500 milliseconds after the scrolling stops
+  vertical_position <- vertical |> debounce(500)
+  
+  # print a message in console with vertical screen position
+  observe({
+    message("vertical scroll position debounced: ", vertical_position())
+  })
+  
+  #si el scrolling supera este valor (pixeles de desplazamiento vertical), entonces se cargarán los gráficos grandes
+  scroll <- reactiveValues(abajo = FALSE)
+  observeEvent(vertical_position(), {
+    if (vertical_position() > 1500) {
+      scroll$abajo <- TRUE
+    }
+               })
+  
   
   
   # gráfico barras años ----
@@ -723,6 +650,129 @@ server <- function(input, output, session) {
   })
   
   
+  
+  # gráfico montos divididos ----
+  alto_grafico_montos <- reactive({
+    casos = length(unique(corrupcion_escalado()$caso))
+    # message("casos en gráfico montos: ", casos)
+    # alto = 58 * casos
+    alto = 60 * casos
+    message("gráfico montos: alto gráfico montos: ", alto)
+    return(alto)
+  })
+  
+  #etiquetas de texto para los millones 
+  monto_etiqueta <- reactive({
+    corrupcion_escalado() |> 
+      group_by(caso) |> 
+      filter(monto_escalera == monto_escalado) |> 
+      filter(nchar(as.character(division_monto_etiqueta)) > 3) |> 
+      select(caso, monto, monto_etiqueta, monto_escalera, division_monto_etiqueta) |> 
+      mutate(monto_etiqueta = str_trim(monto_etiqueta)
+             # monto_etiqueta = ifelse(monto >= 10000000000,
+             #                         str_wrap(monto_etiqueta, 6),
+             #                         monto_etiqueta)
+      )
+  })
+  
+  ## gráfico ----
+  output$grafico_montos <- renderPlot({
+    req(nrow(corrupcion_escalado()) > 0)
+    req(monto_etiqueta())
+    req(alto_grafico_montos())
+    req(scroll$abajo) # req(vertical_position() > 2000)
+    
+    message("rendering gráfico montos...")
+    
+    ### opciones
+    expansion_y = 0.4 #espacio entre borde de cada faceta de cada caso y sus valores
+    expansion_x = 0.8 #espacio entre valor máximo y borde derecho del gráfico
+    espaciado_y = 4 #espacio entre facetas
+    texto_eje_y = opt_texto_plot+1 #texto casos
+    texto_montos = opt_texto_geom #texto montos
+    tamaño_punto = 10 #tamaño de círculos
+    corte_etiqueta_casos = 32 #caracteres antes del corte de línea de etiquetas y
+    
+    # browser()
+    grafico <- corrupcion_escalado() |> 
+      ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
+                 color = .data[[input$variable_color]])) + 
+      #puntos
+      geom_point(size = tamaño_punto) +
+      #signo peso en puntos
+      geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.8) +
+      #etiquetas millones
+      geom_text(data = monto_etiqueta(),
+                aes(label = monto_etiqueta, x = monto_escalera+0.65), 
+                color = color_texto, size = texto_montos, hjust = 0, fontface = "italic", lineheight = 0.85) +
+      #escala vertical
+      scale_y_discrete(labels = ~str_remove(.x, " \\d+") |> str_wrap(corte_etiqueta_casos), #cortar línea de etiquetas eje y
+                       expand = expansion(expansion_y)) + #apretar columnas horizontales de puntos
+      scale_x_continuous(expand = expansion(c(0.1, expansion_x))) +
+      coord_cartesian(clip = "off") +
+      facet_grid(rows = vars(caso),
+                 scales = "free_y", space = 'free', switch = "y", as.table = FALSE) +
+      theme_minimal() +
+      theme(strip.background = element_blank(),
+            strip.text = element_blank(),
+            axis.title = element_blank(),
+            axis.text.y = element_text(family = "IBM Plex Mono", face = "bold",
+                                       size = texto_eje_y, color = color_texto,
+                                       margin = margin(r = 7)),
+            axis.text.x = element_blank(),
+            panel.background = element_rect(fill = color_detalle, linewidth = 0),
+            panel.grid = element_blank(),
+            panel.spacing.y = unit(espaciado_y, "mm"),
+            legend.text = element_text(color = color_texto, size = 18, hjust = 0, margin = margin(t = 0, b = 0, r = 10)),
+            legend.title = element_blank(),
+            plot.margin = unit(c(0, 0, 0,  1), "cm")) +
+      theme(legend.position = "top", legend.direction = "horizontal", 
+            legend.margin = margin(t = 0, b = -3),
+            legend.text = element_text(family = "IBM Plex Mono", size = 10))
+    
+    #sin escala si no se divide el gráfico por colores
+    if (input$variable_color == "ninguno") {
+      grafico <- grafico +
+        scale_color_manual(values = color_destacado) +
+        theme(legend.position = "none")
+    }
+    
+    #si color es por sector político
+    if (input$variable_color == "sector") {
+      grafico <- grafico +
+        scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
+                                      "Ninguno" = color_destacado))
+    }
+    
+    plot(grafico)
+  }, height = reactive(alto_grafico_montos()), res = 72) #|> 
+  # bindCache(input$variable_color, año_min(), año_max())
+  
+  
+  
+  # output$div_montos <- renderUI({
+  #   # browser()
+  #   alto <- 64 * length(unique(corrupcion_escalado()$caso))
+  #   output <- plotOutput("grafico_montos", width = 800, height = alto)
+  #   return(output)
+  # })
+  
+  ## ui montos ----
+  output$ui_montos <- renderUI({
+    req(nrow(corrupcion_escalado()) > 0)
+    req(monto_etiqueta())
+    req(alto_grafico_montos())
+    
+    message("rendering ui gráfico montos...")
+    
+    # plotOutput("grafico_comparacion",
+    plotOutput("grafico_montos", width = 900, 
+               height = alto_grafico_montos()) |> withSpinner(color = color_destacado, type = 8)
+  })
+  
+  
+  
+  
   # gráfico comparación de objetos ----
   
   
@@ -751,7 +801,7 @@ server <- function(input, output, session) {
       filter(caso == input$caso_elegido_comparar) |> 
       pull(monto)
     
-    message("monto del caso elegido: ", monto)
+    # message("monto del caso elegido: ", monto)
     monto
   })
   
@@ -762,7 +812,7 @@ server <- function(input, output, session) {
     cantidad <- as.integer(comparar_monto()/comparar()$precio)
     cantidad <- ifelse(cantidad == 0, 1, cantidad)
     
-    message("cantidad de objetos: ", cantidad)
+    message("gráfico comparación: cantidad de objetos: ", cantidad)
     cantidad
   })
   
@@ -843,7 +893,7 @@ server <- function(input, output, session) {
     cantidad <- cantidad_objetos()
     cantidad <- ifelse(cantidad < 1, 1, cantidad)
     # cantidad = 500
-    message("cantidad de objetos 2: ", cantidad)
+    message("gráfico comparación: cantidad de objetos 2: ", cantidad)
     cantidad
   })
   
@@ -868,7 +918,7 @@ server <- function(input, output, session) {
     
     #filas necesarias
     cantidad_filas <- cantidad()/puntos_ancho()
-    message("cantidad de filas: ", cantidad_filas)
+    message("gráfico comparación: cantidad de filas: ", cantidad_filas)
     
     #pixeles de ancho que ocupa cada punto horizontal
     pixeles_por_punto <- ancho_ventana()/puntos_ancho()
@@ -880,7 +930,7 @@ server <- function(input, output, session) {
     if (cantidad_filas < 1) {
       medida = pixeles_por_punto
     }
-    message("largo del gráfico: ", medida)
+    message("gráfico comparación: largo del gráfico: ", medida)
     medida
   }) 
   
@@ -918,7 +968,7 @@ server <- function(input, output, session) {
     
     if (cantidad_graficada != cantidad) {
       cantidad_faltante = cantidad - cantidad_graficada
-      message("matriz comparación: faltaron ", cantidad_faltante, " puntos. agregando...")
+      message("gráfico comparación: matriz comparación: faltaron ", cantidad_faltante, " puntos. agregando...")
       
       #si faltan puntos para alcanzar la cifra, se agrega una sola fila con la cantidad de puntos (que es menor al ancho, siempre)
       puntos_faltantes <- tibble(value = 0, name = 1:cantidad_faltante)
@@ -942,16 +992,18 @@ server <- function(input, output, session) {
     } else if (ancho_ventana() >= 900) {
       tamaño_punto = 4
     }
-    message("tamaño del punto: ", tamaño_punto)
+    message("gráfico comparación: tamaño del punto: ", tamaño_punto)
     tamaño_punto
   })
   
-  ## gráfico comparación ----
+  ## gráfico ----
   output$grafico_comparacion <- renderPlot({
     req(datos_comparar())
     req(medida_grafico())
-    # req(ancho_ventana())
-    message("rendering gráfico...")
+    req(ancho_ventana())
+    req(scroll$abajo) # req(vertical_position() > 2000)
+    
+    message("rendering gráfico comparación...")
     
     p <- datos_comparar() |> 
       ggplot(aes(name, value)) +
@@ -1015,7 +1067,7 @@ server <- function(input, output, session) {
     req(datos_comparar())
     req(medida_grafico())
     
-    message("rendering ui gráfico comparacion...")
+    # message("rendering ui gráfico comparacion...")
     
     plotOutput("grafico_comparacion",
                # width = ancho_comparacion,
@@ -1154,6 +1206,9 @@ server <- function(input, output, session) {
   
   ## tabla todo ----
   output$tabla_casos <- render_gt({
+    req(scroll$abajo)
+    
+    message("rendering tabla de todo...")
     # browser()
     corrupcion_años() |> 
       select(caso, monto, 

@@ -55,7 +55,7 @@ corrupcion_dividido <- corrupcion |>
   select(caso, monto) |> 
   # mutate(magnitud = ifelse(monto >= mean(monto), "enorme", "normal")) |> 
   # mutate(magnitud = ifelse(monto >= 10000000000, "enorme", "normal")) |> 
-  mutate(magnitud = ifelse(monto >= 5000*1000000, "enorme", "normal")) |> 
+  mutate(magnitud = ifelse(monto >= 30000*1000000, "enorme", "normal")) |> 
   #dividir los montos grandes en tres partes iguales, los normales dejarlos como están
   group_by(caso) |> 
   mutate(divisor_montos = 3,
