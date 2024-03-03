@@ -49,16 +49,20 @@ readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
 mean(corrupcion$monto)
 median(corrupcion$monto)
 
+cantidad_circulos = 15
+corte_enormes = 30000 #millones
+divisor_montos_enormes = 3 #cantidad de columnas en montos enormes
+
 corrupcion_dividido <- corrupcion |>
   # slice(1:15) |> 
   #identificar si los montos de los mayores casos son enormes en comparación con el resto
   select(caso, monto) |> 
   # mutate(magnitud = ifelse(monto >= mean(monto), "enorme", "normal")) |> 
   # mutate(magnitud = ifelse(monto >= 10000000000, "enorme", "normal")) |> 
-  mutate(magnitud = ifelse(monto >= 30000*1000000, "enorme", "normal")) |> 
+  mutate(magnitud = ifelse(monto >= corte_enormes*1000000, "enorme", "normal")) |> 
   #dividir los montos grandes en tres partes iguales, los normales dejarlos como están
   group_by(caso) |> 
-  mutate(divisor_montos = 3,
+  mutate(divisor_montos = divisor_montos_enormes,
          monto1 = ifelse(magnitud == "enorme", monto/divisor_montos, monto),
          monto2 = ifelse(magnitud == "enorme", monto/divisor_montos, NA),
          monto3 = ifelse(magnitud == "enorme", monto/divisor_montos, NA),
@@ -71,7 +75,7 @@ corrupcion_dividido <- corrupcion |>
 corrupcion_dividido_escalado <- corrupcion_dividido |> 
   ungroup() |> 
   mutate(x = monto_dividido,
-         monto_escalado = (x - min(x)) / (max(x) - min(x)) * 15,
+         monto_escalado = (x - min(x)) / (max(x) - min(x)) * cantidad_circulos,
          monto_escalado = ceiling(monto_escalado)) |> 
   select(-x)
 
