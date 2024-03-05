@@ -1,52 +1,51 @@
+library(shiny)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(stringr)
+library(forcats)
+library(glue)
+library(colorspace)
+library(ggrepel)
 
 
+corrupcion <- readRDS("app/corrupcion_datos.rds") |> 
+  mutate(alcaldes_sector = case_when(alcalde == "Alcaldías" & sector == "Derecha" ~ "Alcalde de derecha",
+                                     alcalde == "Alcaldías" & sector == "Izquierda" ~ "Alcalde de izquierda",
+                                     alcalde == "Alcaldías" & sector == "Ninguno" ~ "Alcalde independiente",
+                                     .default = "Otros casos"))
 
-#graficar ----
+cut_comunas <- read.csv2("datos/comunas_chile_cut.csv")
+
+
+# colores
 color_oscuro = "grey20"
 color_fondo = "white"
 color_negro = "black"
 color_agua = "lightblue"
 color_estructuras = "grey40"
 
+color_derecha = "#294a66" |> lighten(0.4)
+color_izquierda = "#722a2a" |> lighten(0.4)
+color_neutro = "black" |> lighten(0.3)
+color_ninguno = "#662953"|> lighten(0.3)
 
-estructuras$osm_polygons |> 
-  filter(!is.na(`addr:city`))
 
-# mapa_2 <- chilemapas::mapa_comunas
 
-# st_crs(estructuras$osm_polygons)
-# st_crs(chilemapas::mapa_comunas)
-# st_crs(mapa_2$geometry) <- 4326
-
-# mapa_3 <- st_transform(mapa_2$geometry, crs = 4326)
-
-#solo el borde de la región
-region <- chilemapas::mapa_comunas |> 
-  filter(codigo_region == 13) |> 
-  pull(geometry) |> 
-  st_transform(crs = 4326) |>
-  # st_cast("POLYGON") |> 
-  st_union()
-
-#recortar shapes para que solo sean las de dentro de la región
+# recortar mapas para que solo sean las de dentro de la región
 estructuras_region <- st_intersection(estructuras$osm_polygons, region)
-rios_region <- st_intersection(rios$osm_lines, region)
+# rios_region <- st_intersection(rios$osm_lines, region)
 calles_region <- st_intersection(calles_principales$osm_lines, region)
 
 # areas_pobladas <- st_read("mapas/Areas_Pobladas/")
-
-
 # areas_pobladas$geometry
-
 # st_crs(areas_pobladas$geometry) <- 4326
 # areas_pobladas_2 <- areas_pobladas |> st_transform(crs = 4326)
-
 # areas_pobladas |> st_simplify()
-
 # areas_pobladas_region <- st_intersection(areas_pobladas_2$geometry, region)
 
-
-
+# primer mapa ----
 ggplot() +
   #mapa regional
   geom_sf(data = mapa, 
@@ -78,15 +77,15 @@ ggplot() +
 
 
 
+# segundo mapa, sólo límite urbano de la RM ----
 
+# poblacion_censo <- chilemapas::censo_2017_comunas |> 
+#   group_by(codigo_comuna) |> 
+#   summarize(poblacion = sum(poblacion))
 
-poblacion_censo <- chilemapas::censo_2017_comunas |> 
-  group_by(codigo_comuna) |> 
-  summarize(poblacion = sum(poblacion))
-
-#sacar comunas chicas
+# seleccionar solo comunas urbanas 
 mapa_filtrado <- mapa |> 
-  left_join(poblacion_censo) |> 
+  # left_join(poblacion_censo) |> 
   # filter(poblacion > 100000) |> 
   # filter(!nombre_comuna %in% c("Lampa", "Colina", "Melipilla")) |> 
   filter(nombre_comuna %in% c("Pudahuel", "Cerro Navia", "Conchali", "La Pintana", "El Bosque", 
@@ -104,45 +103,107 @@ mapa_filtrado <- mapa |>
 
 # mapa_filtrado_2 <- mapa_filtrado$geometry |> st_transform(crs = 4326)
 
+# transformar mapas
+mapa_urbano_2 <- mapa_urbano |> 
+  st_as_sf() |> 
+  st_union() |> 
+  st_transform(crs = 4326)
+
+estructuras_region_2 <- estructuras_region |> 
+  st_as_sf() |> 
+  st_union() |> 
+  st_transform(crs = 4326) |> 
+  st_simplify() |> 
+  st_make_valid()
+
+sf_use_s2(FALSE)
+
+# filtrar el mapa de comunas urbanas para dejar solo sectores urbanos de esas comunas
 mapa_filtrado_urbano <- st_intersection(st_as_sf(mapa_filtrado), 
-                                        st_as_sf(mapa_urbano) |> st_union())
+                                        mapa_urbano |> 
+                                          st_as_sf() |> 
+                                          st_union())
+
+# estructuras_urbano <- st_intersection(estructuras_region_2, 
+#                                       mapa_urbano |> 
+#                                         st_as_sf() |> 
+#                                         st_union() |> 
+#                                         st_transform(crs = 4326))
+
+# filtrar mapa de estructuras (uso de suelo) para que sea solo dentro del límite urbano
+estructuras_urbano <- st_intersection(estructuras_region_2 |> 
+                                        st_union(), 
+                                      mapa_filtrado_urbano |> 
+                                        st_as_sf() |> 
+                                        st_union() |>
+                                        st_transform(crs = 4326))
+
 # calles_urbano <- st_intersection(st_as_sf(calles_region) |> st_transform(crs = 4326), 
 #                                  st_as_sf(mapa_urbano) |> st_union() |> st_transform(crs = 4326))
 
-ggplot() +
-  # geom_sf(data = mapa,
-  #         aes(geometry = geometry),
-  #         fill = color_oscuro, col = color_fondo,
-  #         alpha = 0.6) +
-  #mapa regional
-  geom_sf(data = mapa_filtrado_urbano,
-          aes(geometry = geometry),
-          fill = color_oscuro, col = color_fondo,
-          alpha = 0.6) +
-  geom_text(data = mapa_filtrado_urbano,
-            aes(geometry = geometry, label = nombre_comuna),
-            color = "white", alpha = 1, size = 3,
-            stat = "sf_coordinates") +
-  # #carreteras
-  # geom_sf(data = calles_urbano |> filter(highway %in% c("motorway")),
-  #         color = color_negro, size = .1, alpha = 0.4) +
-  #urbano
-  # geom_sf(data = mapa_urbano,
-  #         aes(geometry = geometry),
-  #         fill = color_oscuro, color = color_oscuro, alpha = 1) +
-  # #carreteras
-  # geom_sf(data = calles_region |> filter(highway %in% c("motorway")),
-  #         color = color_negro, size = .1, alpha = 0.4) +
-  # geom_sf(data = calles_region |> filter(highway %in% c("primary")),
-#         color = color_negro, size = .1, alpha = 0.2) +
-# # estructruras
-# geom_sf(data = estructuras_region,
-#         fill = color_estructuras, color = NA, alpha = 0) +
-#borde comunas
-# geom_sf(data = mapa, 
-#         aes(geometry = geometry),
-#         fill = NA, col = color_fondo, alpha = 1, linewidth = .3) +
-#temas
-theme_void() +
-  theme(plot.background = element_rect(fill = color_fondo, color = color_fondo), panel.background = element_rect(fill = color_fondo, color = color_fondo))
+# filtrar datos de corrupción de municipios
+corrupcion_comunas <- corrupcion |> 
+  filter(!is.na(comuna)) |> 
+  filter(alcalde == "Alcaldías") |> 
+  left_join(cut_comunas, by = join_by(comuna)) |> 
+  filter(!is.na(cut_comuna)) |> 
+  select(sector, alcaldes_sector, año, partido, comuna, cut_comuna) |> 
+  mutate(cut_comuna = as.character(cut_comuna)) |> 
+  mutate(sector = if_else(is.na(sector), "Ninguno", sector))
 
+# agregar datos de municipios a mapa de sector urbano
+mapa_datos <- mapa_filtrado_urbano |> 
+  left_join(corrupcion_comunas, by = c("codigo_comuna" = "cut_comuna")) |> 
+  mutate(alcaldes_sector = if_else(is.na(alcaldes_sector), "Sin casos conocidos", alcaldes_sector)) |> 
+  group_by(comuna) |> 
+  slice_max(año) |> 
+  mutate(etiqueta = glue("{comuna} ({partido})"),
+         etiqueta = if_else(is.na(partido), NA, etiqueta))
+
+# mapa_datos |> 
+#   select(comuna, partido, etiqueta) |> 
+#   print(n=Inf)
+
+
+# graficar mapa
+mapa_datos |> 
+  ggplot(aes(geometry = geometry)) +
+  geom_sf(aes(fill = alcaldes_sector),
+          col = color_fondo,
+          alpha = 1, linewidth = 0.5) +
+  geom_sf(data = estructuras_urbano,
+          fill = color_estructuras, fill = "black", color = NA, alpha = 0.15) +
+  geom_label_repel(aes(label = etiqueta),
+                  color = "black", alpha = 0.7, size = 3, fontface = "bold", 
+                  label.size = 0, seed = 1000,
+                  stat = "sf_coordinates") +
+  geom_label_repel(aes(label = etiqueta),
+                   color = "black", alpha = 1, size = 3, fontface = "bold", 
+                   label.size = 0, seed = 1000,
+                   fill = NA,
+                   stat = "sf_coordinates") +
+  scale_fill_manual(values = c("Alcalde de derecha" = color_derecha,
+                               "Alcalde de izquierda" = color_izquierda,
+                               "Alcalde independiente" = color_ninguno,
+                               "Sin casos conocidos" = "gray70")) +
+  labs(fill = "Municipalidades") +
+  guides(fill = guide_legend(override.aes = list(size = 5))) +
+  coord_sf(xlim = c(-70.81, -70.44213), ylim = c(-33.66, -33.31), expand = F) +
+  #temas
+  theme_void() +
+  theme(legend.position = c(.1, .12)) +
+  theme(legend.title = element_text(face = "bold"),
+        plot.margin = unit(c(5, 5, 5, 15), "mm"),
+        plot.background = element_rect(fill = color_fondo, color = color_fondo), 
+        panel.background = element_rect(fill = color_fondo, color = color_fondo)) +
+  theme(plot.title.position = "plot", 
+        plot.title = element_text(margin = margin(t=0, b = 6)),
+        plot.subtitle = element_text(margin = margin(b = 8))) +
+  labs(title = "Casos de corrupción en municipalidades",
+       subtitle = "Región Metropolitana, por sector político del alcalde",
+       caption = "Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile")
+
+# guardar imagen
+ggsave(filename = "mapas/mapa_corrupcion_municipios_rm.png",
+       width = 10, height = 10
+)

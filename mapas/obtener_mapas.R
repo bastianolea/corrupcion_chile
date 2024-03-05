@@ -1,4 +1,3 @@
-
 #remotes::install_github("ropensci/osmdata")
 library(dplyr)
 library(ggplot2)
@@ -37,11 +36,11 @@ calles_principales <- getbb(ciudad) %>%
 #                   value = c("secondary", "tertiary", "secondary_link", "tertiary_link")) %>%
 #   osmdata_sf()
 
-rios <- getbb(ciudad) %>%
-  opq(timeout = 500) %>%
-  add_osm_feature(key = "waterway", 
-                        value = c("river", "canal")) %>%
-  osmdata_sf()
+# rios <- getbb(ciudad) %>%
+#   opq(timeout = 500) %>%
+#   add_osm_feature(key = "waterway", 
+#                         value = c("river", "canal")) %>%
+#   osmdata_sf()
 
 estructuras <- getbb(ciudad) %>%
   opq(timeout = 500) %>%
@@ -91,16 +90,13 @@ lugares <- getbb(ciudad) %>%
 
 
 
-#asignar crs
-
-
+# asignar crs
 st_crs(calles_principales$osm_lines) <- 4326
-st_crs(rios$osm_lines) <- 4326
+# st_crs(rios$osm_lines) <- 4326
 st_crs(estructuras$osm_polygons) <- 4326
 
 
-
-
+# obtener mapas de chile ----
 
 #cargar polígono regional
 mapa <- chilemapas::mapa_comunas %>%
@@ -112,3 +108,9 @@ mapa <- chilemapas::mapa_comunas %>%
 mapa_urbano <- chilemapas::mapa_zonas |> 
   filter(codigo_region == 13)
 
+#solo el borde de la región
+region <- chilemapas::mapa_comunas |> 
+  filter(codigo_region == 13) |> 
+  pull(geometry) |> 
+  st_transform(crs = 4326) |>
+  st_union()
