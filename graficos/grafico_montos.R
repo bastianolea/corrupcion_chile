@@ -173,7 +173,7 @@ monto_etiqueta <- function() {
 opt_texto_geom = 3
 opt_texto_plot = 16
 opt_texto_axis = 13
-expansion_y = 0.17 #espacio entre borde de cada faceta de cada caso y sus valores
+expansion_y = 0.17 #espacio entre borde de cada faceta de cada caso y sus valores (si fuera aditivo y no multiplicatvo se arregla espaciado distinto entre enormes y normales?
 expansion_x = 0.05 #espacio entre valor máximo y borde derecho del gráfico
 espaciado_y = 5 #espacio entre facetas
 texto_eje_y = 9 #texto casos
