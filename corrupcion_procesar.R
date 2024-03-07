@@ -49,25 +49,46 @@ readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
 mean(corrupcion$monto)
 median(corrupcion$monto)
 
-cantidad_circulos = 15
+# cantidad_circulos = 15
+# corte_enormes = 30000 #millones
+# divisor_montos_enormes = 3 #cantidad de columnas en montos enormes
+cantidad_circulos = 50 #15
 corte_enormes = 30000 #millones
+corte_ultra = 50000
 divisor_montos_enormes = 3 #cantidad de columnas en montos enormes
 
 corrupcion_dividido <- corrupcion |>
-  # slice(1:15) |> 
+  arrange(desc(monto)) |> 
   #identificar si los montos de los mayores casos son enormes en comparación con el resto
   select(caso, monto) |> 
-  # mutate(magnitud = ifelse(monto >= mean(monto), "enorme", "normal")) |> 
-  # mutate(magnitud = ifelse(monto >= 10000000000, "enorme", "normal")) |> 
-  mutate(magnitud = ifelse(monto >= corte_enormes*1000000, "enorme", "normal")) |> 
+  mutate(magnitud = case_when(monto >= corte_ultra*1000000 ~ "ultra",
+                              monto >= corte_enormes*1000000 ~ "enorme",
+                              .default = "normal")) |> 
   #dividir los montos grandes en tres partes iguales, los normales dejarlos como están
   group_by(caso) |> 
-  mutate(divisor_montos = divisor_montos_enormes,
-         monto1 = ifelse(magnitud == "enorme", monto/divisor_montos, monto),
-         monto2 = ifelse(magnitud == "enorme", monto/divisor_montos, NA),
-         monto3 = ifelse(magnitud == "enorme", monto/divisor_montos, NA),
-  ) |> 
-  select(-monto, -divisor_montos) |> 
+  # mutate(monto1 = ifelse(magnitud == "enorme", monto/divisor_montos_enormes, monto),
+  #        monto2 = ifelse(magnitud == "enorme", monto/divisor_montos_enormes, NA),
+  #        monto3 = ifelse(magnitud == "enorme", monto/divisor_montos_enormes, NA),
+  # ) |>
+  mutate(monto1 = ifelse(magnitud == "enorme", (monto/10)*2, monto),
+         monto2 = ifelse(magnitud == "enorme", (monto/10)*3, NA),
+         monto3 = ifelse(magnitud == "enorme", (monto/10)*5, NA),
+  ) |>
+  mutate(monto1 = ifelse(magnitud == "ultra", (monto/10)*1, monto1),
+         monto2 = ifelse(magnitud == "ultra", (monto/10)*1.5, monto2),
+         monto3 = ifelse(magnitud == "ultra", (monto/10)*2, monto3),
+         monto4 = ifelse(magnitud == "ultra", (monto/10)*2.5, NA),
+         monto5 = ifelse(magnitud == "ultra", (monto/10)*3, NA),
+  ) |>
+  # mutate(monto1 = ifelse(magnitud == "ultra", (monto/10)*(0.357*1), monto1),
+  #        monto2 = ifelse(magnitud == "ultra", (monto/10)*(0.357*2), monto2),
+  #        monto3 = ifelse(magnitud == "ultra", (monto/10)*(0.357*3), monto3),
+  #        monto4 = ifelse(magnitud == "ultra", (monto/10)*(0.357*4), NA),
+  #        monto5 = ifelse(magnitud == "ultra", (monto/10)*(0.357*5), NA),
+  #        monto6 = ifelse(magnitud == "ultra", (monto/10)*(0.357*6), NA),
+  #        monto7 = ifelse(magnitud == "ultra", (monto/10)*(0.357*7), NA),
+  # ) |>
+  select(-monto) |> 
   pivot_longer(cols = starts_with("monto"), names_to = "division_monto", values_to = "monto_dividido") |> 
   filter(!is.na(monto_dividido))
 
@@ -93,18 +114,20 @@ corrupcion_dividido_escalado_escalera <- corrupcion_dividido_escalado |>
   ungroup() |> 
   select(-posicion)
 
-corrupcion_escalado <- corrupcion_dividido_escalado_escalera |> 
+corrupcion_escalado_0 <- corrupcion_dividido_escalado_escalera |> 
   #volver a incluir el monto original de cada caso como una nueva columna
   left_join(corrupcion |> 
               select(caso, monto, sector, año, partido, perjudicado, alcalde, caso_fundaciones), 
             join_by(caso)) |> 
   #crear una variable que sirva como etiqueta (porque los montos son muy largos)
-  mutate(caso_etiqueta = str_wrap(caso, 40),
-         caso_etiqueta = fct_reorder(caso_etiqueta, monto_escalera)) |> 
+  mutate(#caso_etiqueta = str_wrap(caso, 40),
+    caso_etiqueta = fct_reorder(caso, monto_escalera)) |> 
   #como los valores grandes se van a dividir en 3 columnas, no queremos tener 3 etiquetas iguales, por lo que hacemos que solo sea visible la del medio, y la ordenamos para que quede en el medio
   mutate(division_monto_n = str_remove(division_monto, "monto") |> as.integer()) |> 
-  mutate(caso_central = case_when(magnitud == "enorme" & division_monto == "monto2" ~ as.character(caso_etiqueta),
-                                  magnitud == "normal" ~ as.character(caso_etiqueta), .default = "")) |> 
+  mutate(caso_central = case_when(magnitud == "ultra" & division_monto == "monto3" ~ as.character(caso_etiqueta),
+                                  magnitud == "enorme" & division_monto == "monto2" ~ as.character(caso_etiqueta),
+                                  magnitud == "normal" ~ as.character(caso_etiqueta), 
+                                  .default = "")) |> 
   mutate(division_monto_etiqueta = paste(caso_central, division_monto_n),
          division_monto_etiqueta = fct_reorder(division_monto_etiqueta, division_monto_n)) |> 
   #convertir monto total a una etiqueta

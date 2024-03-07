@@ -60,7 +60,7 @@ ui <- fluidPage(
   
   # función para obtener el ancho de ventana usando javascript
   js_get_window_width(),
-
+  
   
   css("
                        h1 { font-size: 180%; font-weight: bold; }
@@ -127,12 +127,12 @@ ui <- fluidPage(
            # ),
            
            div(style = "margin-top: 12px;display: inline-block;",
-             pickerInput("desde", label = "Desde",
-                         choices = 2010:2024, selected = 2010, 
-                         multiple = F, inline = T),
-             pickerInput("hasta", label = "Hasta",
-                         choices = 2010:2024, selected = 2024,
-                         multiple = F, inline = T)
+               pickerInput("desde", label = "Desde",
+                           choices = 2010:2024, selected = 2010, 
+                           multiple = F, inline = T),
+               pickerInput("hasta", label = "Hasta",
+                           choices = 2010:2024, selected = 2024,
+                           multiple = F, inline = T)
            )
     )
   ),
@@ -310,7 +310,8 @@ ui <- fluidPage(
                  ¿Cuántas viviendas sociales se podrían haber construido con la plata del Pacogate?"),
            
            div(style = "max-width: 500px;",
-               pickerInput("caso_elegido_comparar", label = em("Seleccione un caso de corrupción:"),
+               pickerInput("caso_elegido_comparar", 
+                           label = em("Seleccione un caso de corrupción:"),
                            choices = NULL, multiple = F, width = "100%"
                ),
                
@@ -346,7 +347,7 @@ ui <- fluidPage(
            markdown("Finalmente, esta tabla transparenta todos los datos recopilados por esta plataforma, que alimentan el resto de visualizaciones. Puedes acceder a estos datos en formato Excel en el [repositorio de GitHub de este proyecto.](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) Si encuentras errores o deseas hacer una corrección, [no dudes en contactarme.](https://twitter.com/bastimapache)"),
            
            div(style = "max-height: 720px; overflow-y: scroll;",
-           gt_output("tabla_casos")
+               gt_output("tabla_casos")
            )
     )
   ),
@@ -393,13 +394,17 @@ server <- function(input, output, session) {
   año_max <- reactive(as.numeric(input$hasta))
   
   # datos ----
- 
+  
   ## datos año ----
   corrupcion_años <- reactive({
+    req(length(año_min()) == 1)
+    req(length(año_max()) == 1)
+    
     corrupcion |> 
       filter(!is.na(año)) |> 
       filter(año >= año_min(),
              año <= año_max())
+    # browser()
   })
   
   rango_años <- reactive({
@@ -444,14 +449,14 @@ server <- function(input, output, session) {
   
   #scroll ----
   # guardar posición de desplazamiento como input
-    observeEvent(input$y_offset, {
-      runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
-    })
+  observeEvent(input$y_offset, {
+    runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
+  })
   
   # obtener input de desplazamiento y revisarlo para que sea válido
   vertical <- reactive({
     if (length(input$y_offset) > 0) {
-    return(input$y_offset[1])
+      return(input$y_offset[1])
     } else {
       return(0)
     }
@@ -470,7 +475,7 @@ server <- function(input, output, session) {
     if (vertical_position() > 1500) {
       scroll$abajo <- TRUE
     }
-               })
+  })
   
   
   
@@ -488,11 +493,13 @@ server <- function(input, output, session) {
                 size = opt_texto_geom) +
       scale_y_continuous(breaks = 1:20, expand = expansion(c(0, 0.1))) +
       scale_x_continuous(breaks = año_min():año_max()) +
-      theme(panel.grid.minor = element_blank(),
-            panel.grid.major.x = element_blank()) +
+      # theme(panel.grid.minor = element_blank(),
+      #       panel.grid.major.x = element_blank()) +
       labs(y = "casos de corrupción anuales", x = NULL) +
       theme(axis.title.y = element_text(size = opt_texto_plot, margin = margin(r=6), face = "italic"),
             axis.text = element_text(size = opt_texto_axis))
+    
+    # browser()
   })
   
   #gráfico cep puntos percepcion ----
@@ -596,12 +603,14 @@ server <- function(input, output, session) {
       select(-name) |> 
       tidyr::uncount(weights = n)
     
+    # browser()
     # si un partido solo sale una vez, mandarlo a "otros"
     datos_partidos_reduc <- datos_partidos |> 
       group_by(partido) |> 
       mutate(n = n()) |>
       rowwise() |> 
-      mutate(partido_reduc = if_else(n == 1, "Otros", partido)) |> 
+      mutate(partido_reduc = if_else(n <= 2, "Otros", partido),
+             partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |> 
       select(-n) |> 
       ungroup()
     
@@ -637,6 +646,8 @@ server <- function(input, output, session) {
   
   # gráfico montos divididos ----
   alto_grafico_montos <- reactive({
+    req(scroll$abajo)
+    
     casos = length(unique(corrupcion_escalado()$caso))
     # message("casos en gráfico montos: ", casos)
     # alto = 58 * casos
@@ -647,6 +658,8 @@ server <- function(input, output, session) {
   
   #etiquetas de texto para los millones 
   monto_etiqueta <- reactive({
+    req(scroll$abajo)
+    
     corrupcion_escalado() |> 
       group_by(caso) |> 
       filter(monto_escalera == monto_escalado) |> 
@@ -669,13 +682,15 @@ server <- function(input, output, session) {
     message("rendering gráfico montos...")
     
     ### opciones
-    expansion_y = 0.4 #espacio entre borde de cada faceta de cada caso y sus valores
-    expansion_x = 0.8 #espacio entre valor máximo y borde derecho del gráfico
+    expansion_y = 0.5 #espacio entre borde de cada faceta de cada caso y sus valores
+    expansion_x = 0.6 #espacio entre valor máximo y borde derecho del gráfico
     espaciado_y = 4 #espacio entre facetas
     texto_eje_y = opt_texto_plot+1 #texto casos
-    texto_montos = opt_texto_geom #texto montos
-    tamaño_punto = 10 #tamaño de círculos
+    texto_montos = opt_texto_geom*0.9 #texto montos
+    tamaño_punto = 8 #tamaño de círculos
     corte_etiqueta_casos = 32 #caracteres antes del corte de línea de etiquetas y
+    espaciado_etiquetas_x = 0.03 #espacio entre etiquetas eje y y puntos
+    espaciado_etiquetas_millones = 0.8 #espacio entre ultimo punto y etiqueta de montos
     
     # browser()
     grafico <- corrupcion_escalado() |> 
@@ -684,15 +699,15 @@ server <- function(input, output, session) {
       #puntos
       geom_point(size = tamaño_punto) +
       #signo peso en puntos
-      geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.8) +
+      geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.7) +
       #etiquetas millones
       geom_text(data = monto_etiqueta(),
-                aes(label = monto_etiqueta, x = monto_escalera+0.65), 
+                aes(label = monto_etiqueta, x = monto_escalera+espaciado_etiquetas_millones), 
                 color = color_texto, size = texto_montos, hjust = 0, fontface = "italic", lineheight = 0.85) +
       #escala vertical
       scale_y_discrete(labels = ~str_remove(.x, " \\d+") |> str_wrap(corte_etiqueta_casos), #cortar línea de etiquetas eje y
                        expand = expansion(expansion_y)) + #apretar columnas horizontales de puntos
-      scale_x_continuous(expand = expansion(c(0.1, expansion_x))) +
+      scale_x_continuous(expand = expansion(c(espaciado_etiquetas_x, expansion_x))) +
       coord_cartesian(clip = "off") +
       facet_grid(rows = vars(caso),
                  scales = "free_y", space = 'free', switch = "y", as.table = FALSE) +
@@ -761,15 +776,17 @@ server <- function(input, output, session) {
   
   
   observeEvent(año_min() | año_max(), {
-                 updatePickerInput(session, "caso_elegido_comparar",
-                                   choices = unique(as.character(corrupcion_años()$caso))
-                 )
-               })
+    updatePickerInput(session, "caso_elegido_comparar",
+                      choices = unique(as.character(corrupcion_años()$caso)),
+                      selected = "Alcaldesa de Maipú (Cathy Barriga)"
+    )
+  })
   
   ## objeto elegido ----
   #objeto por comparar seleccionado
   comparar <- reactive({
-    # req(input$comparar > 0)
+    req(scroll$abajo)
+    
     message("")
     message("objeto: ", input$selector_comparar)
     precios |> filter(objeto == input$selector_comparar)
@@ -777,9 +794,8 @@ server <- function(input, output, session) {
   
   #monto del caso seleccionado
   comparar_monto <- reactive({
+    req(scroll$abajo)
     req(input$caso_elegido_comparar)
-    # req(input$comparar > 0)
-    # browser()
     
     monto <- corrupcion_años() |> 
       filter(caso == input$caso_elegido_comparar) |> 
@@ -792,7 +808,8 @@ server <- function(input, output, session) {
   ## conversión monto a objetos ----
   #cantidad de objetos a lo que equivale el monto del caso
   cantidad_objetos <- reactive({
-    # browser()
+    req(scroll$abajo)
+    
     cantidad <- as.integer(comparar_monto()/comparar()$precio)
     cantidad <- ifelse(cantidad == 0, 1, cantidad)
     
@@ -805,13 +822,44 @@ server <- function(input, output, session) {
     monto <- format(comparar_monto(), big.mark = ".", decimal.mark = ",")
     paste0("$", monto)
   })
+  
+  # output$comparar_precio_intro <- renderText({
+  #   browser()
+  #   if (comparar()$unidad == 1) {
+  #     texto = "precio unitario de referencia: "
+  #   } else if (comparar()$unidad > 1) {
+  #     texto = glue("precio de referencia por {} unidades: "
+  #                  }
+  #   })
+  
   output$comparar_precio <- renderText({
-    precio <- format(comparar()$precio, big.mark = ".", decimal.mark = ",")
-    paste0("$", precio)
+    req(scroll$abajo)
+    
+    if (comparar()$unidad == 1) {
+      precio <- format(comparar()$precio, big.mark = ".", decimal.mark = ",")
+      precio <- paste0("$", precio)
+    } else if (comparar()$unidad > 1) {
+      precio <- format(comparar()$precio/comparar()$unidad, big.mark = ".", decimal.mark = ",")
+      precio <- paste0("$", precio)
+    }
+    return(precio)
   })
-  output$comparar_objeto <- renderText(input$selector_comparar)
-  output$comparar_objeto_2 <- renderText(input$selector_comparar)
-  output$comparar_n_objetos <- renderText(format(cantidad_objetos(), big.mark = ".", decimal.mark = ","))
+  
+  output$comparar_objeto_2 <- output$comparar_objeto <- renderText(input$selector_comparar)
+  
+  output$comparar_n_objetos <- renderText({
+    #objetos que ya vienen dimensionados (toneladas, containers) y por ende son 1 a pesar de contener más del mismo objeto
+    if (input$selector_comparar %in% c("toneladas de palta", "container lleno de completos italianos",
+                                       "container lleno de pizzas familiares")) {
+      objetos = format(cantidad_objetos(), big.mark = ".", decimal.mark = ",")
+      
+      #objetos que vienen en paquetes, por ejemplo 100 mil centellas, 200 computadores
+    } else {
+      objetos = format(cantidad_objetos()*comparar()$unidad, big.mark = ".", decimal.mark = ",")
+    }
+    return(objetos)
+  })
+  
   output$comparar_unidad <- renderText({
     unidad <- comparar()$unidad
     
@@ -852,7 +900,9 @@ server <- function(input, output, session) {
                        em(input$caso_elegido_comparar),
                        "es aproximadamente equivalente a ", strong(textOutput("comparar_n_objetos", inline = T), textOutput("comparar_objeto", inline = T))),
                      
-                     p("precio unitario de referencia: ", textOutput("comparar_precio", inline = T), style = "font-size: 75%; opacity: 0.6;"),
+                     p("precio unitario de referencia: ",
+                       # textOutput("comparar_precio_intro", inline = T),
+                       textOutput("comparar_precio", inline = T), style = "font-size: 75%; opacity: 0.6;"),
                    )
                ),
                
@@ -873,6 +923,8 @@ server <- function(input, output, session) {
   
   ## cantidad de objetos divida por 10 ----
   cantidad <- reactive({
+    req(scroll$abajo)
+    
     # cantidad <- cantidad_objetos()/10
     cantidad <- cantidad_objetos()
     cantidad <- ifelse(cantidad < 1, 1, cantidad)
@@ -887,6 +939,7 @@ server <- function(input, output, session) {
   
   ## medida vertical 
   medida_grafico <- reactive({
+    req(scroll$abajo)
     message("ancho ventana: ", ancho_ventana())
     # medida <- cantidad()*6
     # message("medida inicial del gráfico: ", medida)
@@ -901,18 +954,21 @@ server <- function(input, output, session) {
     # medida = (cantidad()/puntos_ancho()) * 12 #ancho_ventana()
     
     #filas necesarias
-    cantidad_filas <- cantidad()/puntos_ancho()
+    cantidad_filas <- ceiling(cantidad()/puntos_ancho())
     message("gráfico comparación: cantidad de filas: ", cantidad_filas)
     
     #pixeles de ancho que ocupa cada punto horizontal
     pixeles_por_punto <- ancho_ventana()/puntos_ancho()
     #pixeles que se necesitarían hacia abajo con la cantidad de filas que van a haber
     medida = as.integer(pixeles_por_punto * cantidad_filas)
-    if (cantidad_filas > puntos_ancho()) {
-      medida = ifelse(medida < 420, 420, medida) #ancho mínimo
-    }
+    # if (cantidad_filas > puntos_ancho()) {
+    #   medida = ifelse(medida < 420, 420, medida) #ancho mínimo
+    # }
     if (cantidad_filas < 1) {
-      medida = pixeles_por_punto
+      medida = ceiling(pixeles_por_punto)
+    }
+    if (medida >= 50000) {
+      medida = 49000
     }
     message("gráfico comparación: largo del gráfico: ", medida)
     medida
@@ -1066,18 +1122,20 @@ server <- function(input, output, session) {
     
     if (input$sector_alcaldias == "Todos") {
       filtro_sector <- c("Derecha", "Izquierda", "Ninguno")
-      } else {
-        filtro_sector <- input$sector_alcaldias
-        # filtro_sector <- "Derecha"
-        # filtro_sector <- "Izquierda"
-      }
+    } else {
+      filtro_sector <- input$sector_alcaldias
+      # filtro_sector <- "Derecha"
+      # filtro_sector <- "Izquierda"
+    }
     
     # browser()
     
     corrupcion_años() |> 
       filter(alcalde == "Alcaldías") |> 
       filter(sector %in% filtro_sector) |> 
-      select(comuna,  partido, responsable, sector, monto, año,
+      select(comuna, responsable,  
+             sector, partido,
+             monto, año,
              fuente1, fuente2, fuente3) |> 
       # count(sector)
       mutate(sector = factor(sector, c("Izquierda", "Derecha", "Ninguno"))) |> 
@@ -1108,7 +1166,7 @@ server <- function(input, output, session) {
                  domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T, 
                  levels = c("Derecha", "Izquierda", "Ninguno"),
                  palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Ninguno" = color_fondo)
-                 ) |> 
+      ) |> 
       # data_color(columns = c(sector),
       #            method = "factor", apply_to = "text",
       #            domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T,
