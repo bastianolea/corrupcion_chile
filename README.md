@@ -8,7 +8,13 @@ Este visualizador compila datos abiertos sobre este tema país, y produce gráfi
 
 ## Casos de corrupción en municipios
 
-![Municipios y/o alcaldes involucrados en casos de corrupción en Chile, con su partido y sector político](tabla_corrupcion_municipalidades_chile.png)
+![Municipios y/o alcaldes involucrados en casos de corrupción en Chile, con su partido y sector político](tablas/tabla_corrupcion_municipalidades_chile.png)
+
+## Mapa de casos de corrupción en municipalidades de la Región Metropolitana
+![Mapa de municipios y/o alcaldes involucrados en casos de corrupción en Chile, por sector político, en la Región Metopolitana](mapas/mapa_corrupcion_municipios_rm.png)
+
+![Tabla de municipios y/o alcaldes involucrados en casos de corrupción en Chile, por sector político, en la Región Metopolitana](tablas/tabla_corrupcion_municipalidades_rm.png)
+
 
 ### Metodología
 Los datos son organizados en una planilla con sus respectivas fuentes y la información disponible en casa caso. Accede a la carpeta `datos` para revisarlos.
@@ -25,12 +31,6 @@ _Otras fuentes de datos:_
 
 [La aplicación web está disponible en shinyapps.io](https://bastianoleah.shinyapps.io/corrupcion_chile/), o bien, puedes clonar este repositorio en tu equipo para usarla por medio de RStudio.
 
-![Corrupción en Chile, visualizador interactivo de datos 1](otros/pantallazo_corrupcion_chile_a.jpg)
-![Corrupción en Chile, visualizador interactivo de datos 2](otros/pantallazo_corrupcion_chile_b.jpg)
-![Corrupción en Chile, visualizador interactivo de datos 3](otros/pantallazo_corrupcion_chile_c.jpg)
-![Corrupción en Chile, visualizador interactivo de datos 4](otros/pantallazo_corrupcion_chile_d.jpg)
-
-
 ### Sobre la app
 El sistema de análisis de datos está programado en R, y la app misma está desarrollada en Shiny, un paquete de R para el desarrollo de aplicaciones web interactivas.
 
@@ -41,6 +41,13 @@ Algunas peculiaridades de la app:
 - **Gráfico de comparación de montos en su equivalente a precios de otras cosas, que mantiene sus proporciones:** El gráfico que permite comparar montos de casos de corrupción con su equivalente en vehículos, propiedades o incluso hospitales, tiene la particularidad de que presenta cientos o miles de cuadraditos pequeños. Sin embargo, estos cuadraditos siempre se ven equidistantes y ordenados, sin importar el ancho de la ventana del usuario. Esto se hace definiendo una cantidad de cuadraditos por fila, y luego se calcula cuantos pixeles usarían esa cantidad de cuadraditos en el tamaño de ventana del usuario, para usar esa proporción al momento de definir el largo del gráfico. De esa forma, los cuadraditos usarán el tamaño de la ventana o pantalla del usuario para un efecto más impactante, pero siempre se verán ordenados.
 
 - **Carga de elementos en base al desplazamiento del usuario:** Dado que se decidió que la aplicación sea larga hacia abajo, resulta que hay demasiados elementos por cargarse al abrir el sitio, sobre todo algunos gráficos y tablas que son de tamaño considerable. Para agilizar la carga del sitio, se implementó código en JavaScript que permite obtener la posición vertical del usuario en la ventana como un input para Shiny; es decir, podemos saber si el usuario está en la parte superior de la app, o si se ha desplazado hacia abajo. De este modo, solamente cargamos los elementos grandes al final del sitio si el usuario ha hecho scroll lo suficiente como para ver dichos elementos.
+
+
+#### Pantallazos
+![Corrupción en Chile, visualizador interactivo de datos 1](otros/pantallazos/pantallazo_corrupcion_chile_a.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 2](otros/pantallazos/pantallazo_corrupcion_chile_b.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 3](otros/pantallazos/pantallazo_corrupcion_chile_c.jpg)
+![Corrupción en Chile, visualizador interactivo de datos 4](otros/pantallazos/pantallazo_corrupcion_chile_d.jpg)
 
 ---- 
 
