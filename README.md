@@ -6,14 +6,25 @@ La corrupción ha copado los medios comunicacionales en los últimos meses. Sin 
 
 Este visualizador compila datos abiertos sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile.
 
+
+## Casos de corrupción por monto
+![Gráfico de casos de corrupción por montos defraudados, indicando casos relacionados a fundaciones](graficos/grafico_corrupcion_montos_caso_fundaciones.png)
+![Gráfico de casos de corrupción por montos defraudados, indicando sector político implicado](graficos/grafico_corrupcion_montos_sector.png)
+![Gráfico de casos de corrupción por montos defraudados, indicando casos de alcaldes y municipios con su sector político](graficos/grafico_corrupcion_montos_alcaldes_sector.png)
+
+### Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos
+![Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos](tablas/tabla_corrupcion_partidos_chile.png)
+
 ## Casos de corrupción en municipios
 
+### Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos
 ![Municipios y/o alcaldes involucrados en casos de corrupción en Chile, con su partido y sector político](tablas/tabla_corrupcion_municipalidades_chile.png)
 
-## Mapa de casos de corrupción en municipalidades de la Región Metropolitana
+### Mapa de casos de corrupción en municipalidades de la Región Metropolitana
 ![Mapa de municipios y/o alcaldes involucrados en casos de corrupción en Chile, por sector político, en la Región Metopolitana](mapas/mapa_corrupcion_municipios_rm.png)
 
 ![Tabla de municipios y/o alcaldes involucrados en casos de corrupción en Chile, por sector político, en la Región Metopolitana](tablas/tabla_corrupcion_municipalidades_rm.png)
+
 
 
 ### Metodología

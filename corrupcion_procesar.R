@@ -32,12 +32,15 @@ corrupcion <- corrupcion_0 |>
   mutate(partido = ifelse(partido == "" | is.na(partido), "Ninguno", partido),
          caso_fundaciones = ifelse(!is.na(fundacion), "Caso fundaciones", "Otros casos"),
          alcalde = ifelse(posicion == "Alcalde", "Alcaldías", "Otros casos"),
-         alcalde = tidyr::replace_na(alcalde, "Otros casos"),
+         alcalde = replace_na(alcalde, "Otros casos"),
          perjudicado = ifelse(perjudicado == "" | is.na(perjudicado), "Otros", perjudicado),
   ) |> 
   ungroup() |> 
   #otros
-  mutate(sector = tidyr::replace_na(sector, "Ninguno"))
+  mutate(sector = replace_na(sector, "Ninguno"),
+         partido = replace_na(partido, "Ninguno"),
+         delitos = str_to_sentence(delitos)
+         )
 
 ## guardar ----
 readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
@@ -46,8 +49,8 @@ readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
 
 # dividir montos grandes ----
 # browser()
-mean(corrupcion$monto)
-median(corrupcion$monto)
+# mean(corrupcion$monto)
+# median(corrupcion$monto)
 
 # cantidad_circulos = 15
 # corte_enormes = 30000 #millones
@@ -141,7 +144,7 @@ corrupcion_escalado_0 <- corrupcion_dividido_escalado_escalera |>
 
 
 ## guardar ----
-readr::write_rds(corrupcion_escalado, "app/corrupcion_datos_escalados.rds")
+readr::write_rds(corrupcion_escalado_0, "app/corrupcion_datos_escalados.rds")
 
 
 
