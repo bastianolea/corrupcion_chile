@@ -55,8 +55,8 @@ readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
 # cantidad_circulos = 15
 # corte_enormes = 30000 #millones
 # divisor_montos_enormes = 3 #cantidad de columnas en montos enormes
-cantidad_circulos = 50 #15
-corte_enormes = 30000 #millones
+cantidad_circulos = 25 #15
+corte_enormes = 10000 #millones
 corte_ultra = 50000
 divisor_montos_enormes = 3 #cantidad de columnas en montos enormes
 
@@ -151,7 +151,8 @@ readr::write_rds(corrupcion_escalado_0, "app/corrupcion_datos_escalados.rds")
 # datos cep ----
 cep <- readxl::read_excel("datos/CEP_datos_percepcion_1_a_total_(1994-2023).xlsx") |> 
   janitor::clean_names() |> 
-  mutate(variable = stringr::str_wrap(variable, 20))
+  mutate(variable = stringr::str_wrap(variable, 20)) |> 
+  mutate(año = lubridate::year(fecha))
 
 readr::write_rds(cep, "app/cep_corrupcion.rds")
 

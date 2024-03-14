@@ -5,7 +5,6 @@ library(shinyjs)
 
 library(dplyr)
 library(ggplot2)
-library(lubridate)
 library(stringr)
 library(glue)
 library(gt)
@@ -14,10 +13,10 @@ library(gt)
 library(thematic)
 library(showtext)
 library(bslib)
+
 source("colores.R")
+
 thematic_shiny(font = "auto", bg = color_fondo, fg = color_texto, accent = color_destacado)
-
-
 
 #opciones
 options(scipen = 99999)
@@ -420,6 +419,7 @@ server <- function(input, output, session) {
   ## datos montos ----
   corrupcion_escalado <- reactive({
     req(nrow(corrupcion_años()) > 0)
+    req(scroll$abajo)
     # browser()
     
     corrupcion_escalados_años <- corrupcion_escalados |> 
@@ -432,7 +432,7 @@ server <- function(input, output, session) {
     casos <- unique(corrupcion_escalados_años$caso)
     # 
     corrupcion_escalado_filtrado <- corrupcion_escalados_años |>
-      filter(caso %in% casos[1:20])
+      filter(caso %in% casos[1:30])
     
     # corrupcion_escalados_años
     corrupcion_escalado_filtrado
@@ -508,8 +508,8 @@ server <- function(input, output, session) {
     
     datos_cep <- cep_corrupcion |> 
       filter(variable %in% input$cep) |> 
-      filter(year(fecha) >= año_min(),
-             year(fecha) <= año_max())
+      filter(año >= año_min(),
+             año <= año_max())
     
     if (length(input$cep) > 1) {
       p <- datos_cep |>  
@@ -683,7 +683,7 @@ server <- function(input, output, session) {
     
     ### opciones
     expansion_y = 0.5 #espacio entre borde de cada faceta de cada caso y sus valores
-    expansion_x = 0.6 #espacio entre valor máximo y borde derecho del gráfico
+    expansion_x = 0.1 #espacio entre valor máximo y borde derecho del gráfico
     espaciado_y = 4 #espacio entre facetas
     texto_eje_y = opt_texto_plot+1 #texto casos
     texto_montos = opt_texto_geom*0.9 #texto montos
@@ -1292,12 +1292,12 @@ server <- function(input, output, session) {
       #color sector político
       data_color(columns = c(sector), 
                  method = "factor", apply_to = "fill",
-                 levels = c("Izquierda", "Derecha", "Ninguno"), 
-                 palette = c(color_izquierda, color_derecha, color_fondo)) |> 
+                 levels = c("Izquierda", "Derecha", "Centro", "Ninguno"), 
+                 palette = c(color_izquierda, color_derecha, color_fondo, color_fondo)) |> 
       data_color(columns = c(sector), 
                  method = "factor", apply_to = "text",
-                 levels = c("Izquierda", "Derecha", "Ninguno"), 
-                 palette = c("white", "white", color_texto)) |> 
+                 levels = c("Izquierda", "Derecha", "Centro", "Ninguno"), 
+                 palette = c("white", "white", color_texto, color_texto)) |> 
       #color partido
       data_color(columns = c(partido, sector), 
                  method = "factor", apply_to = "text",
