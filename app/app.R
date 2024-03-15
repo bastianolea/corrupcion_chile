@@ -171,7 +171,7 @@ ui <- fluidPage(
            plotOutput("grafico_cep") |> withSpinner(color = color_destacado, type = 8),
            
            div(style = "font-size: 80%; margin: 18px; opacity: 0.5;",
-               p(em("Datos obtenidos usando el", 
+               p(em("Datos para este gráfico obtenidos usando el", 
                     tags$a("Graficador CEP,", 
                            href = "https://www.cepchile.cl/opinion-publica/encuesta-cep/", target = "_blank"),
                     "aplicación web para el Centro de Estudios Públicos diseñada y programada por Bastián Olea Herrera como parte del equipo DataUC.")
@@ -225,6 +225,24 @@ ui <- fluidPage(
   ),
   
   
+  ### gráficos barras comparativos ----
+  fluidRow(
+    column(12,
+           hr(),
+           h2("Comparación de casos"),
+           p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha. Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
+           
+           shinyWidgets::pickerInput("selector_barras_comparativo", 
+                                     label = em("Criterio de separación:"),
+                                     choices = c("Sector político", "Caso Convenios o fundaciones", "Sector versus fundaciones"), 
+                                     selected = "Sector político", multiple = F,
+                                     inline = T, width = "fit"
+           ),
+           
+           plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(color = color_destacado, type = 8)
+    )
+  ),
+  
   ### tabla alcaldías ----
   fluidRow(
     column(12,
@@ -240,7 +258,7 @@ ui <- fluidPage(
            ),
            
            # div(style = "max-height: 600px; overflow-y: scroll;",
-           gt_output("tabla_alcaldías")
+           gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
            # )
     )
   ),
@@ -250,10 +268,10 @@ ui <- fluidPage(
     column(12,
            hr(),
            h2("Fundaciones involucradas o investigadas por corrupción"),
-           p("Tabla con todos los casos de corrupción que involucran a fundaciones."),
+           p("Tabla con todos los casos de corrupción que involucran a fundaciones, dentro del marco del Caso Convenios."),
            
            # div(style = "max-height: 600px; overflow-y: scroll;",
-           gt_output("tabla_fundaciones")
+           gt_output("tabla_fundaciones") |> withSpinner(color = color_destacado, type = 8)
            # )
     )
   ),
@@ -285,7 +303,7 @@ ui <- fluidPage(
              style = "min-height: 900px; width: 800px;",
              # min-width: 830px; max-width: 1024px;",
              htmlOutput("ui_montos", fill = TRUE) |> 
-               withSpinner(color = color_destacado, type = 8, proxy.height = 400),
+               withSpinner(color = color_destacado, type = 8, proxy.height = 200),
              # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
              
              hr()
@@ -345,7 +363,7 @@ ui <- fluidPage(
            
            markdown("Finalmente, esta tabla transparenta todos los datos recopilados por esta plataforma, que alimentan el resto de visualizaciones. Puedes acceder a estos datos en formato Excel en el [repositorio de GitHub de este proyecto.](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) Si encuentras errores o deseas hacer una corrección, [no dudes en contactarme.](https://twitter.com/bastimapache)"),
            
-           div(style = "max-height: 720px; overflow-y: scroll;",
+           div(style = "max-height: 900px; overflow-y: scroll;",
                gt_output("tabla_casos")
            )
     )
@@ -642,7 +660,94 @@ server <- function(input, output, session) {
       theme(plot.margin = unit(rep(-0.5, 4), "cm"))
   })
   
+  # gráfico barras comparativo ----
+  datos_barras <- reactive({
+    corrupcion_años() |> 
+      # filter(año >= 2010) |> 
+      filter(responsable != "Virginia Reginato",
+             responsable != "Cathy Barriga") |> 
+      mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros"))
+    # browser()
+  })
   
+  #grafico
+  output$grafico_barras_comparativo <- renderPlot({
+    
+    escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10, 
+                                                     expand = expansion(c(0, 0.01)),
+                                                     labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
+    
+    ancho_barras = 0.5
+    
+    tema_barras_horizontales <- theme(text = element_text(family = "IBM Plex Mono"),
+                                      axis.title = element_blank(),
+                                      axis.ticks.y = element_blank(),
+                                      panel.grid.major.y = element_blank(),
+                                      legend.key.size = unit(3, "mm"),
+                                      legend.position = "top",
+                                      legend.margin = margin(b = -6), 
+                                      legend.text = element_text(margin = margin(l = 2, r = 4)),
+                                      axis.text = element_text(size = opt_texto_axis, face = "italic"),
+                                      strip.text = element_text(hjust = 0, face = "bold"),
+                                      legend.title = element_text(face = "bold")
+    )
+    
+    escala_y_barras_horizontales <- scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…"))
+    
+    ## barras sector ----
+    if (input$selector_barras_comparativo == "Sector político") {
+      p <- datos_barras() |> 
+        filter(sector != "Otros") |> 
+        ggplot(aes(y = caso, x = monto, fill = sector)) +
+        geom_col(width = ancho_barras) +
+        # geom_vline(data = datos_barras |> group_by(sector) |> slice_max(monto) |> ungroup() |> select(-sector), 
+        #            aes(xintercept = monto)) +
+        facet_grid(rows = vars(sector), scales = "free_y", space = "free_y", axes = "all") +
+        escala_barras_horizontales +
+        tema_barras_horizontales +
+        escala_y_barras_horizontales +
+        scale_fill_manual(values = c("Derecha" = color_derecha, 
+                                     "Izquierda" = color_izquierda,
+                                     "Otros" = color_destacado)) +
+        labs(fill = "Sector político")
+      
+      ## barras fundaciones ----
+    } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
+      p <- datos_barras() |> 
+        ggplot(aes(y = caso, x = monto, fill = caso_fundaciones)) +
+        geom_col(width = ancho_barras) +
+        facet_grid(rows = vars(caso_fundaciones), scales = "free_y", space = "free_y", axes = "all") +
+        escala_barras_horizontales +
+        escala_y_barras_horizontales +
+        tema_barras_horizontales +
+        scale_fill_manual(values = c("Caso fundaciones" = color_fundaciones,
+                                     "Otros casos" = color_destacado)) +
+        labs(fill = "Tipo de caso")
+      
+      ## barras sector vs fundaciones ----
+    } else if (input$selector_barras_comparativo == "Sector versus fundaciones") {
+      p <- datos_barras() |> 
+        mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
+                                              sector == "Derecha" ~ "Derecha",
+                                              # sector == "Izquierda" ~ "Izquierda",
+                                              .default = "Izquierda y otros")) |> 
+        ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
+        geom_col(width = ancho_barras) +
+        facet_grid(rows = vars(fundaciones_sector), scales = "free_y", space = "free_y", axes = "all") +
+        escala_barras_horizontales +
+        escala_y_barras_horizontales +
+        tema_barras_horizontales +
+        scale_fill_manual(values = c("Derecha" = color_derecha, 
+                                     "Fundaciones" = color_fundaciones,
+                                     "Izquierda y otros" = color_destacado)) +
+        labs(fill = "Tipo de caso")
+    }
+    plot(p)
+  })
+  
+  
+  
+  #—----
   
   # gráfico montos divididos ----
   alto_grafico_montos <- reactive({
@@ -771,6 +876,7 @@ server <- function(input, output, session) {
   
   
   
+  #—----
   
   # gráfico comparación de objetos ----
   
@@ -1115,6 +1221,7 @@ server <- function(input, output, session) {
   })
   
   
+  #—----
   # tablas ----
   
   ## tabla alcaldías ----
@@ -1130,28 +1237,38 @@ server <- function(input, output, session) {
     
     # browser()
     
-    corrupcion_años() |> 
+    datos <- corrupcion_años() |> 
       filter(alcalde == "Alcaldías") |> 
       filter(sector %in% filtro_sector) |> 
       select(comuna, responsable,  
              sector, partido,
              monto, año,
-             fuente1, fuente2, fuente3) |> 
+             starts_with("fuente")) |> 
       # count(sector)
       mutate(sector = factor(sector, c("Izquierda", "Derecha", "Ninguno"))) |> 
-      mutate(
-        fuente = case_when(!is.na(fuente3) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3})"),
-                           !is.na(fuente2) ~ glue::glue("[1]({fuente1}), [2]({fuente2})"),
-                           !is.na(fuente1) ~ glue::glue("[1]({fuente1})"), 
-                           .default = "Sin fuentes"),
-        fuente = purrr::map(fuente, gt::md)) |> 
-      select(-fuente1, -fuente2, -fuente3) |> 
       arrange(desc(monto)) |> 
+      #crear enlaces de fuentes
+      mutate(across(starts_with("fuente"), ~{
+        str_extract(.x, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |>  ## mutate(fuente1 = str_extract(fuente1, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |> str_remove("/$")) |> 
+          str_remove("/$")
+      }, .names = "{.col}_sitio")) |> 
+      mutate(
+        link_fuente = case_when(!is.na(fuente4) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3}), [{fuente4_sitio}]({fuente4})"),
+                                !is.na(fuente3) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3})"),
+                                !is.na(fuente2) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2})"),
+                                !is.na(fuente1) ~ glue("[{fuente1_sitio}]({fuente1})"),
+                                .default = "Sin fuentes")) |> 
+      select(-starts_with("fuente")) |>
+      mutate(fuente = purrr::map(link_fuente, gt::md)) |>
+      select(-link_fuente)
+    
+    
+    datos |> 
       gt() |> 
       cols_align(columns = where(is.numeric), 
                  align = "right") |> 
-      cols_align(columns = comuna, 
-                 align = "left") |> 
+      cols_align(columns = comuna, align = "left") |> 
+      cols_align(columns = fuente, align = "left") |> 
       tab_style(locations = cells_column_labels(),
                 style = cell_text(weight = "bold")) |> 
       tab_style(locations = cells_body(columns = comuna),
@@ -1199,22 +1316,31 @@ server <- function(input, output, session) {
   ## tabla fundaciones ----
   output$tabla_fundaciones <- render_gt({
     # browser()
-    corrupcion_años() |> 
+    
+    datos <- corrupcion_años() |> 
       filter(!is.na(fundacion)) |> 
-      select(fundacion, comuna,  partido, sector, monto, año, fuente1, fuente2, fuente3) |> 
-      mutate(
-        fuente = case_when(!is.na(fuente3) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3})"),
-                           !is.na(fuente2) ~ glue::glue("[1]({fuente1}), [2]({fuente2})"),
-                           !is.na(fuente1) ~ glue::glue("[1]({fuente1})"), 
-                           .default = "Sin fuentes"),
-        fuente = purrr::map(fuente, gt::md)) |> 
-      select(-fuente1, -fuente2, -fuente3) |> 
+      select(fundacion, comuna,  partido, sector, monto, año, 
+             starts_with("fuente")) |> 
       arrange(desc(monto)) |> 
+      #crear enlaces de fuentes
+      mutate(across(starts_with("fuente"), ~{
+        str_extract(.x, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |>  ## mutate(fuente1 = str_extract(fuente1, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |> str_remove("/$")) |> 
+          str_remove("/$")}, 
+        .names = "{.col}_sitio")) |> 
+      mutate(link_fuente = case_when(!is.na(fuente4) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3}), [{fuente4_sitio}]({fuente4})"),
+                                     !is.na(fuente3) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3})"),
+                                     !is.na(fuente2) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2})"),
+                                     !is.na(fuente1) ~ glue("[{fuente1_sitio}]({fuente1})"),
+                                     .default = "Sin fuentes")) |> 
+      select(-starts_with("fuente")) |>
+      mutate(fuente = purrr::map(link_fuente, gt::md)) |>
+      select(-link_fuente)
+    
+    datos |> 
       gt() |> 
-      cols_align(columns = where(is.numeric), 
-                 align = "right") |> 
-      cols_align(columns = fundacion, 
-                 align = "left") |> 
+      cols_align(columns = where(is.numeric), align = "right") |> 
+      cols_align(columns = fundacion, align = "left") |> 
+      cols_align(columns = fuente, align = "left") |> 
       tab_style(locations = cells_column_labels(),
                 style = cell_text(weight = "bold")) |> 
       tab_style(locations = cells_body(columns = comuna),
@@ -1260,29 +1386,36 @@ server <- function(input, output, session) {
     
     message("rendering tabla de todo...")
     # browser()
-    corrupcion_años() |> 
+    
+    datos <- corrupcion_años() |> 
       select(caso, monto, 
              responsable, 
              partido, sector, fundacion, 
              posicion, perjudicado, 
              año, comuna,
              delitos,
-             fuente1, fuente2, fuente3, fuente4) |> 
-      mutate(
-        fuente = case_when(!is.na(fuente4) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3}), [4]({fuente4})"),
-                           !is.na(fuente3) ~ glue::glue("[1]({fuente1}), [2]({fuente2}), [3]({fuente3})"),
-                           !is.na(fuente2) ~ glue::glue("[1]({fuente1}), [2]({fuente2})"),
-                           !is.na(fuente1) ~ glue::glue("[1]({fuente1})"), 
-                           .default = "Sin fuentes"),
-        fuente = purrr::map(fuente, gt::md)) |> 
-      mutate(across(where(is.character), ~tidyr::replace_na(.x, " "))) |> 
-      select(-fuente1, -fuente2, -fuente3, -fuente4) |> 
+             starts_with("fuente")) |> 
       arrange(desc(monto)) |> 
+      #crear enlaces de fuentes
+      mutate(across(starts_with("fuente"), ~{
+        str_extract(.x, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |>  ## mutate(fuente1 = str_extract(fuente1, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |> str_remove("/$")) |> 
+          str_remove("/$")}, 
+        .names = "{.col}_sitio")) |> 
+      mutate(link_fuente = case_when(!is.na(fuente4) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3}), [{fuente4_sitio}]({fuente4})"),
+                                     !is.na(fuente3) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3})"),
+                                     !is.na(fuente2) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2})"),
+                                     !is.na(fuente1) ~ glue("[{fuente1_sitio}]({fuente1})"),
+                                     .default = "Sin fuentes")) |> 
+      select(-starts_with("fuente")) |>
+      mutate(fuente = purrr::map(link_fuente, gt::md)) |>
+      select(-link_fuente)
+    
+    datos |> 
+      mutate(across(where(is.character), ~tidyr::replace_na(.x, " "))) |> 
       gt() |> 
-      cols_align(columns = where(is.numeric), 
-                 align = "right") |> 
-      cols_align(columns = caso, 
-                 align = "left") |> 
+      cols_align(columns = where(is.numeric), align = "right") |> 
+      cols_align(columns = caso, align = "left") |> 
+      cols_align(columns = fuente, align = "left") |> 
       tab_style(locations = cells_column_labels(),
                 style = cell_text(weight = "bold")) |> 
       tab_style(locations = cells_body(columns = caso),
