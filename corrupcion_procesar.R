@@ -42,6 +42,8 @@ corrupcion <- corrupcion_0 |>
          delitos = str_to_sentence(delitos)
          )
 
+# corrupcion |> count(fundacion, caso_fundaciones)
+
 ## guardar ----
 readr::write_rds(corrupcion, "app/corrupcion_datos.rds")
 

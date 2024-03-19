@@ -84,9 +84,15 @@ ui <- fluidPage(
                    windowTitle = "Corrupción en Chile"),
         p("Visualizador interactivo de datos sobre casos de corrupción en Chile.", 
           style = "margin-bottom: 8px; font-size: 90%;"),
-        em(tags$a("Bastián Olea Herrera", 
-                  href = "http://bastian.olea.biz",
-                  target = "_blank")),
+        
+        div(style = "font-size: 90%;",
+          markdown("[_Bastián Olea Herrera_](https://bastian.olea.biz)")
+        ),
+        
+        div(style = "opacity: .5; font-size: 80%; margin-top: -6px; margin-bottom: 8px;",
+            em("Última actualización de datos:", format(file.info("corrupcion_datos.rds")$mtime, "%d/%m/%Y"))
+        ),
+        
         hr()
     )
   ),
@@ -105,6 +111,8 @@ ui <- fluidPage(
            markdown("Este visualizador compila [datos abiertos](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile, especificando montos, responsables y sus sectores políticos."),
            
            hr()
+           
+           
     )
   ),
   
@@ -230,12 +238,19 @@ ui <- fluidPage(
     column(12,
            hr(),
            h2("Comparación de casos"),
-           p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha. Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
+           p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha."), #Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
+           
+           shinyWidgets::awesomeCheckbox("checkbox_outliers_barras_comparativo", 
+                                         label = em("Excluir casos extremos"), value = TRUE),
+           
+           shinyWidgets::awesomeCheckbox("top_20_barras_comparativo", 
+                                         label = em("Limitar a 20 casos"), value = TRUE),
            
            shinyWidgets::pickerInput("selector_barras_comparativo", 
                                      label = em("Criterio de separación:"),
-                                     choices = c("Sector político", "Caso Convenios o fundaciones", "Sector versus fundaciones"), 
-                                     selected = "Sector político", multiple = F,
+                                     choices = c("Sector político", "Caso Convenios o fundaciones", "Sector político versus fundaciones"), 
+                                     selected = "Caso Convenios o fundaciones", # selected = "Sector político", 
+                                     multiple = F,
                                      inline = T, width = "fit"
            ),
            
@@ -501,8 +516,6 @@ server <- function(input, output, session) {
   output$grafico_años <- renderPlot({
     req(nrow(corrupcion_años()) > 0)
     
-    # browser()
-    # dev.new()
     corrupcion_años() |> 
       count(año) |> 
       ggplot(aes(año, n)) +
@@ -522,7 +535,6 @@ server <- function(input, output, session) {
   
   #gráfico cep puntos percepcion ----
   output$grafico_cep <- renderPlot({
-    # browser()
     
     datos_cep <- cep_corrupcion |> 
       filter(variable %in% input$cep) |> 
@@ -662,20 +674,29 @@ server <- function(input, output, session) {
   
   # gráfico barras comparativo ----
   datos_barras <- reactive({
-    corrupcion_años() |> 
-      # filter(año >= 2010) |> 
-      filter(responsable != "Virginia Reginato",
-             responsable != "Cathy Barriga") |> 
-      mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros"))
     # browser()
+    datos <- corrupcion_años() |> 
+      # filter(año >= 2010) |> 
+      # filter(responsable != "Virginia Reginato" | is.na(responsable)) |> 
+      # filter(responsable != "Cathy Barriga" | is.na(responsable)) |> 
+      mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros"))
+    
+    # browser()
+    if (input$checkbox_outliers_barras_comparativo == TRUE) {
+    datos_filtrados <- datos |> 
+      # filter(monto <= max(monto)*0.5) |> 
+      filter(monto <= 11000000000)
+    } else {
+      datos_filtrados <- datos 
+    }
   })
   
   #grafico
   output$grafico_barras_comparativo <- renderPlot({
     
     escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10, 
-                                                     expand = expansion(c(0, 0.01)),
-                                                     labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
+      expand = expansion(c(0, 0.01)),
+      labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
     
     ancho_barras = 0.5
     
@@ -686,6 +707,8 @@ server <- function(input, output, session) {
                                       legend.key.size = unit(3, "mm"),
                                       legend.position = "top",
                                       legend.margin = margin(b = -6), 
+                                      plot.title.position = "plot",
+                                      plot.title = element_text(face = "bold.italic"),
                                       legend.text = element_text(margin = margin(l = 2, r = 4)),
                                       axis.text = element_text(size = opt_texto_axis, face = "italic"),
                                       strip.text = element_text(hjust = 0, face = "bold"),
@@ -696,7 +719,16 @@ server <- function(input, output, session) {
     
     ## barras sector ----
     if (input$selector_barras_comparativo == "Sector político") {
-      p <- datos_barras() |> 
+      
+      if (input$top_20_barras_comparativo == TRUE) {
+        datos <- datos_barras() |> 
+          group_by(sector) |> 
+          slice_max(n = 20, order_by = monto)
+      } else {
+        datos <- datos_barras()
+      }
+      
+      p <- datos |> 
         filter(sector != "Otros") |> 
         ggplot(aes(y = caso, x = monto, fill = sector)) +
         geom_col(width = ancho_barras) +
@@ -709,11 +741,21 @@ server <- function(input, output, session) {
         scale_fill_manual(values = c("Derecha" = color_derecha, 
                                      "Izquierda" = color_izquierda,
                                      "Otros" = color_destacado)) +
-        labs(fill = "Sector político")
+        labs(fill = "Sector político",
+             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
       ## barras fundaciones ----
     } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
-      p <- datos_barras() |> 
+      
+      if (input$top_20_barras_comparativo == TRUE) {
+      datos <- datos_barras() |> 
+        group_by(caso_fundaciones) |> 
+        slice_max(n = 20, order_by = monto)
+      } else {
+        datos <- datos_barras()
+      }
+      
+      p <- datos |> 
         ggplot(aes(y = caso, x = monto, fill = caso_fundaciones)) +
         geom_col(width = ancho_barras) +
         facet_grid(rows = vars(caso_fundaciones), scales = "free_y", space = "free_y", axes = "all") +
@@ -722,15 +764,27 @@ server <- function(input, output, session) {
         tema_barras_horizontales +
         scale_fill_manual(values = c("Caso fundaciones" = color_fundaciones,
                                      "Otros casos" = color_destacado)) +
-        labs(fill = "Tipo de caso")
+        labs(fill = "Tipo de caso",
+             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
       ## barras sector vs fundaciones ----
-    } else if (input$selector_barras_comparativo == "Sector versus fundaciones") {
-      p <- datos_barras() |> 
+    } else if (input$selector_barras_comparativo == "Sector político versus fundaciones") {
+      
+      datos <- datos_barras() |> 
         mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
-                                              sector == "Derecha" ~ "Derecha",
-                                              # sector == "Izquierda" ~ "Izquierda",
-                                              .default = "Izquierda y otros")) |> 
+                                                     sector == "Derecha" ~ "Derecha",
+                                                     sector == "Izquierda" ~ "Izquierda",
+                                                     .default = "Otros"))
+        
+      if (input$top_20_barras_comparativo == TRUE) {
+        datos <- datos |> 
+          group_by(fundaciones_sector) |> 
+          slice_max(n = 20, order_by = monto)
+      } else {
+        datos <- datos
+      }
+      
+      p <- datos |> 
         ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
         geom_col(width = ancho_barras) +
         facet_grid(rows = vars(fundaciones_sector), scales = "free_y", space = "free_y", axes = "all") +
@@ -739,8 +793,10 @@ server <- function(input, output, session) {
         tema_barras_horizontales +
         scale_fill_manual(values = c("Derecha" = color_derecha, 
                                      "Fundaciones" = color_fundaciones,
-                                     "Izquierda y otros" = color_destacado)) +
-        labs(fill = "Tipo de caso")
+                                     "Izquierda" = color_izquierda,
+                                     "Otros" = color_destacado)) +
+        labs(fill = "Tipo de caso",
+             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
     }
     plot(p)
   })
