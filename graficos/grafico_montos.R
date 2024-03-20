@@ -11,7 +11,7 @@ library(colorspace)
 source("app/colores.R")
 color_derecha = "#294a66" |> lighten(0.25)
 color_izquierda = "#722a2a" |> lighten(0.2)
-color_neutro = "black" |> lighten(0.3)
+color_neutro = "black" |> lighten(0.5)
 color_ninguno = "#662953"|> lighten(0.3)
 
 color_fundaciones = "#c88d2c"
@@ -124,6 +124,7 @@ corrupcion_escalado <- function() {
   corrupcion_escalados_años <- corrupcion_escalado_0 |> 
     filter(!is.na(año)) |> 
     filter(año >= 2014) |> 
+    filter(sector != "Ninguno") |> 
     arrange(desc(monto))
   
   #filtrar top de casos
@@ -186,6 +187,8 @@ espaciado_etiquetas_millones = 0.7 #espacio entre ultimo punto y etiqueta de mon
 color_texto = "black"
 color_detalle = "white"
 
+variable_color = "sector"
+
 grafico <- corrupcion_escalado() |> 
   ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
              color = .data[[variable_color]])) + 
@@ -240,10 +243,11 @@ if (variable_color == "ninguno") {
 if (variable_color == "sector") {
   grafico <- grafico +
     scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
+                                  "Centro" = color_neutro,
                                   "Ninguno" = color_neutro)) +
     labs(color = "Sector político") +
   guides(colour = guide_legend(override.aes = list(size = 5))) +
-    labs(subtitle = glue("Por sector político y ordenados por monto"))
+    labs(subtitle = glue("Casos según sector político y ordenados por monto, de 2014 a 2024"))
 }
 
 
@@ -272,7 +276,7 @@ if (variable_color == "alcaldes_sector") {
 
 plot(grafico)
 
-ggsave(filename = paste0("grafico_corrupcion_montos_", variable_color, ".png"),
+ggsave(filename = paste0("graficos/grafico_corrupcion_montos_", variable_color, "_2.png"),
        plot = grafico,
        width = 15, height = 11
 )
