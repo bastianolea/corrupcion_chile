@@ -49,8 +49,8 @@ datos <- corrupcion |>
 
 # tabla ----
 tabla <- datos |> 
-  slice(1:27) |>
-  # slice(26:99) |>
+  # slice(1:26) |>
+  # slice(27:99) |>
   gt() |> 
   tab_header(titulo, subtitle = md(subtitulo)) |> 
   #alineación columnas
@@ -103,7 +103,8 @@ tabla <- datos |>
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_b.png")
+tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile.png")
+# tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_b.png")
 
 # #tabla solo rm y guardarla
 # tabla |> 

@@ -8,6 +8,7 @@ library(ggplot2)
 library(stringr)
 library(glue)
 library(gt)
+library(scales)
 
 #temas
 library(thematic)
@@ -214,7 +215,7 @@ ui <- fluidPage(
                    "cuyo responsable o responsables principales pertenecen a un determinado sector político")
            )
            ),
-           div(style = "width: 320px; margin: auto; margin-top: -20px;",
+           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
                plotOutput("torta_sector") |> withSpinner(color = color_destacado, type = 8)
            )
     ),
@@ -226,7 +227,7 @@ ui <- fluidPage(
                    "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
            )
            ),
-           div(style = "width: 320px; margin: auto; margin-top: -20px;",
+           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
                plotOutput("torta_partido") |> withSpinner(color = color_destacado, type = 8)
            )
     )
@@ -272,9 +273,9 @@ ui <- fluidPage(
                                      inline = T, width = "fit"
            ),
            
-           # div(style = "max-height: 600px; overflow-y: scroll;",
+           div(style = "max-height: 800px; overflow-y: scroll;",
            gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
-           # )
+           )
     )
   ),
   
@@ -445,7 +446,7 @@ server <- function(input, output, session) {
   })
   
   output$rango_años_barras <- renderText(rango_años())
-  output$rango_años_torta1 <- renderText(rango_años())
+  output$rango_años_torta2 <- output$rango_años_torta1 <- renderText(rango_años())
   output$rango_años_torta1 <- renderText(rango_años())
   output$rango_años_montos <- renderText(rango_años())
   
@@ -554,7 +555,7 @@ server <- function(input, output, session) {
       geom_line(linewidth = 2, alpha = .4) +
       geom_point(size = 7, alpha = .9) +
       scale_x_date(date_breaks = "years", date_labels = "%Y") +
-      scale_y_continuous(labels = ~scales::percent(.x, accuracy = 1)) +
+      scale_y_continuous(labels = ~percent(.x, accuracy = 1)) +
       theme(#text = element_text(family = "IBM Plex Mono"),
         panel.grid.minor.x = element_blank(),
         axis.text = element_text(size = opt_texto_axis),
@@ -602,24 +603,48 @@ server <- function(input, output, session) {
     datos <- corrupcion_años() |> 
       count(sector) |>
       arrange(desc(sector)) |> 
+      mutate(p = n/sum(n))
       #calcular posición de etiquetas en torta
-      mutate(suma = sum(n)) |> 
-      mutate(prop = n / suma *100) %>%
-      mutate(ypos = cumsum(prop)- 0.5 * prop)
+      # mutate(suma = sum(n)) 
+      # mutate(prop = n / suma *100) %>%
+      # mutate(ypos = cumsum(prop)- 0.5 * prop)
+
+      # gráfico antiguo 
+    # datos |> 
+    #   ggplot(aes("", prop, fill = sector)) +
+    #   geom_col(width=1) +
+    #   coord_polar("y", start=0) +
+    #   theme_void() +
+    #   geom_text(aes(x = 1.1, y = ypos, label = sector), color = "white", 
+    #             size = opt_texto_geom) +
+    #   geom_point(aes(x = 1.75, y = ypos, col = sector), size = 12) +
+    #   geom_text(aes(x = 1.75, y = ypos, label = percent(prop/100, accuracy = 1)), 
+    #             color = "white", size = opt_texto_geom-1) +
+    #   scale_fill_manual(values = degradado_verde(length(datos$sector)), aesthetics = c("fill", "color")) +
+    #   theme(legend.position="none") +
+    #   theme(plot.margin = unit(rep(-0.5, 4), "cm"))
     
-    datos |> 
-      ggplot(aes("", prop, fill = sector)) +
-      geom_col(width=1) +
-      coord_polar("y", start=0) +
-      theme_void() +
-      geom_text(aes(x = 1.1, y = ypos, label = sector), color = "white", 
-                size = opt_texto_geom) +
-      geom_point(aes(x = 1.75, y = ypos, col = sector), size = 12) +
-      geom_text(aes(x = 1.75, y = ypos, label = scales::percent(prop/100, accuracy = 1)), 
-                color = "white", size = opt_texto_geom-1) +
-      scale_fill_manual(values = degradado_verde(length(datos$sector)), aesthetics = c("fill", "color")) +
-      theme(legend.position="none") +
-      theme(plot.margin = unit(rep(-0.5, 4), "cm"))
+    # browser()
+    # dev.new()
+    
+    # gráfico nuevo
+    datos |>
+      ggplot(aes(x = n, y = factor(1), fill = sector)) +
+      geom_col(width = 1) +
+      geom_text(aes(label = sector), position = position_stack(vjust = 0.5),
+                hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = "white") + 
+      geom_text(aes(label = percent(p, accuracy = 1), y = 0.25, color = sector), position = position_stack(vjust = 0.5),
+                hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
+      scale_y_discrete(guide = "none", name = NULL) +
+      guides(fill = "none", color = "none") +
+      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+                   start = 1.06, inner.radius = 0.4) +
+      scale_fill_manual(values = c("Derecha" = color_derecha, 
+                                   "Izquierda" = color_izquierda,
+                                   "Centro" = color_neutro,
+                                   "Ninguno" = color_ninguno), 
+                        aesthetics = c("fill", "color")) +
+      theme_void()
   })
   
   #gráfico torta partido ----
@@ -637,39 +662,57 @@ server <- function(input, output, session) {
     # si un partido solo sale una vez, mandarlo a "otros"
     datos_partidos_reduc <- datos_partidos |> 
       group_by(partido) |> 
-      mutate(n = n()) |>
+      # mutate(n = n()) |>
+      summarize(n = n()) |>
+      arrange(desc(n)) |> 
+      mutate(p = n/sum(n)) |> 
       rowwise() |> 
-      mutate(partido_reduc = if_else(n <= 2, "Otros", partido),
+      mutate(partido_reduc = if_else(p <= 0.05, "Otros", partido),
              partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |> 
-      select(-n) |> 
-      ungroup()
+      group_by(partido_reduc) |>
+      summarize(n = sum(n),
+                p = sum(p))
     
     datos <- datos_partidos_reduc |> 
       # count(partido) |> 
-      count(partido_reduc) |>
-      rename(partido = partido_reduc) |> 
-      arrange(desc(partido)) |> 
-      mutate(prop = n / sum(n) *100) %>%
-      mutate(ypos = cumsum(prop)- 0.5 * prop)
+      rename(partido = partido_reduc)
+      # mutate(prop = n / sum(n) *100) %>%
+      # mutate(ypos = cumsum(prop)- 0.5 * prop)
     
     # browser()
-    
+    # 
     # dev.new()
-    datos |> 
-      ggplot(aes("", prop, fill = partido)) +
-      geom_col(width=1) +
-      coord_polar("y", start=0) +
-      theme_void() +
-      geom_text(aes(x = 1.1, y = ypos, label = partido), color = "white", 
-                size = opt_texto_geom) +
-      geom_point(aes(x = 1.75, y = ypos, col = partido), size = 12) +
-      geom_text(aes(x = 1.75, y = ypos, label = scales::percent(prop/100, accuracy = 1)), 
-                color = "white", size = opt_texto_geom-1) +
-      # scale_fill_brewer(palette="Set1") +
-      # scale_fill_gradient(low = "red", high = "blue") +
+    # # gráfico antiguo
+    # datos |>
+    #   ggplot(aes("", prop, fill = partido)) +
+    #   geom_col(width=1) +
+    #   coord_polar("y", start=0) +
+    #   theme_void() +
+    #   geom_text(aes(x = 1.1, y = ypos, label = partido), color = "white",
+    #             size = opt_texto_geom) +
+    #   geom_point(aes(x = 1.75, y = ypos, col = partido), size = 12) +
+    #   geom_text(aes(x = 1.75, y = ypos, label = percent(prop/100, accuracy = 1)),
+    #             color = "white", size = opt_texto_geom-1) +
+    #   # scale_fill_brewer(palette="Set1") +
+    #   # scale_fill_gradient(low = "red", high = "blue") +
+    #   scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
+    #   theme(legend.position="none") +
+    #   theme(plot.margin = unit(rep(-0.5, 4), "cm"))
+    
+    # gráfico nuevo
+    datos |>
+      ggplot(aes(x = n, y = factor(1), fill = partido)) +
+      geom_col(width = 1) +
+      geom_text(aes(label = partido), position = position_stack(vjust = 0.5),
+                hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = "white") + 
+      geom_text(aes(label = percent(p, accuracy = 1), y = 0.25, color = partido), position = position_stack(vjust = 0.5),
+                hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
+      scale_y_discrete(guide = "none", name = NULL) +
+      guides(fill = "none", color = "none") +
+      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+                   start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
-      theme(legend.position="none") +
-      theme(plot.margin = unit(rep(-0.5, 4), "cm"))
+      theme_void()
   })
   
   # gráfico barras comparativo ----
@@ -696,7 +739,7 @@ server <- function(input, output, session) {
     
     escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10, 
       expand = expansion(c(0, 0.01)),
-      labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
+      labels = unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
     
     ancho_barras = 0.5
     

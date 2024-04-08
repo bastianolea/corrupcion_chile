@@ -12,6 +12,10 @@ Este visualizador compila datos abiertos sobre este tema país, y produce gráfi
 ![Gráfico de casos de corrupción por montos defraudados, indicando sector político implicado](graficos/grafico_corrupcion_montos_sector.png)
 ![Gráfico de casos de corrupción por montos defraudados, indicando casos de alcaldes y municipios con su sector político](graficos/grafico_corrupcion_montos_alcaldes_sector.png)
 
+![Gráfico de torta de montos sumados de casos corrupción por sector político](graficos/grafico_torta_montos_sector.png)
+
+![Gráfico de torta de cantidad de casos corrupción por sector político](graficos/grafico_torta_sector.png)
+
 ### Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos
 ![Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos](tablas/tabla_corrupcion_partidos_chile.png)
 

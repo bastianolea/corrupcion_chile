@@ -29,10 +29,11 @@ subtitulo = glue("Lista de casos de corrupción en municipalidades de Chile, ord
                                 _Última actualización:_ {format(today(), '%d/%m/%Y')}")
 # tabla ----
 tabla <- corrupcion_municipios |> 
-  filter(region == "Metropolitana de Santiago") |> 
+  filter(region == "Metropolitana de Santiago") |>
+  filter(sector %in% c("Izquierda", "Derecha", "Centro")) |> 
   select(comuna, responsable, monto, sector, partido, año) |> 
   mutate(monto = monto/1000000) |> 
-  mutate(sector = factor(sector, c("Izquierda", "Derecha", "Ninguno"))) |> 
+  mutate(sector = factor(sector, c("Izquierda", "Derecha", "Centro"))) |> 
   arrange(desc(monto)) |> 
   #tabla
   gt() |> 
@@ -50,9 +51,9 @@ tabla <- corrupcion_municipios |>
             style = cell_text(style = "italic")) |> 
   #colorizar datos
   data_color(columns = c(sector), 
-             method = "factor", domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T, 
-             levels = c("Derecha", "Izquierda", "Ninguno"),
-             palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Ninguno" = "white")) |> 
+             method = "factor", domain = c("Derecha", "Izquierda", "Centro"), ordered = T, 
+             levels = c("Derecha", "Izquierda", "Centro"),
+             palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Centro" = "white")) |> 
   #formatear números
   fmt_number(columns = monto, sep_mark = ".", decimals = 0) |> 
   #nombres de columnas

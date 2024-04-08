@@ -33,7 +33,7 @@ datos_barras <- corrupcion |>
          responsable != "Cathy Barriga") |> 
   mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros"))
 
-escala_barras_horizontales <- scale_x_continuous(n.breaks = 10, expand = expansion(c(0, 0.01)),
+escala_barras_horizontales <- scale_x_continuous(n.breaks = 6, expand = expansion(c(0, 0.01)),
                                                  labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
 
 escala_y_barras_horizontales <- scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…"))
@@ -49,6 +49,8 @@ tema_barras_horizontales <- theme(axis.title = element_blank(),
                                   legend.text = element_text(margin = margin(l = 2, r = 4))
 )
 
+
+# gráfico sector ----
 datos_barras |> 
   ggplot(aes(y = caso, x = monto, fill = sector)) +
   geom_col(width = ancho_barras) +
@@ -61,9 +63,10 @@ datos_barras |>
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Otros" = color_destacado)) +
-  labs(fill = "Sector político") +
+  labs(fill = "Sector político")
 
 
+# gráfico tipo ----
 datos_barras |> 
   ggplot(aes(y = caso, x = monto, fill = caso_fundaciones)) +
   geom_col(width = ancho_barras) +
@@ -75,19 +78,20 @@ datos_barras |>
                                "Otros casos" = color_destacado)) +
   labs(fill = "Tipo de caso")
 
-datos_barras |> 
-  mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
-                                        sector == "Derecha" ~ "Derecha",
-                                        # sector == "Izquierda" ~ "Izquierda",
-                                        .default = "Izquierda y otros")) |> 
-  ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
-  geom_col(width = ancho_barras) +
-  facet_grid(rows = vars(fundaciones_sector), scales = "free_y", space = "free_y", axes = "all") +
-  escala_barras_horizontales + 
-  escala_y_barras_horizontales +
-  tema_barras_horizontales +
-  scale_fill_manual(values = c("Derecha" = color_derecha, 
-                               "Fundaciones" = color_fundaciones,
-                               "Izquierda y otros" = color_destacado)) +
-  labs(fill = "Tipo de caso") +
-  theme(strip.text = element_text(hjust = 0, face = "bold"))
+# 
+# datos_barras |> 
+#   mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
+#                                         sector == "Derecha" ~ "Derecha",
+#                                         # sector == "Izquierda" ~ "Izquierda",
+#                                         .default = "Izquierda y otros")) |> 
+#   ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
+#   geom_col(width = ancho_barras) +
+#   facet_grid(rows = vars(fundaciones_sector), scales = "free_y", space = "free_y", axes = "all") +
+#   escala_barras_horizontales + 
+#   escala_y_barras_horizontales +
+#   tema_barras_horizontales +
+#   scale_fill_manual(values = c("Derecha" = color_derecha, 
+#                                "Fundaciones" = color_fundaciones,
+#                                "Izquierda y otros" = color_destacado)) +
+#   labs(fill = "Tipo de caso") +
+#   theme(strip.text = element_text(hjust = 0, face = "bold"))
