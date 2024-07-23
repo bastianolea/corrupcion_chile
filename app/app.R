@@ -523,7 +523,8 @@ server <- function(input, output, session) {
       geom_col(width = 0.6) +
       geom_text(aes(label = n, y = n-0.25), vjust = 1, color = color_enlaces,
                 size = opt_texto_geom) +
-      scale_y_continuous(breaks = 1:20, expand = expansion(c(0, 0.1))) +
+      scale_y_continuous(#breaks = 1:20, 
+                         expand = expansion(c(0, 0.1))) +
       scale_x_continuous(breaks = año_min():año_max()) +
       # theme(panel.grid.minor = element_blank(),
       #       panel.grid.major.x = element_blank()) +
@@ -715,6 +716,8 @@ server <- function(input, output, session) {
       theme_void()
   })
   
+  
+  
   # gráfico barras comparativo ----
   datos_barras <- reactive({
     # browser()
@@ -747,15 +750,17 @@ server <- function(input, output, session) {
                                       axis.title = element_blank(),
                                       axis.ticks.y = element_blank(),
                                       panel.grid.major.y = element_blank(),
-                                      legend.key.size = unit(3, "mm"),
+                                      legend.key.size = unit(4, "mm"),
                                       legend.position = "top",
                                       legend.margin = margin(b = -6), 
                                       plot.title.position = "plot",
                                       plot.title = element_text(face = "bold.italic"),
-                                      legend.text = element_text(margin = margin(l = 2, r = 4)),
+                                      legend.text = element_text(size = 13, margin = margin(l = 4, r = 4)),
                                       axis.text = element_text(size = opt_texto_axis, face = "italic"),
-                                      strip.text = element_text(hjust = 0, face = "bold"),
-                                      legend.title = element_text(face = "bold")
+                                      axis.text.y = element_text(size = opt_texto_axis*1.1, face = "bold"),
+                                      strip.text = element_text(hjust = 0, size = 16, face = "bold"),
+                                      legend.title = element_text(face = "bold", size = 13, margin = margin(r = 4))
+                                      
     )
     
     escala_y_barras_horizontales <- scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…"))
@@ -768,7 +773,8 @@ server <- function(input, output, session) {
           group_by(sector) |> 
           slice_max(n = 20, order_by = monto)
       } else {
-        datos <- datos_barras()
+        datos <- datos_barras() |> 
+          slice_max(n = 40, order_by = monto)
       }
       
       p <- datos |> 
