@@ -15,15 +15,21 @@ library(thematic)
 library(showtext)
 library(bslib)
 
+library(ragg)
+options(shiny.useragg = TRUE)
+
 source("colores.R")
 
-thematic_shiny(font = "auto", bg = color_fondo, fg = color_texto, accent = color_destacado)
+thematic_shiny(font = "auto", 
+               bg = color_fondo, fg = color_texto, accent = color_destacado)
 
 #opciones
 options(scipen = 99999)
-opt_texto_geom = 6
+opt_texto_geom = 4.5
 opt_texto_plot = 16
 opt_texto_axis = 13
+resolucion = 80 #resolución de render de los gráficos
+showtext::showtext_opts(dpi = 120)
 
 #datos ----
 corrupcion <- readRDS("corrupcion_datos.rds")
@@ -533,7 +539,7 @@ server <- function(input, output, session) {
             axis.text = element_text(size = opt_texto_axis))
     
     # browser()
-  })
+  }, res = resolucion)
   
   #gráfico cep puntos percepcion ----
   output$grafico_cep <- renderPlot({
@@ -565,7 +571,7 @@ server <- function(input, output, session) {
       theme(legend.position = "top", legend.direction = "horizontal", 
             legend.title = element_blank(),
             legend.margin = margin(t = 0, b = -3))
-  })
+  }, res = resolucion)
   
   #gráfico cpi puntos ----
   
@@ -592,8 +598,8 @@ server <- function(input, output, session) {
         panel.grid.minor.x = element_blank(),
         axis.text = element_text(size = opt_texto_axis),
         axis.title.y = element_text(size = opt_texto_plot, margin = margin(r=6), face = "italic")) +
-      labs(y = "Índice de percepción de la corrupción", x = NULL)
-  })
+      labs(y = "Índice de percepción\nde la corrupción", x = NULL)
+  }, res = resolucion)
   
   
   #gráfico torta sector ----
@@ -638,7 +644,7 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = c("Derecha" = color_derecha, 
                                    "Izquierda" = color_izquierda,
@@ -646,7 +652,7 @@ server <- function(input, output, session) {
                                    "Ninguno" = color_ninguno), 
                         aesthetics = c("fill", "color")) +
       theme_void()
-  })
+  }, res = resolucion)
   
   #gráfico torta partido ----
   output$torta_partido <- renderPlot({
@@ -710,11 +716,11 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
       theme_void()
-  })
+  }, res = resolucion)
   
   
   
@@ -848,7 +854,7 @@ server <- function(input, output, session) {
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
     }
     plot(p)
-  })
+  }, res = resolucion)
   
   
   
@@ -954,7 +960,8 @@ server <- function(input, output, session) {
     }
     
     plot(grafico)
-  }, height = reactive(alto_grafico_montos()), res = 72) #|> 
+  }, height = reactive(alto_grafico_montos()), 
+  res = 72) #|> 
   # bindCache(input$variable_color, año_min(), año_max())
   
   
