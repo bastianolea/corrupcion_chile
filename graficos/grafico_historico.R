@@ -66,8 +66,8 @@ datos_suma2 |>
 datos_suma2 |> 
   filter(sector %in% c("Izquierda", "Derecha")) |> 
   ggplot(aes(x = año, y = suma_n, fill = sector, color = sector)) +
-  geom_step() +
-  theme(
+  geom_step() + 
+  theme()
 
 datos_suma2 |> 
   filter(sector %in% c("Izquierda", "Derecha")) |> 
