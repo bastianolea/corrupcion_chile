@@ -1,9 +1,9 @@
-library(shiny)
+library(shiny) |> suppressPackageStartupMessages()
 library(shinyWidgets)
 library(shinycssloaders)
-library(shinyjs)
+library(shinyjs) |> suppressPackageStartupMessages()
 
-library(dplyr)
+library(dplyr) |> suppressPackageStartupMessages()
 library(ggplot2)
 library(stringr)
 library(glue)
@@ -13,7 +13,7 @@ library(scales)
 #temas
 library(thematic)
 library(showtext)
-library(bslib)
+library(bslib) |> suppressPackageStartupMessages()
 
 library(ragg)
 options(shiny.useragg = TRUE)
