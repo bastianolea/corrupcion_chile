@@ -409,7 +409,20 @@ ui <- fluidPage(
              puedes encontrar los datos en el [repositorio](https://github.com/bastianolea/corrupcion_chile), o bien, [contactarme.](http://bastian.olea.biz)")
            ),
            
-           div(style = "height: 40px")
+           #### cafecito ----
+           div(
+             style = "max-width: 380px; margin: auto; padding: 28px",
+             
+             tags$style(HTML(".cafecito:hover {opacity: 75%; transition: 0.3s; color: black !important;} .cafecito a:hover {color: black}")),
+             
+             div(class = "cafecito",
+                 style = "transform:scale(0.7);",
+                 tags$body(HTML('<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="bastimapache" data-color="#FFDD00" data-emoji=""  data-font="Bree" data-text="Regálame un cafecito" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>'))
+             )
+           ),
+           
+           
+           # div(style = "height: 40px")
            
     )
   )
