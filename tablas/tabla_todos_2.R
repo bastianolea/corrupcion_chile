@@ -28,7 +28,7 @@ color_na = "grey80"
 titulo = "Casos de corrupción en Chile"
 subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos políticos, ordenados por monto, de 2014 a 2024
                              
-                                _Última actualización de datos:_ {format(today(), '%d/%m/%Y')}")
+                                _Sólo se incluyen los 30 mayores casos. Última actualización de datos:_ {format(today(), '%d/%m/%Y')}")
 
 # datos ----
 datos <- corrupcion |> 
@@ -49,7 +49,7 @@ datos <- corrupcion |>
 
 # tabla ----
 tabla <- datos |> 
-  # slice(1:26) |>
+  slice(1:30) |>
   # slice(27:99) |>
   gt() |> 
   tab_header(titulo, subtitle = md(subtitulo)) |> 
@@ -103,7 +103,7 @@ tabla <- datos |>
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile.png")
+tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_3.png")
 # tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_b.png")
 
 # #tabla solo rm y guardarla

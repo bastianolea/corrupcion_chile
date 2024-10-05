@@ -687,7 +687,7 @@ server <- function(input, output, session) {
       arrange(desc(n)) |> 
       mutate(p = n/sum(n)) |> 
       rowwise() |> 
-      mutate(partido_reduc = if_else(p <= 0.05, "Otros", partido),
+      mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
              partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |> 
       group_by(partido_reduc) |>
       summarize(n = sum(n),
@@ -761,7 +761,9 @@ server <- function(input, output, session) {
     
     escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10, 
       expand = expansion(c(0, 0.01)),
-      labels = unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
+      # limits = c(1e-9, NA),
+      # labels = unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
+      labels = unit_format(unit = "mil mill.", big.mark = ".", decimal.mark = ",", scale = 1e-9))
     
     ancho_barras = 0.5
     
@@ -775,7 +777,7 @@ server <- function(input, output, session) {
                                       plot.title.position = "plot",
                                       plot.title = element_text(face = "bold.italic"),
                                       legend.text = element_text(size = 13, margin = margin(l = 4, r = 4)),
-                                      axis.text = element_text(size = opt_texto_axis, face = "italic"),
+                                      axis.text = element_text(size = opt_texto_axis*0.9, face = "italic"),
                                       axis.text.y = element_text(size = opt_texto_axis*1.1, face = "bold"),
                                       strip.text = element_text(hjust = 0, size = 16, face = "bold"),
                                       legend.title = element_text(face = "bold", size = 13, margin = margin(r = 4))

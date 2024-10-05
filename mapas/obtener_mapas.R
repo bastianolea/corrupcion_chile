@@ -8,24 +8,24 @@ library(rvest)
 library(sf)
 
 # obtener calles y otros desde OpenStreetMap ----
-available_features()
+# available_features()
 
 #explorar etiquetas disponibles
-available_tags("place")
-available_tags("waterway")
-available_tags("landuse")
+# available_tags("place")
+# available_tags("waterway")
+# available_tags("landuse")
 
 #definir ciudad a obtener
 # ciudad = "Santiago"
 ciudad = "Región Metropolitana"
-getbb("Santiago")
-getbb("Región Metropolitana")
-?getbb
+# getbb("Santiago")
+# getbb("Región Metropolitana")
+# ?getbb
 
 #obtener calles y carreteras
 calles_principales <- getbb(ciudad) %>%
   opq(timeout = 500) %>%
-  add_osm_feature(key = "highway", 
+  add_osm_feature(key = "highway",
                   value = c("motorway", "primary", "motorway_link", "primary_link",
                             "trunk")) %>%
   osmdata_sf()
@@ -65,11 +65,11 @@ estructuras <- getbb(ciudad) %>%
 # places <- available_tags("place")
 # places |> print(n=Inf)
 
-lugares <- getbb(ciudad) %>%
-  opq() %>%
-  add_osm_feature(key = "place", 
-                  value = c("province", "region", "town", "village", "district", "county", "city")) %>%
-  osmdata_sf()
+# lugares <- getbb(ciudad) %>%
+#   opq() %>%
+#   add_osm_feature(key = "place", 
+#                   value = c("province", "region", "town", "village", "district", "county", "city")) %>%
+#   osmdata_sf()
 
 # lugares$osm_points %>% count(place)
 # 

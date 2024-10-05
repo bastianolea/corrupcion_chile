@@ -44,7 +44,7 @@ datos |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.06, inner.radius = 0.4) +
+               start = 1.3, inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -69,7 +69,7 @@ datos2 <- corrupcion |>
   filter(año >= 2014) |> 
   filter(sector != "Ninguno") |> 
   # filter(responsable != "Virginia Reginato") |> 
-  summarize(n = sum(monto), .by = sector) |> 
+  summarize(n = sum(monto, na.rm = TRUE), .by = sector) |> 
   mutate(p = n/sum(n),
          n = n/1000000) |> 
   mutate(sector = as.factor(sector))
@@ -77,9 +77,9 @@ datos2 <- corrupcion |>
 datos2 |> 
   mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", trim = T) |> paste0("\n", "millones")) |> 
   ggplot(aes(x = n, y = factor(1), fill = sector)) +
-  geom_col(width = 1) +
+  geom_col(width = 1, color = "white", linewidth = 0) +
   geom_text(aes(label = sector), position = position_stack(vjust = 0.5),
-            angle = 90, hjust = 0.5, fontface = "bold", color = "white") + 
+            angle = 90, hjust = 0.5, size = 3.6, fontface = "bold", color = "white") + 
   geom_text(aes(label = ifelse(sector == "Derecha", cifra, ""), 
                 y = 2.1, color = sector), lineheight = 0.9, position = position_stack(vjust = 0.5), angle = 90, fontface = "bold") + 
   geom_text(aes(label = ifelse(sector != "Derecha", cifra, ""), 
@@ -87,7 +87,7 @@ datos2 |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.64, inner.radius = 0.4) +
+               start = 1.66, inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +

@@ -71,7 +71,7 @@ tabla <- corrupcion_municipios |>
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> gtsave(filename = "tablas/tabla_corrupcion_municipalidades_chile.png")
+tabla |> gtsave(filename = "tablas/tabla_corrupcion_municipalidades_chile_3.png")
 
 #tabla solo rm y guardarla
 tabla |> 
@@ -79,7 +79,7 @@ tabla |>
              md(glue("Lista de casos de corrupción en municipalidades de la Región Metropolitana, ordenados por monto, con datos de afiliación política.
                              
                                 _Última actualización:_ {format(today(), '%d/%m/%Y')}"))) |> 
-gtsave(filename = "tablas/tabla_corrupcion_municipalidades_rm.png")
+gtsave(filename = "tablas/tabla_corrupcion_municipalidades_rm_3.png")
 
 
 # conteos ----

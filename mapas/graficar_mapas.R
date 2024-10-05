@@ -8,7 +8,9 @@ library(forcats)
 library(glue)
 library(colorspace)
 library(ggrepel)
+library(sf)
 
+source("mapas/obtener_mapas.R")
 
 corrupcion <- readRDS("app/corrupcion_datos.rds") |> 
   mutate(alcaldes_sector = case_when(alcalde == "Alcaldías" & sector == "Derecha" ~ "Alcalde de derecha",
@@ -203,7 +205,7 @@ mapa_datos |>
        subtitle = "Región Metropolitana, por sector político del alcalde",
        caption = "Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile")
 
-# guardar imagen
-ggsave(filename = "mapas/mapa_corrupcion_municipios_rm.png",
+# guardar ----
+ggsave(filename = "mapas/mapa_corrupcion_municipios_rm_3.png",
        width = 10, height = 10
 )

@@ -165,7 +165,7 @@ monto_etiqueta <- function() {
 
 ## gráfico ----
 
-# variable_color = "ninguno"
+variable_color = "ninguno"
 # variable_color = "sector"
 # variable_color = "caso_fundaciones"
 # variable_color = "alcaldes_sector"
@@ -187,7 +187,6 @@ espaciado_etiquetas_millones = 0.7 #espacio entre ultimo punto y etiqueta de mon
 color_texto = "black"
 color_detalle = "white"
 
-variable_color = "sector"
 
 grafico <- corrupcion_escalado() |> 
   ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
@@ -226,7 +225,7 @@ grafico <- corrupcion_escalado() |>
         legend.title = element_text(face = "bold"),
         legend.text = element_text(size = 10, margin = margin(l = 3))) +
   labs(title = "Casos de corrupción más grandes de Chile",
-       caption = "Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile ") +
+       caption = glue("Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile (Última actualización de datos: {format(today(), '%d/%m/%Y')})")) +
   theme(plot.title.position = "plot", 
         plot.title = element_text(margin = margin(t=2, b = 4)),
         plot.subtitle = element_text(margin = margin(b = 8))
@@ -276,7 +275,7 @@ if (variable_color == "alcaldes_sector") {
 
 plot(grafico)
 
-ggsave(filename = paste0("graficos/grafico_corrupcion_montos_", variable_color, "_2.png"),
+ggsave(filename = paste0("graficos/grafico_corrupcion_montos_", variable_color, "_3.png"),
        plot = grafico,
        width = 15, height = 11
 )
