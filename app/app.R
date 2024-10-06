@@ -240,6 +240,19 @@ ui <- fluidPage(
   ),
   
   
+  #### gráfico torta montos ----
+  fluidRow(
+    column(12,
+           hr(),
+           h2("Montos totales de casos de corrupción por sector político"),
+           p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
+           
+           div(style = "max-width: 600px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
+           plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
+           )
+    )
+  ),
+  
   ### gráficos barras comparativos ----
   fluidRow(
     column(12,
@@ -733,6 +746,53 @@ server <- function(input, output, session) {
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
       theme_void()
+  }, res = resolucion)
+  
+  
+  
+  # gráfico torta montos ----
+  output$torta_montos <- renderPlot({
+    # browser()
+    datos2 <- corrupcion_años() |> 
+      # filter(año >= 2014) |> 
+      filter(sector != "Ninguno") |> 
+      # filter(responsable != "Virginia Reginato") |> 
+      summarize(n = sum(monto, na.rm = TRUE), .by = sector) |> 
+      mutate(p = n/sum(n),
+             n = n/1000000) |> 
+      mutate(sector = as.factor(sector))
+    
+    # browser()
+    # dev.new()
+    datos2 |> 
+      mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", trim = T) |> paste0("\n", "millones")) |> 
+      ggplot(aes(x = n, y = factor(1), fill = sector)) +
+      geom_col(width = 1, color = "white", linewidth = 0) +
+      # texto interior
+      geom_text(aes(label = sector), position = position_stack(vjust = 0.5),
+                angle = 90, hjust = 0.5, size = 3.6, fontface = "bold", color = "white") + 
+      # texto exterior
+      geom_text(aes(label = ifelse(sector == "Derecha", cifra, ""), 
+                    y = 2.1, color = sector), color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), angle = 90, fontface = "bold") + 
+      geom_text(aes(label = ifelse(sector != "Derecha", cifra, ""), 
+                    y = 1.7, color = sector), color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), hjust = 0, angle = 90, fontface = "bold") + 
+      scale_y_discrete(guide = "none", name = NULL) +
+      guides(fill = "none", color = "none") +
+      coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
+                   start = 1.65, inner.radius = 0.4) +
+      scale_fill_manual(values = c("Derecha" = color_derecha, 
+                                   "Izquierda" = color_izquierda,
+                                   "Centro" = color_neutro), aesthetics = c("fill", "color")) +
+      theme_void() +
+      # labs(title = "Casos de corrupción en Chile", 
+           # subtitle = "Montos totales defraudados según sector político, de 2014 a 2024",
+           # caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
+      theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
+            plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
+            plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6))) +
+      theme(plot.margin = margin(t = -60, b = -60))
+    
+    
   }, res = resolucion)
   
   

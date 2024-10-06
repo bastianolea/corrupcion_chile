@@ -26,14 +26,14 @@ color_fundaciones = "#D39552" #"#c88d2c" |> lighten(0.2)
 color_na = "grey80"
 
 titulo = "Casos de corrupción en Chile"
-subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos políticos, ordenados por monto.
+subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos políticos, ordenados por monto, de 2014 a 2024
                              
-                                _Última actualización:_ {format(today(), '%d/%m/%Y')}")
+                                _Sólo se incluyen los 30 mayores casos. Última actualización de datos:_ {format(today(), '%d/%m/%Y')}")
 
 # datos ----
 datos <- corrupcion |> 
-  filter(año >= 2010) |> 
-  filter(sector != "Ninguno") |> 
+  filter(año >= 2014) |> 
+  filter(sector != "Ninguno") |>
   mutate(tipo = case_when(alcalde == "Alcaldías" ~ "Municipalidades",
                           caso_fundaciones == "Caso fundaciones" ~ "Fundaciones", .default = "Otros casos")) |> 
   mutate(caso = if_else(alcalde == "Alcaldías", str_remove(caso, " \\(.*\\)"), caso)) |>
@@ -49,8 +49,8 @@ datos <- corrupcion |>
 
 # tabla ----
 tabla <- datos |> 
-  slice(1:25) |>
-  # slice(26:99) |>
+  slice(1:30) |>
+  # slice(27:99) |>
   gt() |> 
   tab_header(titulo, subtitle = md(subtitulo)) |> 
   #alineación columnas
@@ -85,7 +85,7 @@ tabla <- datos |>
   #nombres de columnas
   cols_label(
     caso = "Caso de corrupción",
-    comuna = "Municipio",
+    comuna = "Comuna",
     año = "Año",
     partido = "Partido",
     sector = "Sector político",
@@ -94,14 +94,18 @@ tabla <- datos |>
     monto = "Monto (millones)",
     delitos = "Delitos"
   ) |> 
-  tab_source_note("Fuente: Visualizador de datos de corrupción, fuentes de prensa citadas en https://github.com/bastianolea/corrupcion_chile") |> 
-  tab_options(table.border.top.color = "white", 
+  tab_source_note(
+    html("<b>Fuentes:</b> Visualizador de datos de corrupción: <u>https://bastianoleah.shinyapps.io/corrupcion_chile</u> <br>
+                       Puedes encontrar los datos y fuentes de prensa en: <u>https://github.com/bastianolea/corrupcion_chile")) |> 
+  tab_options(table.border.top.color = "white",
               table.border.bottom.color = "white"); print(tabla)
 
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_1.png")
+tabla |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_partidos_chile_", today(), ".png"))
+# tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_b.png")
 
 # #tabla solo rm y guardarla
 # tabla |> 
@@ -113,18 +117,5 @@ tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_1.png")
 
 
 # conteos ----
-# corrupcion_municipios |> count(partido) |> arrange(desc(n))
-# corrupcion_municipios |> count(sector) |> arrange(desc(n))
-# 
-# corrupcion_municipios |> 
-#   filter(region == "Metropolitana de Santiago") |> 
-#   count(partido) |> arrange(desc(n))
-# 
-# corrupcion_municipios |> 
-#   filter(region == "Metropolitana de Santiago") |> 
-#   count(sector) |> arrange(desc(n))
-# 
-# corrupcion_municipios |> 
-#   filter(region == "Metropolitana de Santiago") |> 
-#   filter(sector == "Derecha") |> 
-#   summarize(sum(monto))
+datos |> count(partido)
+datos |> count(sector) |> mutate(p = n/sum(n))

@@ -44,7 +44,7 @@ datos |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.3, inner.radius = 0.4) +
+               start = 1.24, inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -57,7 +57,7 @@ datos |>
         plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6)))
 
 # guardar
-ggsave(filename = paste0("graficos/grafico_torta_sector.png"),
+ggsave(filename = paste0("graficos/grafico_torta_sector_", today(), ".png"),
        width = 6, height = 6)
 
 
@@ -100,5 +100,5 @@ datos2 |>
         plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6)))
 
 # guardar
-ggsave(filename = paste0("graficos/grafico_torta_montos_sector.png"),
+ggsave(filename = paste0("graficos/grafico_torta_montos_sector_", today(), ".png"),
        width = 6, height = 6)

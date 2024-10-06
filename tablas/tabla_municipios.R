@@ -25,7 +25,7 @@ color_izquierda = "#722a2a" |> lighten(0.4)
 
 
 # datos ----
-datos <- corrupcion_municipios |> 
+datos_municipios <- corrupcion_municipios |> 
   filter(region == "Metropolitana de Santiago") |>
   filter(sector %in% c("Izquierda", "Derecha", "Centro")) |> 
   select(comuna, responsable, monto, sector, partido, año) |> 
@@ -38,7 +38,7 @@ subtitulo = glue("Lista de casos de corrupción en municipalidades de Chile, ord
                              
                                 _Última actualización:_ {format(today(), '%d/%m/%Y')}")
 # tabla ----
-tabla <- datos |> 
+tabla_municipios <- datos_municipios |> 
   gt() |> 
   tab_header(titulo,
              subtitle = md(subtitulo)) |> 
@@ -74,15 +74,16 @@ tabla <- datos |>
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> gtsave(filename = "tablas/tabla_corrupcion_municipalidades_chile_3.png")
+tabla_municipios |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_chile_", today(), ".png"))
 
 #tabla solo rm y guardarla
-tabla |> 
+tabla_municipios |> 
   tab_header("Corrupción en municipios de la Región Metropolitana",
              md(glue("Lista de casos de corrupción en municipalidades de la Región Metropolitana, ordenados por monto, con datos de afiliación política.
                              
                                 _Última actualización:_ {format(today(), '%d/%m/%Y')}"))) |> 
-gtsave(filename = "tablas/tabla_corrupcion_municipalidades_rm_3.png")
+gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_rm_", today(), ".png"))
 
 
 # conteos ----

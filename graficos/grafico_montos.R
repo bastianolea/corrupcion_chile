@@ -101,7 +101,7 @@ corrupcion_escalado_0 <- corrupcion_dividido_escalado_escalera |>
             join_by(caso)) |> 
   #crear una variable que sirva como etiqueta (porque los montos son muy largos)
   mutate(#caso_etiqueta = str_wrap(caso, 40),
-         caso_etiqueta = fct_reorder(caso, monto_escalera)) |> 
+    caso_etiqueta = fct_reorder(caso, monto_escalera)) |> 
   #como los valores grandes se van a dividir en 3 columnas, no queremos tener 3 etiquetas iguales, por lo que hacemos que solo sea visible la del medio, y la ordenamos para que quede en el medio
   mutate(division_monto_n = str_remove(division_monto, "monto") |> as.integer()) |> 
   mutate(caso_central = case_when(magnitud == "ultra" & division_monto == "monto3" ~ as.character(caso_etiqueta),
@@ -164,179 +164,183 @@ monto_etiqueta <- function() {
 
 
 ## gráfico ----
+variables_posibles = c("ninguno", "sector", "caso_fundaciones", "alcaldes_sector")
 
-variable_color = "ninguno"
-# variable_color = "sector"
-# variable_color = "caso_fundaciones"
-# variable_color = "alcaldes_sector"
-
-### opciones
-opt_texto_geom = 3
-opt_texto_plot = 16
-opt_texto_axis = 13
-expansion_y = 0.17 #espacio entre borde de cada faceta de cada caso y sus valores (si fuera aditivo y no multiplicatvo se arregla espaciado distinto entre enormes y normales?
-expansion_x = 0.05 #espacio entre valor máximo y borde derecho del gráfico
-espaciado_y = 5 #espacio entre facetas
-texto_eje_y = 9 #texto casos
-texto_montos = 3 #texto montos
-tamaño_punto = 6 #tamaño de círculos
-corte_etiqueta_casos = 45 #caracteres antes del corte de línea de etiquetas y
-espaciado_etiquetas_x = 0.005 #espacio entre etiquetas eje y y puntos
-espaciado_etiquetas_millones = 0.7 #espacio entre ultimo punto y etiqueta de montos
-
-color_texto = "black"
-color_detalle = "white"
-
-
-grafico <- corrupcion_escalado() |> 
-  ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
-             color = .data[[variable_color]])) + 
-  #puntos
-  geom_point(size = tamaño_punto) +
-  #signo peso en puntos
-  geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.6, vjust = 0.48) +
-  #etiquetas millones
-  geom_text(data = monto_etiqueta(),
-            aes(label = monto_etiqueta, x = monto_escalera+espaciado_etiquetas_millones), 
-            color = color_texto, size = texto_montos, hjust = 0, lineheight = 0.85) +
-  #escala vertical
-  scale_y_discrete(labels = ~str_remove(.x, " \\d+") |> str_wrap(corte_etiqueta_casos), #cortar línea de etiquetas eje y
-    # labels = ~str_remove(.x, " \\d+") |> str_replace(" \\(", "\\\n\\("), #cortar línea de etiquetas eje y}
-    # labels = ~str_remove(.x, " \\d+"), #cortar línea de etiquetas eje y
-                   expand = expansion(expansion_y)) + #apretar columnas horizontales de puntos
-  scale_x_continuous(expand = expansion(c(espaciado_etiquetas_x, expansion_x))) +
-  coord_cartesian(clip = "off") +
-  facet_grid(rows = vars(caso),
-             scales = "free_y", space = 'free', switch = "y", as.table = FALSE) +
-  theme_minimal() +
-  theme(strip.background = element_blank(),
-        strip.text = element_blank(),
-        axis.title = element_blank(),
-        axis.text.y = element_text(face = "bold", lineheight = 1,
-                                   size = texto_eje_y, color = color_texto,
-                                   margin = margin(r = 7)),
-        axis.text.x = element_blank(),
-        panel.background = element_blank(), #element_rect(fill = color_detalle, linewidth = 0),
-        panel.grid = element_blank(),
-        panel.spacing.y = unit(espaciado_y, "mm"),
-        legend.text = element_text(color = color_texto, size = 18, hjust = 0, margin = margin(t = 0, b = 0, r = 10)),
-        plot.margin = unit(c(0.1, 0, 0,  0.1), "cm")) +
-  theme(legend.position = c(.9, .1), legend.direction = "vertical", 
-        legend.title = element_text(face = "bold"),
-        legend.text = element_text(size = 10, margin = margin(l = 3))) +
-  labs(title = "Casos de corrupción más grandes de Chile",
-       caption = glue("Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile (Última actualización de datos: {format(today(), '%d/%m/%Y')})")) +
-  theme(plot.title.position = "plot", 
-        plot.title = element_text(margin = margin(t=2, b = 4)),
-        plot.subtitle = element_text(margin = margin(b = 8))
+for (variable_color in variables_posibles) {
+  # variable_color = "ninguno"
+  # # variable_color = "sector"
+  # # variable_color = "caso_fundaciones"
+  # # variable_color = "alcaldes_sector"
+  
+  ### opciones
+  opt_texto_geom = 3
+  opt_texto_plot = 16
+  opt_texto_axis = 13
+  expansion_y = 0.17 #espacio entre borde de cada faceta de cada caso y sus valores (si fuera aditivo y no multiplicatvo se arregla espaciado distinto entre enormes y normales?
+  expansion_x = 0.05 #espacio entre valor máximo y borde derecho del gráfico
+  espaciado_y = 5 #espacio entre facetas
+  texto_eje_y = 9 #texto casos
+  texto_montos = 3 #texto montos
+  tamaño_punto = 6 #tamaño de círculos
+  corte_etiqueta_casos = 45 #caracteres antes del corte de línea de etiquetas y
+  espaciado_etiquetas_x = 0.005 #espacio entre etiquetas eje y y puntos
+  espaciado_etiquetas_millones = 0.7 #espacio entre ultimo punto y etiqueta de montos
+  
+  color_texto = "black"
+  color_detalle = "white"
+  
+  
+  grafico <- corrupcion_escalado() |> 
+    ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
+               color = .data[[variable_color]])) + 
+    #puntos
+    geom_point(size = tamaño_punto) +
+    #signo peso en puntos
+    geom_text(aes(label = "$"), color = color_detalle, size = tamaño_punto*0.6, vjust = 0.48) +
+    #etiquetas millones
+    geom_text(data = monto_etiqueta(),
+              aes(label = monto_etiqueta, x = monto_escalera+espaciado_etiquetas_millones), 
+              color = color_texto, size = texto_montos, hjust = 0, lineheight = 0.85) +
+    #escala vertical
+    scale_y_discrete(labels = ~str_remove(.x, " \\d+") |> str_wrap(corte_etiqueta_casos), #cortar línea de etiquetas eje y
+                     # labels = ~str_remove(.x, " \\d+") |> str_replace(" \\(", "\\\n\\("), #cortar línea de etiquetas eje y}
+                     # labels = ~str_remove(.x, " \\d+"), #cortar línea de etiquetas eje y
+                     expand = expansion(expansion_y)) + #apretar columnas horizontales de puntos
+    scale_x_continuous(expand = expansion(c(espaciado_etiquetas_x, expansion_x))) +
+    coord_cartesian(clip = "off") +
+    facet_grid(rows = vars(caso),
+               scales = "free_y", space = 'free', switch = "y", as.table = FALSE) +
+    theme_minimal() +
+    theme(strip.background = element_blank(),
+          strip.text = element_blank(),
+          axis.title = element_blank(),
+          axis.text.y = element_text(face = "bold", lineheight = 1,
+                                     size = texto_eje_y, color = color_texto,
+                                     margin = margin(r = 7)),
+          axis.text.x = element_blank(),
+          panel.background = element_blank(), #element_rect(fill = color_detalle, linewidth = 0),
+          panel.grid = element_blank(),
+          panel.spacing.y = unit(espaciado_y, "mm"),
+          legend.text = element_text(color = color_texto, size = 18, hjust = 0, margin = margin(t = 0, b = 0, r = 10)),
+          plot.margin = unit(c(0.1, 0, 0,  0.1), "cm")) +
+    theme(legend.position = c(.9, .1), legend.direction = "vertical", 
+          legend.title = element_text(face = "bold"),
+          legend.text = element_text(size = 10, margin = margin(l = 3))) +
+    labs(title = "Casos de corrupción más grandes de Chile",
+         caption = glue("Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile (Última actualización de datos: {format(today(), '%d/%m/%Y')})")) +
+    theme(plot.title.position = "plot", 
+          plot.title = element_text(margin = margin(t=2, b = 4)),
+          plot.subtitle = element_text(margin = margin(b = 8))
+    )
+  
+  #sin escala si no se divide el gráfico por colores
+  if (variable_color == "ninguno") {
+    grafico <- grafico +
+      scale_color_manual(values = color_destacado) +
+      theme(legend.position = "none")
+  }
+  
+  #color si es por sector político
+  if (variable_color == "sector") {
+    grafico <- grafico +
+      scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
+                                    "Centro" = color_neutro,
+                                    "Ninguno" = color_neutro)) +
+      labs(color = "Sector político") +
+      guides(colour = guide_legend(override.aes = list(size = 5))) +
+      labs(subtitle = glue("Casos según sector político y ordenados por monto, de 2014 a 2024"))
+  }
+  
+  
+  #color si es por fundaciones
+  if (variable_color == "caso_fundaciones") {
+    grafico <- grafico +
+      scale_color_manual(values = c("Caso fundaciones" = color_fundaciones,
+                                    "Otros casos" = color_neutro)) +
+      labs(color = "Caso fundaciones") +
+      guides(colour = guide_legend(override.aes = list(size = 5))) +
+      labs(subtitle = glue("Según correspondan a fundaciones u otros casos, y ordenados por monto"))
+  }
+  
+  
+  #color si es por alcaldes
+  if (variable_color == "alcaldes_sector") {
+    grafico <- grafico +
+      scale_color_manual(values = c("Alcalde de derecha" = color_derecha,
+                                    "Alcalde de izquierda" = color_izquierda,
+                                    "Alcalde independiente" = color_ninguno,
+                                    "Otros casos" = color_neutro)) +
+      labs(color = "Alcaldías") +
+      guides(colour = guide_legend(override.aes = list(size = 5))) +
+      labs(subtitle = glue("Según correspondan a alcaldías u otros casos, y ordenados por monto"))
+  }
+  
+  plot(grafico)
+  
+  ## guardar ----
+  ggsave(filename = paste0("graficos/grafico_corrupcion_montos_", variable_color, "_", today(), ".png"),
+         plot = grafico,
+         width = 15, height = 11
   )
-
-#sin escala si no se divide el gráfico por colores
-if (variable_color == "ninguno") {
-  grafico <- grafico +
-    scale_color_manual(values = color_destacado) +
-    theme(legend.position = "none")
 }
-
-#color si es por sector político
-if (variable_color == "sector") {
-  grafico <- grafico +
-    scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
-                                  "Centro" = color_neutro,
-                                  "Ninguno" = color_neutro)) +
-    labs(color = "Sector político") +
-  guides(colour = guide_legend(override.aes = list(size = 5))) +
-    labs(subtitle = glue("Casos según sector político y ordenados por monto, de 2014 a 2024"))
-}
-
-
-#color si es por fundaciones
-if (variable_color == "caso_fundaciones") {
-  grafico <- grafico +
-    scale_color_manual(values = c("Caso fundaciones" = color_fundaciones,
-                                  "Otros casos" = color_neutro)) +
-    labs(color = "Caso fundaciones") +
-    guides(colour = guide_legend(override.aes = list(size = 5))) +
-    labs(subtitle = glue("Según correspondan a fundaciones u otros casos, y ordenados por monto"))
-}
-
-
-#color si es por alcaldes
-if (variable_color == "alcaldes_sector") {
-  grafico <- grafico +
-    scale_color_manual(values = c("Alcalde de derecha" = color_derecha,
-                                  "Alcalde de izquierda" = color_izquierda,
-                                  "Alcalde independiente" = color_ninguno,
-                                  "Otros casos" = color_neutro)) +
-    labs(color = "Alcaldías") +
-    guides(colour = guide_legend(override.aes = list(size = 5))) +
-    labs(subtitle = glue("Según correspondan a alcaldías u otros casos, y ordenados por monto"))
-}
-
-plot(grafico)
-
-ggsave(filename = paste0("graficos/grafico_corrupcion_montos_", variable_color, "_3.png"),
-       plot = grafico,
-       width = 15, height = 11
-)
 
 
 #revisar ----
 
-#circulos por caso
-corrupcion_escalado_0 |> 
-  select(caso, monto_escalado) |> 
-  distinct() |> 
-  group_by(caso) |>
-  summarize(pelotas = sum(monto_escalado)) |> 
-  print(n=Inf)
-
-
-corrupcion_escalado_0 |> 
-  select(-monto_escalera) |> 
-  distinct() |> 
-  select(1:6) |> 
-  #cada columna dividida por sus pelotitas
-  mutate(monto2 = monto_dividido/monto_escalado) |> 
-  group_by(caso) |> 
-  #sumar todas las pelotitas, a ver si da lo mismo que da el monto total
-  summarize(monto_sumado = sum(monto_dividido),
-            monto = mean(monto))
-  
-
-# conteos ----
-corrupcion |> 
-  filter(año >= 2014) |> 
-  count(caso_fundaciones) |> 
-  mutate(p = n/sum(n)*100)
-
-corrupcion |> 
-  filter(año >= 2014) |> 
-  count(caso_fundaciones, sector) |> 
-  filter(caso_fundaciones != "Otros casos") |> 
-  mutate(p = n/sum(n)*100)
-
-corrupcion |> 
-  filter(año >= 2014) |> 
-  count(alcaldes_sector) |> 
-  filter(alcaldes_sector != "Otros casos") |> 
-  mutate(p = n/sum(n)*100)
-
-corrupcion |> 
-  filter(año >= 2014) |> 
-  count(sector) |> 
-  mutate(p = n/sum(n)*100)
-
-# De los casos de corrupción de los últimos 10 años,
-# del total, 62% han sido desde partidos de derecha, y 19% corresponden a fundaciones.
-# Entre los casos de fundaciones, 40% son de izquierda y 20% de derecha.
-# Entre los casos de alcaldes y municipios corruptos, 81% de ellos han sido de derecha.
-
-corrupcion |> 
-  filter(año >= 2014) |> 
-  group_by(sector) |> 
-  summarize(n = sum(monto)) |> 
-  mutate(p = n/sum(n)*100)
-
-# Si sumamos todos los montos de casos de corrupción, obtenemos que 5% son atribuibles a la izquierda, y 66% a la derecha
-
+# #circulos por caso
+# corrupcion_escalado_0 |> 
+#   select(caso, monto_escalado) |> 
+#   distinct() |> 
+#   group_by(caso) |>
+#   summarize(pelotas = sum(monto_escalado)) |> 
+#   print(n=Inf)
+# 
+# 
+# corrupcion_escalado_0 |> 
+#   select(-monto_escalera) |> 
+#   distinct() |> 
+#   select(1:6) |> 
+#   #cada columna dividida por sus pelotitas
+#   mutate(monto2 = monto_dividido/monto_escalado) |> 
+#   group_by(caso) |> 
+#   #sumar todas las pelotitas, a ver si da lo mismo que da el monto total
+#   summarize(monto_sumado = sum(monto_dividido),
+#             monto = mean(monto))
+#   
+# 
+# # conteos ----
+# corrupcion |> 
+#   filter(año >= 2014) |> 
+#   count(caso_fundaciones) |> 
+#   mutate(p = n/sum(n)*100)
+# 
+# corrupcion |> 
+#   filter(año >= 2014) |> 
+#   count(caso_fundaciones, sector) |> 
+#   filter(caso_fundaciones != "Otros casos") |> 
+#   mutate(p = n/sum(n)*100)
+# 
+# corrupcion |> 
+#   filter(año >= 2014) |> 
+#   count(alcaldes_sector) |> 
+#   filter(alcaldes_sector != "Otros casos") |> 
+#   mutate(p = n/sum(n)*100)
+# 
+# corrupcion |> 
+#   filter(año >= 2014) |> 
+#   count(sector) |> 
+#   mutate(p = n/sum(n)*100)
+# 
+# # De los casos de corrupción de los últimos 10 años,
+# # del total, 62% han sido desde partidos de derecha, y 19% corresponden a fundaciones.
+# # Entre los casos de fundaciones, 40% son de izquierda y 20% de derecha.
+# # Entre los casos de alcaldes y municipios corruptos, 81% de ellos han sido de derecha.
+# 
+# corrupcion |> 
+#   filter(año >= 2014) |> 
+#   group_by(sector) |> 
+#   summarize(n = sum(monto)) |> 
+#   mutate(p = n/sum(n)*100)
+# 
+# # Si sumamos todos los montos de casos de corrupción, obtenemos que 5% son atribuibles a la izquierda, y 66% a la derecha
+# 
