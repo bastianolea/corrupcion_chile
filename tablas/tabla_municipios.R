@@ -69,21 +69,31 @@ tabla_municipios <- datos_municipios |>
     monto = "Monto (millones)"
   ) |> 
   tab_source_note("Fuente: Visualizador de datos de corrupción, en https://github.com/bastianolea/corrupcion_chile") |> 
-  tab_options(table.border.top.color = "white", table.border.bottom.color = "white"); print(tabla)
- 
+  tab_options(table.border.top.color = "white", table.border.bottom.color = "white")
+
+tabla_municipios
+
 # guardar ----
 
 #guardar tabla como imagen
 tabla_municipios |> 
   gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_chile_", today(), ".png"))
 
-#tabla solo rm y guardarla
 tabla_municipios |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_chile.png"))
+
+#tabla solo rm y guardarla
+tabla_municipios_rm <- tabla_municipios |> 
   tab_header("Corrupción en municipios de la Región Metropolitana",
              md(glue("Lista de casos de corrupción en municipalidades de la Región Metropolitana, ordenados por monto, con datos de afiliación política.
                              
-                                _Última actualización:_ {format(today(), '%d/%m/%Y')}"))) |> 
-gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_rm_", today(), ".png"))
+                                _Última actualización:_ {format(today(), '%d/%m/%Y')}")))
+
+tabla_municipios_rm |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_rm_", today(), ".png"))
+
+tabla_municipios_rm |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_rm.png"))
 
 
 # conteos ----
@@ -91,15 +101,15 @@ gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_rm_", today(),
 corrupcion_municipios |> count(partido) |> arrange(desc(n))
 corrupcion_municipios |> count(sector) |> arrange(desc(n)) |> mutate(p = n/sum(n)*100)
 
-corrupcion_municipios |> 
-  filter(region == "Metropolitana de Santiago") |> 
+corrupcion_municipios |>
+  filter(region == "Metropolitana de Santiago") |>
   count(partido) |> arrange(desc(n))
 
-corrupcion_municipios |> 
-  filter(region == "Metropolitana de Santiago") |> 
+corrupcion_municipios |>
+  filter(region == "Metropolitana de Santiago") |>
   count(sector) |> arrange(desc(n))
 
-corrupcion_municipios |> 
-  filter(region == "Metropolitana de Santiago") |> 
-  filter(sector == "Derecha") |> 
+corrupcion_municipios |>
+  filter(region == "Metropolitana de Santiago") |>
+  filter(sector == "Derecha") |>
   summarize(sum(monto))

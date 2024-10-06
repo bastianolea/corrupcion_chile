@@ -5,3 +5,5 @@
 .dta
 .zip
 .xlsx
+mapas/osm_calles_principales.rds
+mapas/osm_estructuras.rds

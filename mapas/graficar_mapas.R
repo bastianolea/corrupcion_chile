@@ -10,7 +10,7 @@ library(colorspace)
 library(ggrepel)
 library(sf)
 
-source("mapas/obtener_mapas.R")
+# source("mapas/obtener_mapas.R")
 
 corrupcion <- readRDS("app/corrupcion_datos.rds") |> 
   mutate(alcaldes_sector = case_when(alcalde == "Alcaldías" & sector == "Derecha" ~ "Alcalde de derecha",
@@ -20,6 +20,11 @@ corrupcion <- readRDS("app/corrupcion_datos.rds") |>
 
 cut_comunas <- read.csv2("datos/comunas_chile_cut.csv")
 
+calles_principales <- readr::read_rds("mapas/osm_calles_principales.rds")
+estructuras <- readr::read_rds("mapas/osm_estructuras.rds")
+mapa <- readr::read_rds("mapas/mapa_comunas.rds")
+mapa_urbano <- readr::read_rds("mapas/mapa_rm_urbano.rds")
+region <- readr::read_rds("mapas/mapa_region.rds")
 
 # colores
 color_oscuro = "grey20"
@@ -168,7 +173,7 @@ mapa_datos <- mapa_filtrado_urbano |>
 
 
 # graficar mapa
-mapa_datos |> 
+mapa_corrupcion_municipios <- mapa_datos |> 
   ggplot(aes(geometry = geometry)) +
   geom_sf(aes(fill = alcaldes_sector),
           col = color_fondo,
@@ -206,6 +211,10 @@ mapa_datos |>
        caption = "Fuentes disponibles en https://github.com/bastianolea/corrupcion_chile")
 
 # guardar ----
-ggsave(filename = "mapas/mapa_corrupcion_municipios_rm_3.png",
-       width = 10, height = 10
-)
+mapa_corrupcion_municipios |> 
+  ggsave(filename = paste0("mapas/mapa_corrupcion_municipios_rm_", today(), ".png"),
+       width = 10, height = 10)
+
+mapa_corrupcion_municipios |> 
+  ggsave(filename = paste0("mapas/mapa_corrupcion_municipios_rm.png"),
+       width = 10, height = 10)

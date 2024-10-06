@@ -26,15 +26,14 @@ color_fundaciones = "#D39552" #"#c88d2c" |> lighten(0.2)
 
 
 # casos sector ----
-datos <- corrupcion |> 
+datos_casos_sector <- corrupcion |> 
   filter(año >= 2014) |> 
   filter(sector != "Ninguno") |> 
   count(sector) |> 
   mutate(p = n/sum(n)) |> 
   mutate(sector = as.factor(sector))
 
-
-datos |> 
+torta_casos_sector <- datos_casos_sector |> 
   ggplot(aes(x = n, y = factor(1), fill = sector)) +
   geom_col(width = 1) +
   geom_text(aes(label = sector), position = position_stack(vjust = 0.5),
@@ -57,15 +56,18 @@ datos |>
         plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6)))
 
 # guardar
-ggsave(filename = paste0("graficos/grafico_torta_sector_", today(), ".png"),
+torta_casos_sector |> 
+  ggsave(filename = paste0("graficos/grafico_torta_sector_", today(), ".png"),
        width = 6, height = 6)
 
-
+torta_casos_sector |> 
+  ggsave(filename = paste0("graficos/grafico_torta_sector.png"),
+         width = 6, height = 6)
 
 
 
 # montos sector ----
-datos2 <- corrupcion |> 
+datos_montos_sector <- corrupcion |> 
   filter(año >= 2014) |> 
   filter(sector != "Ninguno") |> 
   # filter(responsable != "Virginia Reginato") |> 
@@ -74,7 +76,7 @@ datos2 <- corrupcion |>
          n = n/1000000) |> 
   mutate(sector = as.factor(sector))
 
-datos2 |> 
+torta_montos_sector <- datos_montos_sector |> 
   mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", trim = T) |> paste0("\n", "millones")) |> 
   ggplot(aes(x = n, y = factor(1), fill = sector)) +
   geom_col(width = 1, color = "white", linewidth = 0) +
@@ -100,5 +102,10 @@ datos2 |>
         plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6)))
 
 # guardar
-ggsave(filename = paste0("graficos/grafico_torta_montos_sector_", today(), ".png"),
+torta_montos_sector |> 
+  ggsave(filename = paste0("graficos/grafico_torta_montos_sector_", today(), ".png"),
        width = 6, height = 6)
+
+torta_montos_sector |> 
+  ggsave(filename = paste0("graficos/grafico_torta_montos_sector.png"),
+         width = 6, height = 6)

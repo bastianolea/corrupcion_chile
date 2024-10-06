@@ -31,7 +31,7 @@ subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos
                                 _Sólo se incluyen los 30 mayores casos. Última actualización de datos:_ {format(today(), '%d/%m/%Y')}")
 
 # datos ----
-datos <- corrupcion |> 
+datos_corrupcion_partidos <- corrupcion |> 
   filter(año >= 2014) |> 
   filter(sector != "Ninguno") |>
   mutate(tipo = case_when(alcalde == "Alcaldías" ~ "Municipalidades",
@@ -48,7 +48,7 @@ datos <- corrupcion |>
   print(n = Inf)
 
 # tabla ----
-tabla <- datos |> 
+tabla_corrupcion_partidos <- datos_corrupcion_partidos |> 
   slice(1:30) |>
   # slice(27:99) |>
   gt() |> 
@@ -98,13 +98,20 @@ tabla <- datos |>
     html("<b>Fuentes:</b> Visualizador de datos de corrupción: <u>https://bastianoleah.shinyapps.io/corrupcion_chile</u> <br>
                        Puedes encontrar los datos y fuentes de prensa en: <u>https://github.com/bastianolea/corrupcion_chile")) |> 
   tab_options(table.border.top.color = "white",
-              table.border.bottom.color = "white"); print(tabla)
+              table.border.bottom.color = "white")
+
+tabla_corrupcion_partidos
+
 
 # guardar ----
 
 #guardar tabla como imagen
-tabla |> 
+tabla_corrupcion_partidos |> 
   gtsave(filename = paste0("tablas/tabla_corrupcion_partidos_chile_", today(), ".png"))
+
+tabla_corrupcion_partidos |> 
+  gtsave(filename = paste0("tablas/tabla_corrupcion_partidos_chile.png"))
+
 # tabla |> gtsave(filename = "tablas/tabla_corrupcion_partidos_chile_b.png")
 
 # #tabla solo rm y guardarla
@@ -117,5 +124,5 @@ tabla |>
 
 
 # conteos ----
-datos |> count(partido)
-datos |> count(sector) |> mutate(p = n/sum(n))
+datos_corrupcion_partidos |> count(partido)
+datos_corrupcion_partidos |> count(sector) |> mutate(p = n/sum(n))

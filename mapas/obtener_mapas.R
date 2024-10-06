@@ -114,3 +114,10 @@ region <- chilemapas::mapa_comunas |>
   pull(geometry) |> 
   st_transform(crs = 4326) |>
   st_union()
+
+# guardar ----
+readr::write_rds(calles_principales, "mapas/osm_calles_principales.rds")
+readr::write_rds(estructuras, "mapas/osm_estructuras.rds")
+readr::write_rds(mapa, "mapas/mapa_comunas.rds")
+readr::write_rds(mapa_urbano, "mapas/mapa_rm_urbano.rds")
+readr::write_rds(region, "mapas/mapa_region.rds")

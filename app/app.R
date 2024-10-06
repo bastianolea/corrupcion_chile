@@ -292,7 +292,7 @@ ui <- fluidPage(
                                      inline = T, width = "fit"
            ),
            
-           div(style = "max-height: 800px; overflow-y: scroll;",
+           div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
            )
     )
@@ -303,11 +303,14 @@ ui <- fluidPage(
     column(12,
            hr(),
            h2("Fundaciones involucradas o investigadas por corrupción"),
+           
+           plotOutput("grafico_fundaciones", height = 500) |> withSpinner(color = color_destacado, type = 8),
+           
            p("Tabla con todos los casos de corrupción que involucran a fundaciones, dentro del marco del Caso Convenios."),
            
-           # div(style = "max-height: 600px; overflow-y: scroll;",
+           div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_fundaciones") |> withSpinner(color = color_destacado, type = 8)
-           # )
+           )
     )
   ),
   
@@ -753,7 +756,7 @@ server <- function(input, output, session) {
   # gráfico torta montos ----
   output$torta_montos <- renderPlot({
     # browser()
-    datos2 <- corrupcion_años() |> 
+    datos_montos <- corrupcion_años() |> 
       # filter(año >= 2014) |> 
       filter(sector != "Ninguno") |> 
       # filter(responsable != "Virginia Reginato") |> 
@@ -764,7 +767,7 @@ server <- function(input, output, session) {
     
     # browser()
     # dev.new()
-    datos2 |> 
+    datos_montos |> 
       mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", trim = T) |> paste0("\n", "millones")) |> 
       ggplot(aes(x = n, y = factor(1), fill = sector)) +
       geom_col(width = 1, color = "white", linewidth = 0) +
@@ -795,6 +798,54 @@ server <- function(input, output, session) {
     
   }, res = resolucion)
   
+  
+  # grafico fundaciones ----
+  
+  output$grafico_fundaciones <- renderPlot({
+    datos_fundaciones <- corrupcion_años() |> 
+      # filter(año >= 2010) |> 
+      filter(!is.na(fundacion)) |> 
+      filter(!is.na(monto)) |> 
+      mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros")) |> 
+      mutate(caso = str_remove(caso, "Caso Convenios\\:|Caso Convenios\\,|Caso Convenios"),
+             caso = str_remove(caso, "\\("),
+             caso = str_remove(caso, "\\)"),
+             caso = str_trim(caso),
+             caso = gsub("^([a-z])", "\\U\\1", caso, perl=TRUE) #primera letra a mayúscula
+      ) |> 
+      mutate(caso = forcats::fct_reorder(caso, monto))
+    
+    
+    # gráfico sector ----
+    datos_fundaciones |> 
+      ggplot(aes(y = caso, x = monto, fill = sector)) +
+      geom_col(width = 0.5) +
+      geom_text(aes(label = scales::comma(monto,
+                                          prefix = " ", suffix = " mill.", big.mark = ".", decimal.mark = ",", 
+                                          scale = 1e-6)),
+                hjust = 0, show.legend = FALSE) +
+      scale_fill_manual(values = c("Derecha" = color_derecha, 
+                                   "Izquierda" = color_izquierda,
+                                   "Otros" = color_destacado)) +
+      scale_x_continuous(n.breaks = 6, expand = expansion(c(0, 0.24)),
+                         labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", 
+                                                      scale = 1e-6)) +
+      scale_y_discrete(labels = ~str_trunc(as.character(.x), 60, ellipsis = "…")) +
+      labs(fill = "Sector político", y = "Fundaciones según su sector político") +
+      theme(axis.title.y = element_text(size = opt_texto_plot, margin = margin(r=6), face = "italic"),
+            legend.title = element_text(face = "bold"),
+            axis.title = element_blank(),
+            axis.ticks.y = element_blank(),
+            panel.grid.major.y = element_blank(),
+            axis.text.y = element_text(size = opt_texto_axis, face = "bold"),
+            # axis.text.x = element_text(size = opt_texto_axis, angle = 30, hjust = 1),
+            axis.text.x = element_text(size = opt_texto_axis*0.9, angle = 30, face = "italic", hjust = 1),
+            legend.key.size = unit(3, "mm"),
+            legend.position = "top",
+            legend.margin = margin(b = -6), 
+            legend.text = element_text(margin = margin(l = 2, r = 4))
+      )
+  }, res = resolucion)
   
   
   # gráfico barras comparativo ----
@@ -837,7 +888,8 @@ server <- function(input, output, session) {
                                       plot.title.position = "plot",
                                       plot.title = element_text(face = "bold.italic"),
                                       legend.text = element_text(size = 13, margin = margin(l = 4, r = 4)),
-                                      axis.text = element_text(size = opt_texto_axis*0.9, face = "italic"),
+                                      # axis.text = element_text(size = opt_texto_axis*0.9, face = "italic"),
+                                      axis.text.x = element_text(size = opt_texto_axis*0.9, angle = 30, face = "italic", hjust = 1),
                                       axis.text.y = element_text(size = opt_texto_axis*1.1, face = "bold"),
                                       strip.text = element_text(hjust = 0, size = 16, face = "bold"),
                                       legend.title = element_text(face = "bold", size = 13, margin = margin(r = 4))
