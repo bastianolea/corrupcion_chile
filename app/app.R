@@ -6,6 +6,7 @@ library(shinyjs) |> suppressPackageStartupMessages()
 library(dplyr) |> suppressPackageStartupMessages()
 library(ggplot2)
 library(stringr)
+library(forcats)
 library(glue)
 library(gt)
 library(scales)
@@ -341,7 +342,7 @@ ui <- fluidPage(
              style = "min-height: 900px; width: 800px;",
              # min-width: 830px; max-width: 1024px;",
              htmlOutput("ui_montos", fill = TRUE) |> 
-               withSpinner(color = color_destacado, type = 8, proxy.height = 200),
+               withSpinner(color = color_destacado, type = 8, proxy.height = 400),
              # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
              
              hr()
@@ -387,7 +388,7 @@ ui <- fluidPage(
     column(12, align = "center",     
            div(style = "min-width: 420px; 
                         max-width: 1080px;",
-               uiOutput("ui_comparacion", fill = "container") |> withSpinner(color = color_destacado, type = 8)
+               uiOutput("ui_comparacion", fill = "container") |> withSpinner(proxy.height = 400, color = color_destacado, type = 8)
            ),
     )
   ),
@@ -1456,7 +1457,8 @@ server <- function(input, output, session) {
     
     plotOutput("grafico_comparacion",
                # width = ancho_comparacion,
-               height = medida_grafico()) |> withSpinner(color = color_destacado, type = 8)
+               height = medida_grafico()) |> withSpinner(proxy.height = 400,
+                                                         color = color_destacado, type = 8)
   })
   
   

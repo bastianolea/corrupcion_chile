@@ -66,6 +66,19 @@ Algunas peculiaridades de la app:
 ![Corrupción en Chile, visualizador interactivo de datos 3](otros/pantallazos/pantallazo_corrupcion_chile_c.jpg)
 ![Corrupción en Chile, visualizador interactivo de datos 4](otros/pantallazos/pantallazo_corrupcion_chile_d.jpg)
 
+
+
+### Estructura del proyecto
+
+Esta breve sección explica a grandes rasgos cómo funciona este proyecto, en términos programáticos.
+
+Todo el contenido de este repositorio depende de un archivo de datos en formato Excel, `datos/casos_corrupcion_chile.xlsx`. Este archivo es producido a partir de `datos/casos_corrupcion_chile.numbers`, que es una planilla de Apple Numbers, pero también podría editarse directamente el Excel. En esta planilla se almacenan manualmente todos los datos de la plataforma.
+
+Los datos de la plataforma se procesan ejecutando el script `corrupcion_procesar.R`, que procesa los datos desde el archivo Excel para dejarlos en formato .rds (nativo de R) en el archivo `app/corrupcion_datos.rds`. Este archivo es el que alimenta la aplicación y todos los gráficos y tablas.
+
+El script `corrupcion_graficar.R` ejecuta varios otros scripts que producen gráficos, tablas y mapas a partir de los datos procesados, `app/corrupcion_datos.rds`. Los gráficos, tablas y mapas se guardan en las carpetas `graficos`, `tablas` y `mapas`, respectivamente, con nombres de archivo con o sin fecha. Los archivos sin fecha son usados en este `readme.md` para mantener actualizadas las visualizaciones estáticas, y los con fecha se guardan sólo por temas de archivación de versiones anteriores.
+
+
 ---- 
 
 Diseñado y programado en R por Bastián Olea Herrera. Magíster en Sociología, data scientist.
