@@ -7,6 +7,7 @@ library(glue)
 library(gt)
 library(colorspace)
 library(ggtext)
+library(scales)
 
 # datos ----
 corrupcion <- readRDS("app/corrupcion_datos.rds")
