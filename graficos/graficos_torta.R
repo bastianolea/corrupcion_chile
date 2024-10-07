@@ -15,6 +15,8 @@ corrupcion <- readRDS("app/corrupcion_datos.rds")
 
 options(scipen = 99999)
 
+source("app/colores.R")
+
 # colores
 color_derecha = "#294a66" |> lighten(0.4)
 color_izquierda = "#722a2a" |> lighten(0.4)
@@ -44,7 +46,7 @@ torta_casos_sector <- datos_casos_sector |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.29, inner.radius = 0.4) +
+               start = 0.8, inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -128,6 +130,7 @@ torta_casos_partido |>
 datos_montos_sector <- corrupcion |> 
   filter(año >= 2014) |> 
   filter(sector != "Ninguno") |> 
+  # add_row(sector = "Izquierda", monto = 10000000000) |>
   # filter(responsable != "Virginia Reginato") |> 
   summarize(n = sum(monto, na.rm = TRUE), .by = sector) |> 
   mutate(p = n/sum(n),
@@ -147,7 +150,8 @@ torta_montos_sector <- datos_montos_sector |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.66, inner.radius = 0.4) +
+               start = 1.3,
+               inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -158,6 +162,9 @@ torta_montos_sector <- datos_montos_sector |>
   theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
         plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
         plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6)))
+
+
+torta_montos_sector
 
 # guardar
 torta_montos_sector |> 
