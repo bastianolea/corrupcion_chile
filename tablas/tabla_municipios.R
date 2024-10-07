@@ -63,6 +63,8 @@ for (opcion in c("chile", "rm")) {
     #alineación columnas
     cols_align(columns = where(is.numeric), align = "left") |> 
     cols_align(columns = comuna, align = "right") |> 
+    cols_align(columns = partido, align = "center") |> 
+    cols_align(columns = sector, align = "center") |> 
     #estilos
     tab_style(locations = cells_body(columns = responsable), 
               style = cell_text(weight = "bold")) |> 
@@ -105,10 +107,12 @@ for (opcion in c("chile", "rm")) {
   
   #guardar tabla como imagen
   tabla_municipios |> 
-    gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, "_", today(), ".png"))
+    gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, "_", today(), ".png"),
+           vwidth = 840)
   
   tabla_municipios |> 
-    gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, ".png"))
+    gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, ".png"),
+           vwidth = 840)
 }
 # #tabla solo rm y guardarla
 # tabla_municipios_rm <- tabla_municipios |> 
