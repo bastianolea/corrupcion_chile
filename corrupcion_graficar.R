@@ -15,5 +15,18 @@ scripts <- c("graficos/graficos_torta.R",
 "tablas/tabla_casos_corrupcion.R",
 "tablas/tabla_municipios.R")
 
+
 # ejecutar multicore
 future_walk(scripts, source)
+
+# copiar a la app
+file.copy(c("graficos/grafico_torta_montos_sector.png",
+            "graficos/grafico_torta_sector.png",
+            "graficos/grafico_torta_partido.png",
+            "mapas/mapa_corrupcion_municipios_rm.png",
+            "graficos/grafico_corrupcion_montos_sector.png",
+            "graficos/grafico_corrupcion_montos_caso_fundaciones.png",
+            "tablas/tabla_corrupcion_partidos_chile.png",
+            "tablas/tabla_corrupcion_municipalidades_chile.png",
+            "tablas/tabla_corrupcion_municipalidades_rm.png"),
+          "app/www/graficos", overwrite = TRUE)

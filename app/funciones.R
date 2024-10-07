@@ -34,3 +34,21 @@ js_get_vertical_position <- function() {
 #     runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
 #   })
 # }
+
+boton_descarga_imagen <- function(texto = "Descargar gráfico", 
+                                  enlace = "graficos/grafico_torta_montos_sector.png") {
+tags$a(
+  div(style = paste0("background-color:", "#272E2B", ";
+                              color:", color_texto, "; 
+                              font-size: 80%;
+                              min-width: 200px; max-width: 240px;
+                              min-height: 32px;
+                              padding: 10px; margin: auto; 
+                              border-radius: 4px;
+                              margin-bottom: 20px; margin-top: 20px;"),
+      div(style = "text-align: center;",
+          div(texto)
+      )
+  ),
+  href = enlace, target = "_blank")
+}

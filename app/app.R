@@ -109,8 +109,6 @@ ui <- fluidPage(
   fluidRow(
     column(12, style = "margin-top: -26px;",
            
-           verbatimTextOutput("posicion_vertical"),
-           
            markdown("Se denomina **Corrupción** al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
              Agentes del Estado, políticos o empresarios suelen ser sus perpetradores, debido a sus posiciones privilegiadas, capacidad de negociación y redes de contactos."),
            
@@ -224,7 +222,10 @@ ui <- fluidPage(
            ),
            div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
                plotOutput("torta_sector") |> withSpinner(color = color_destacado, type = 8)
-           )
+           ),
+           
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/grafico_torta_sector.png")
     ),
     column(6, style = "margin-bottom: -30px;",
            
@@ -236,7 +237,9 @@ ui <- fluidPage(
            ),
            div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
                plotOutput("torta_partido") |> withSpinner(color = color_destacado, type = 8)
-           )
+           ),
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/grafico_torta_partido.png")
     )
   ),
   
@@ -250,7 +253,10 @@ ui <- fluidPage(
            
            div(style = "max-width: 600px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
            plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
-           )
+           ),
+           
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/grafico_torta_montos_sector.png")
     )
   ),
   
@@ -275,7 +281,10 @@ ui <- fluidPage(
                                      inline = T, width = "fit"
            ),
            
-           plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(color = color_destacado, type = 8)
+           plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(color = color_destacado, type = 8),
+           
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/grafico_corrupcion_montos_sector.png")
     )
   ),
   
@@ -295,7 +304,10 @@ ui <- fluidPage(
            
            div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
-           )
+           ),
+           
+           boton_descarga_imagen("Descargar tabla como imagen", 
+                                 "graficos/tabla_corrupcion_municipalidades_chile.png")
     )
   ),
   
@@ -311,7 +323,10 @@ ui <- fluidPage(
            
            div(style = "max-height: 600px; overflow-y: scroll;",
            gt_output("tabla_fundaciones") |> withSpinner(color = color_destacado, type = 8)
-           )
+           ),
+           
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/grafico_corrupcion_montos_caso_fundaciones.png")
     )
   ),
   
@@ -344,6 +359,9 @@ ui <- fluidPage(
              htmlOutput("ui_montos", fill = TRUE) |> 
                withSpinner(color = color_destacado, type = 8, proxy.height = 400),
              # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
+             
+             boton_descarga_imagen("Descargar gráfico", 
+                                   "graficos/grafico_corrupcion_montos_sector.png"),
              
              hr()
            )
@@ -401,6 +419,9 @@ ui <- fluidPage(
            h2("Recopilación de todos los casos de corrupción en Chile"),
            
            markdown("Finalmente, esta tabla transparenta todos los datos recopilados por esta plataforma, que alimentan el resto de visualizaciones. Puedes acceder a estos datos en formato Excel en el [repositorio de GitHub de este proyecto.](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) Si encuentras errores o deseas hacer una corrección, [no dudes en contactarme.](https://twitter.com/bastimapache)"),
+           
+           boton_descarga_imagen("Descargar gráfico", 
+                                 "graficos/tabla_corrupcion_partidos_chile.png"),
            
            div(style = "max-height: 900px; overflow-y: scroll;",
                gt_output("tabla_casos")

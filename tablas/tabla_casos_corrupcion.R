@@ -127,6 +127,7 @@ tabla_corrupcion_partidos |>
 datos_corrupcion_partidos |> count(partido) |> arrange(desc(n))
 datos_corrupcion_partidos |> count(sector) |> mutate(p = n/sum(n)) |> arrange(desc(n))
 
+
 # textos ----
 
 casos_total_udi <- datos_corrupcion_partidos |> count(partido) |> arrange(desc(n)) |> 
