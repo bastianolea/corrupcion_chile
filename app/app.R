@@ -590,7 +590,7 @@ server <- function(input, output, session) {
       geom_errorbar(aes(ymin = porcentaje_ic_inferior, ymax = porcentaje_ic_superior),
                     alpha = .3) +
       geom_line(linewidth = 2, alpha = .4) +
-      geom_point(size = 7, alpha = .9) +
+      geom_point(size = 6, alpha = .9) +
       scale_x_date(date_breaks = "years", date_labels = "%Y") +
       scale_y_continuous(labels = ~percent(.x, accuracy = 1)) +
       theme(#text = element_text(family = "IBM Plex Mono"),
@@ -615,7 +615,7 @@ server <- function(input, output, session) {
     cpi |> 
       ggplot(aes(año, cpi)) +
       geom_line(linewidth = 2, alpha = .4) +
-      geom_point(size = 7, alpha = .9) +
+      geom_point(size = 6, alpha = .9) +
       # geom_text(aes(label = cpi), color = color_fondo, size = opt_texto_geom, face = "IBM Plex Mono") +
       geom_point(aes(y = cpi + 0.5, shape = cambio, fill = cambio, color = cambio),
                  size = 4, alpha = 1) +

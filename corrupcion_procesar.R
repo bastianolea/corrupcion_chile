@@ -31,7 +31,7 @@ corrupcion <- corrupcion_0 |>
   #variables nuevas para visualizador
   mutate(partido = ifelse(partido == "" | is.na(partido), "Ninguno", partido),
          caso_fundaciones = ifelse(!is.na(fundacion), "Caso fundaciones", "Otros casos"),
-         alcalde = ifelse(posicion == "Alcalde", "Alcaldías", "Otros casos"),
+         alcalde = ifelse(posicion %in% c("Alcalde", "Municipio"), "Alcaldías", "Otros casos"),
          alcalde = replace_na(alcalde, "Otros casos"),
          perjudicado = ifelse(perjudicado == "" | is.na(perjudicado), "Otros", perjudicado),
   ) |> 

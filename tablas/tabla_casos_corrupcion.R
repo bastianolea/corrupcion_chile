@@ -49,7 +49,7 @@ datos_corrupcion_partidos <- corrupcion |>
 
 # tabla ----
 tabla_corrupcion_partidos <- datos_corrupcion_partidos |> 
-  slice(1:30) |>
+  slice(1:35) |>
   # slice(27:99) |>
   gt() |> 
   tab_header(titulo, subtitle = md(subtitulo)) |> 
@@ -124,5 +124,31 @@ tabla_corrupcion_partidos |>
 
 
 # conteos ----
-datos_corrupcion_partidos |> count(partido)
-datos_corrupcion_partidos |> count(sector) |> mutate(p = n/sum(n))
+datos_corrupcion_partidos |> count(partido) |> arrange(desc(n))
+datos_corrupcion_partidos |> count(sector) |> mutate(p = n/sum(n)) |> arrange(desc(n))
+
+# textos ----
+
+casos_total_udi <- datos_corrupcion_partidos |> count(partido) |> arrange(desc(n)) |> 
+  filter(partido == "UDI") |> pull(n)
+
+casos_total_rn <- datos_corrupcion_partidos |> count(partido) |> arrange(desc(n)) |> 
+  filter(partido == "RN") |> pull(n)
+
+porcentaje_total_udi <- datos_corrupcion_partidos |> count(partido) |> arrange(desc(n)) |> 
+  mutate(p = n/sum(n)*100) |> 
+  filter(partido == "UDI") |> pull(p) |> round(1)
+
+
+porcentaje_total_derecha <- datos_corrupcion_partidos |> count(sector) |> 
+  mutate(p = n/sum(n)*100) |> 
+  filter(sector == "Derecha") |> pull(p) |> round(1)
+
+porcentaje_total_derecha
+casos_total_udi
+casos_total_rn
+porcentaje_total_udi
+
+glue("En los últimos 10 años y a nivel país, un {porcentaje_total_derecha}% de los casos de corrupción pertenecen al sector de la derecha.")
+
+glue("Los partidos políticos con mayor cantidad de casos de corrupción son la UDI, con {casos_total_udi} casos, y RN con {casos_total_rn} casos. La UDI por sí sola es responsable de un {porcentaje_total_udi}% de los casos totales de corrupción a nivel nacional.")
