@@ -45,8 +45,10 @@ torta_casos_sector <- datos_casos_sector |>
             angle = 90, hjust = 0.5, fontface = "bold") + 
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
-  coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 0.8, inner.radius = 0.4) +
+  coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
+               # start = 0.8, 
+               start = 1.17, 
+               inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -103,7 +105,8 @@ torta_casos_partido <- datos_casos_partido |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.29, inner.radius = 0.4) +
+               start = 0.72, 
+               inner.radius = 0.4) +
   scale_fill_manual(values = degradado_verde(length(datos_casos_partido$partido)), aesthetics = c("fill", "color")) +
   theme_void() +
   labs(title = "Casos de corrupción en Chile", 
@@ -150,7 +153,8 @@ torta_montos_sector <- datos_montos_sector |>
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 1.3,
+               # start = 1.3,
+               start = 1.62,
                inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,

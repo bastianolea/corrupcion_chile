@@ -10,6 +10,7 @@ library(forcats)
 library(glue)
 library(gt)
 library(scales)
+library(readr)
 
 #temas
 library(thematic)
@@ -33,11 +34,11 @@ resolucion = 80 #resolución de render de los gráficos
 showtext::showtext_opts(dpi = 120)
 
 #datos ----
-corrupcion <- readRDS("corrupcion_datos.rds")
-corrupcion_escalados <- readRDS("corrupcion_datos_escalados.rds")
-cep_corrupcion <- readRDS("cep_corrupcion.rds")
-cpi_corrupcion <- readRDS("corruption_perception_index_chile.rds")
-precios <- readRDS("precios_objetos.rds")
+corrupcion <- read_rds("corrupcion_datos.rds")
+corrupcion_escalados <- read_rds("corrupcion_datos_escalados.rds")
+cep_corrupcion <- read_rds("cep_corrupcion.rds")
+cpi_corrupcion <- read_rds("corruption_perception_index_chile.rds")
+precios <- read_rds("precios_objetos.rds")
 
 #funciones ----
 source("funciones.R")
@@ -94,7 +95,7 @@ ui <- fluidPage(
           style = "margin-bottom: 8px; font-size: 90%;"),
         
         div(style = "font-size: 90%;",
-          markdown("[_Bastián Olea Herrera_](https://bastian.olea.biz)")
+            markdown("[_Bastián Olea Herrera_](https://bastian.olea.biz)")
         ),
         
         div(style = "opacity: .5; font-size: 80%; margin-top: -6px; margin-bottom: 8px;",
@@ -252,7 +253,7 @@ ui <- fluidPage(
            p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
            
            div(style = "max-width: 600px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
-           plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
+               plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
            ),
            
            boton_descarga_imagen("Descargar gráfico", 
@@ -302,12 +303,14 @@ ui <- fluidPage(
                                      inline = T, width = "fit"
            ),
            
-           div(style = "max-height: 600px; overflow-y: scroll;",
-           gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
-           ),
-           
-           boton_descarga_imagen("Descargar tabla como imagen", 
-                                 "graficos/tabla_corrupcion_municipalidades_chile.png")
+           div(style = "padding-left: 18px; padding-right: 18px;",
+               div(style = "max-height: 600px; overflow-y: scroll;",
+                   gt_output("tabla_alcaldías") |> withSpinner(color = color_destacado, type = 8)
+               ),
+               
+               boton_descarga_imagen("Descargar tabla como imagen", 
+                                     "graficos/tabla_corrupcion_municipalidades_chile.png")
+           )
     )
   ),
   
@@ -321,12 +324,14 @@ ui <- fluidPage(
            
            p("Tabla con todos los casos de corrupción que involucran a fundaciones, dentro del marco del Caso Convenios."),
            
-           div(style = "max-height: 600px; overflow-y: scroll;",
-           gt_output("tabla_fundaciones") |> withSpinner(color = color_destacado, type = 8)
-           ),
-           
-           boton_descarga_imagen("Descargar gráfico", 
-                                 "graficos/grafico_corrupcion_montos_caso_fundaciones.png")
+           div(style = "padding-left: 18px; padding-right: 18px;",
+               div(style = "max-height: 600px; overflow-y: scroll;",
+                   gt_output("tabla_fundaciones") |> withSpinner(color = color_destacado, type = 8)
+               ),
+               
+               boton_descarga_imagen("Descargar gráfico", 
+                                     "graficos/grafico_corrupcion_montos_caso_fundaciones.png")
+           )
     )
   ),
   
@@ -423,8 +428,10 @@ ui <- fluidPage(
            boton_descarga_imagen("Descargar gráfico", 
                                  "graficos/tabla_corrupcion_partidos_chile.png"),
            
-           div(style = "max-height: 900px; overflow-y: scroll;",
-               gt_output("tabla_casos")
+           div(style = "padding-left: 18px; padding-right: 18px;",
+               div(style = "max-height: 900px; overflow-y: scroll;",
+                   gt_output("tabla_casos")
+               )
            )
     )
   ),
@@ -581,7 +588,7 @@ server <- function(input, output, session) {
       geom_text(aes(label = n, y = n-0.25), vjust = 1, color = color_enlaces,
                 size = opt_texto_geom) +
       scale_y_continuous(#breaks = 1:20, 
-                         expand = expansion(c(0, 0.1))) +
+        expand = expansion(c(0, 0.1))) +
       scale_x_continuous(breaks = año_min():año_max()) +
       # theme(panel.grid.minor = element_blank(),
       #       panel.grid.major.x = element_blank()) +
@@ -662,12 +669,12 @@ server <- function(input, output, session) {
       count(sector) |>
       arrange(desc(sector)) |> 
       mutate(p = n/sum(n))
-      #calcular posición de etiquetas en torta
-      # mutate(suma = sum(n)) 
-      # mutate(prop = n / suma *100) %>%
-      # mutate(ypos = cumsum(prop)- 0.5 * prop)
-
-      # gráfico antiguo 
+    #calcular posición de etiquetas en torta
+    # mutate(suma = sum(n)) 
+    # mutate(prop = n / suma *100) %>%
+    # mutate(ypos = cumsum(prop)- 0.5 * prop)
+    
+    # gráfico antiguo 
     # datos |> 
     #   ggplot(aes("", prop, fill = sector)) +
     #   geom_col(width=1) +
@@ -734,8 +741,8 @@ server <- function(input, output, session) {
     datos <- datos_partidos_reduc |> 
       # count(partido) |> 
       rename(partido = partido_reduc)
-      # mutate(prop = n / sum(n) *100) %>%
-      # mutate(ypos = cumsum(prop)- 0.5 * prop)
+    # mutate(prop = n / sum(n) *100) %>%
+    # mutate(ypos = cumsum(prop)- 0.5 * prop)
     
     # browser()
     # 
@@ -810,8 +817,8 @@ server <- function(input, output, session) {
                                    "Centro" = color_neutro), aesthetics = c("fill", "color")) +
       theme_void() +
       # labs(title = "Casos de corrupción en Chile", 
-           # subtitle = "Montos totales defraudados según sector político, de 2014 a 2024",
-           # caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
+      # subtitle = "Montos totales defraudados según sector político, de 2014 a 2024",
+      # caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
       theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
             plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
             plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6))) +
@@ -881,9 +888,9 @@ server <- function(input, output, session) {
     
     # browser()
     if (input$checkbox_outliers_barras_comparativo == TRUE) {
-    datos_filtrados <- datos |> 
-      # filter(monto <= max(monto)*0.5) |> 
-      filter(monto <= 11000000000)
+      datos_filtrados <- datos |> 
+        # filter(monto <= max(monto)*0.5) |> 
+        filter(monto <= 11000000000)
     } else {
       datos_filtrados <- datos 
     }
@@ -952,9 +959,9 @@ server <- function(input, output, session) {
     } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
       
       if (input$top_20_barras_comparativo == TRUE) {
-      datos <- datos_barras() |> 
-        group_by(caso_fundaciones) |> 
-        slice_max(n = 20, order_by = monto)
+        datos <- datos_barras() |> 
+          group_by(caso_fundaciones) |> 
+          slice_max(n = 20, order_by = monto)
       } else {
         datos <- datos_barras()
       }
@@ -976,10 +983,10 @@ server <- function(input, output, session) {
       
       datos <- datos_barras() |> 
         mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
-                                                     sector == "Derecha" ~ "Derecha",
-                                                     sector == "Izquierda" ~ "Izquierda",
-                                                     .default = "Otros"))
-        
+                                              sector == "Derecha" ~ "Derecha",
+                                              sector == "Izquierda" ~ "Izquierda",
+                                              .default = "Otros"))
+      
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos |> 
           group_by(fundaciones_sector) |> 
@@ -1256,7 +1263,7 @@ server <- function(input, output, session) {
                      width = "100%", 
                      style = "margin-left: auto; margin-right: 0; 
                  filter: invert(84%) sepia(8%) saturate(1115%) hue-rotate(97deg) brightness(85%) contrast(88%);")
-                 
+                   
                ),
                
                #texto a la derecha
