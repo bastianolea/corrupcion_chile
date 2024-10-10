@@ -131,6 +131,8 @@ mapa_filtrado_urbano <- st_intersection(st_as_sf(mapa_filtrado),
                                           st_as_sf() |> 
                                           st_union())
 
+mapa_filtrado_urbano
+
 # estructuras_urbano <- st_intersection(estructuras_region_2, 
 #                                       mapa_urbano |> 
 #                                         st_as_sf() |> 
