@@ -47,11 +47,6 @@ cep_corrupcion <- read_rds("cep_corrupcion.rds")
 cpi_corrupcion <- read_rds("corruption_perception_index_chile.rds")
 precios <- read_rds("precios_objetos.rds")
 
-mapa_pais <- read_rds("mapa_pais.rds")
-mapa_region <- read_rds("mapa_region.rds")
-mapa_filtrado_urbano <- read_rds("mapa_rm_urbano.rds")
-
-
 #funciones ----
 source("funciones.R")
 
@@ -82,12 +77,11 @@ ui <- fluidPage(
   js_get_window_width(),
   
   
-  css("
-                       h1 { font-size: 180%; font-weight: bold; }
-                       h2 { margin-top: 24px; font-size: 150%; font-weight: bold; }
-                       h4 { font-style: italic; font-size: 120%; }
-                       h5 { font-style: italic; font-size: 90%; opacity: .5; }
-                       "),
+  css("h1 { font-size: 180%; font-weight: bold; }
+       h2 { margin-top: 24px; font-size: 150%; font-weight: bold; }
+       h4 { font-style: italic; font-size: 120%; }
+       h5 { font-style: italic; font-size: 90%; opacity: .5; }
+       "),
   
   css("a { 
       color: {{color_enlaces}}; 
@@ -98,9 +92,8 @@ ui <- fluidPage(
                        color: {{color_texto}};
                        }"),
   
-  
+  ## título ----
   fluidRow(
-    ##título ----
     div(style = "padding-top: 12px; padding-bottom: 20px;",
         
         titlePanel(h1("Corrupción en Chile"), 
@@ -120,7 +113,7 @@ ui <- fluidPage(
     )
   ),
   
-  ##intro ----
+  ## intro ----
   fluidRow(
     column(12, style = "margin-top: -26px;",
            
@@ -165,8 +158,8 @@ ui <- fluidPage(
     )
   ),
   
-  ##body ----
-  ###grafico años ----
+  ## body ----
+  ### grafico años ----
   fluidRow(
     column(12, 
            hr(),
@@ -204,8 +197,8 @@ ui <- fluidPage(
                     tags$a("Graficador CEP,", 
                            href = "https://www.cepchile.cl/opinion-publica/encuesta-cep/", target = "_blank"),
                     "aplicación web para el Centro de Estudios Públicos diseñada y programada por Bastián Olea Herrera como parte del equipo DataUC.")
-               )),
-           # hr(),
+               )
+           )
     )
   ),
   
@@ -221,7 +214,7 @@ ui <- fluidPage(
            
            plotOutput("grafico_cpi") |> withSpinner(color = color_destacado, type = 8),
            
-           hr(),
+           hr()
     )
   ),
   
@@ -293,6 +286,8 @@ ui <- fluidPage(
            girafeOutput("mapa_interactivo_sur") |> withSpinner(color = color_destacado, type = 8)
     )
   ),
+  
+  
   fluidRow(
     # column(12, style = "margin-top: 18px;",
     #        h4("Corrupción en Santiago"),
@@ -621,7 +616,7 @@ server <- function(input, output, session) {
   #   ancho_ventana()
   #   })
   
-  # scroll
+  # scroll ----
   # guardar posición de desplazamiento como input
   observeEvent(input$y_offset, {
     runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
@@ -640,18 +635,18 @@ server <- function(input, output, session) {
   vertical_position <- vertical |> debounce(200)
   
   observe({
-    message("vertical scroll position debounced: ", round(vertical_position(), 0))
+    message("vertical scroll position debounced: ", vertical_position())
   })
   
   #si el scrolling supera este valor (pixeles de desplazamiento vertical), entonces se cargarán los gráficos grandes
   scroll <- reactiveValues(abajo = FALSE, inicio = FALSE)
   
   observeEvent(vertical_position(), {
-    if (vertical_position() > 600) {
+    if (vertical_position() > 500) {
       scroll$inicio <- TRUE
     }
     
-    if (vertical_position() > 1500) {
+    if (vertical_position() > 1800) {
       scroll$abajo <- TRUE
     }
   })
@@ -783,7 +778,7 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = c("Derecha" = color_derecha, 
                                    "Izquierda" = color_izquierda,
@@ -855,7 +850,7 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
       theme_void()
@@ -891,7 +886,7 @@ server <- function(input, output, session) {
                     y = 1.7, color = sector), color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), hjust = 0, angle = 90, fontface = "bold") + 
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
+      coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
                    start = 1.65, inner.radius = 0.4) +
       scale_fill_manual(values = c("Derecha" = color_derecha, 
                                    "Izquierda" = color_izquierda,
@@ -1099,6 +1094,11 @@ server <- function(input, output, session) {
   
   ## datos mapas ----
   
+  mapa_pais <- reactive(read_rds("mapa_pais.rds"))
+  mapa_region <- reactive(read_rds("mapa_region.rds"))
+  mapa_filtrado_urbano <- reactive(read_rds("mapa_rm_urbano.rds"))
+  
+  
   # crear columna de match entre comunas
   corrupcion_comunas_conteo_join <- reactive({
     req(scroll$inicio)
@@ -1118,7 +1118,7 @@ server <- function(input, output, session) {
   corrupcion_comunas_mapa <- reactive({
     req(scroll$inicio)
     # crear columna de match entre comunas
-    mapa_pais_join <- mapa_pais |>
+    mapa_pais_join <- mapa_pais() |>
       mutate(comuna_match = tolower(nombre_comuna))
     
     # unir datos con mapa
@@ -1149,7 +1149,7 @@ server <- function(input, output, session) {
     
     corrupcion_comunas_conteo_join() |> 
       unnest(c(montos, responsables, casos, delitos, años)) |> 
-      left_join(mapa_filtrado_urbano,
+      left_join(mapa_filtrado_urbano(),
                 by = "comuna_match") |> 
       mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE),
              punto_jitter = punto |> st_jitter(amount = 0.015)) |> 
@@ -1167,11 +1167,11 @@ server <- function(input, output, session) {
   mapa_corrupcion_chile <- reactive({
     req(scroll$inicio)
     
-    message("mapa chile")
+    message("rendering mapa chile...")
     
-    mapa <- corrupcion_comunas_mapa() |> 
+    corrupcion_comunas_mapa() |> 
       ggplot() +
-      geom_sf(data = mapa_region, aes(geometry = geometry), 
+      geom_sf(data = mapa_region(), aes(geometry = geometry), 
               fill = color_barras,
               color = color_fondo2, alpha = 0.6) +
       # puntos
@@ -1185,13 +1185,13 @@ server <- function(input, output, session) {
       coord_sf(xlim = c(-76, -66)) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                         range = c(3, 13),
-                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ",",))+
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(1, .6)) +
       guides(alpha = guide_none(),
              size = guide_none()) +
       theme(axis.text = element_blank(), axis.ticks = element_blank())
-  }) |> suppressWarnings()
+  })
   
   ### zonas ----
   # calcular coordenadas de corte para dividir chile en 3
@@ -1206,6 +1206,7 @@ server <- function(input, output, session) {
   
   # norte
   mapa_norte <- reactive({
+    req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(xlim = c(-76, -66),
                ylim = c(-inicios_y[1], -finales_y[1]),
@@ -1214,6 +1215,7 @@ server <- function(input, output, session) {
   
   # centro
   mapa_centro <- reactive({
+    req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(xlim = c(-76, -66),
                ylim = c(-inicios_y[2], -finales_y[2]), 
@@ -1222,15 +1224,17 @@ server <- function(input, output, session) {
   
   # rm
   mapa_rm_zoom <- reactive({
+    req(scroll$inicio)
     mapa_corrupcion_chile() +
-    # geom_sf(data = mapa_pais, aes(geometry = geometry), fill = NA, alpha = .1) +
-    coord_sf(xlim = c(-72.1, -69.7),
-             ylim = c(-32.7, -34.3),
-             expand = F)
+      # geom_sf(data = mapa_pais(), aes(geometry = geometry), fill = NA, alpha = .1) +
+      coord_sf(xlim = c(-72.1, -69.7),
+               ylim = c(-32.7, -34.3),
+               expand = F)
   })
   
   # sur
   mapa_sur <- reactive({
+    req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(xlim = c(-76, -66),
                ylim = c(-inicios_y[3], -finales_y[3]), 
@@ -1242,13 +1246,13 @@ server <- function(input, output, session) {
   mapa_corrupcion_rm <- reactive({
     req(scroll$inicio)
     
-    message("mapa rm")
+    message("rendering mapa rm...")
     
     corrupcion_comunas_rm_mapa() |> 
       filter(!is.na(montos)) |> 
       ggplot(aes(geometry = geometry)) +
       # fondo
-      geom_sf(data = mapa_filtrado_urbano,
+      geom_sf(data = mapa_filtrado_urbano(),
               aes(geometry = geometry),
               fill = color_barras,
               color = color_fondo2, alpha = 0.6) +
@@ -1263,7 +1267,7 @@ server <- function(input, output, session) {
       coord_sf(xlim = c(-70.81, -70.44213), ylim = c(-33.66, -33.31), expand = TRUE) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                         range = c(4, 15),
-                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ",",))+
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(1, .6)) +
       guides(alpha = guide_none(),
@@ -1679,7 +1683,7 @@ server <- function(input, output, session) {
     tamaño_punto
   })
   
-  ## gráfico ----
+  ## gráfico comparación ----
   output$grafico_comparacion <- renderPlot({
     req(datos_comparar())
     req(medida_grafico())
@@ -1939,16 +1943,29 @@ server <- function(input, output, session) {
         str_extract(.x, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |>  ## mutate(fuente1 = str_extract(fuente1, "\\w+(\\.cl/|\\.com/|\\.co/|\\.org/|\\.net/|\\.biz/)") |> str_remove("/$")) |> 
           str_remove("/$")}, 
         .names = "{.col}_sitio")) |> 
+      # select(starts_with("fuente")) |>
+      # filter(nchar(fuente1_sitio) > 20) |> 
+      # select(ends_with("sitio")) |> 
+      # print(n=Inf)
       mutate(link_fuente = case_when(!is.na(fuente4) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3}), [{fuente4_sitio}]({fuente4})"),
                                      !is.na(fuente3) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2}), [{fuente3_sitio}]({fuente3})"),
                                      !is.na(fuente2) ~ glue("[{fuente1_sitio}]({fuente1}), [{fuente2_sitio}]({fuente2})"),
                                      !is.na(fuente1) ~ glue("[{fuente1_sitio}]({fuente1})"),
                                      .default = "Sin fuentes")) |> 
       select(-starts_with("fuente")) |>
+      # select(link_fuente) |> 
+      # filter(nchar(link_fuente) > 30) |>
+      # print(n=Inf)
       mutate(fuente = purrr::map(link_fuente, gt::md)) |>
       select(-link_fuente)
     
+    # browser()
+    
+    
     datos |> 
+      # celdas sin datos
+      mutate(responsable = ifelse(is.na(responsable), "Caso no individualizado", responsable),
+             delitos = ifelse(is.na(delitos), "Sin datos", delitos)) |> 
       mutate(across(where(is.character), ~tidyr::replace_na(.x, " "))) |> 
       gt() |> 
       cols_align(columns = where(is.numeric), align = "right") |> 
@@ -1980,6 +1997,14 @@ server <- function(input, output, session) {
                  levels = c("Otros"),
                  palette = color_detalle2, na_color = color_texto) |> 
       fmt_number(columns = monto, sep_mark = ".", decimals = 0) |> 
+      # reemplazar missings
+      sub_missing(columns = monto, missing_text = "Sin datos") |>
+      tab_style(style = cell_text(color = color_detalle2), locations = cells_body(columns = monto, rows = is.na(monto))) |> 
+      tab_style(style = cell_text(color = color_detalle2), 
+                locations = cells_body(columns = responsable, rows = responsable == "Caso no individualizado")) |>
+      tab_style(style = cell_text(color = color_detalle2), 
+                locations = cells_body(columns = delitos, rows = delitos == "Sin datos")) |> 
+      # etiquetas de variables
       cols_label(
         caso = "Caso",
         monto = "Monto defraudado",
