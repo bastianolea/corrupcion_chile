@@ -640,12 +640,17 @@ server <- function(input, output, session) {
   vertical_position <- vertical |> debounce(200)
   
   observe({
-    message("vertical scroll position debounced: ", vertical_position())
+    message("vertical scroll position debounced: ", round(vertical_position(), 0))
   })
   
   #si el scrolling supera este valor (pixeles de desplazamiento vertical), entonces se cargarán los gráficos grandes
-  scroll <- reactiveValues(abajo = FALSE)
+  scroll <- reactiveValues(abajo = FALSE, inicio = FALSE)
+  
   observeEvent(vertical_position(), {
+    if (vertical_position() > 600) {
+      scroll$inicio <- TRUE
+    }
+    
     if (vertical_position() > 1500) {
       scroll$abajo <- TRUE
     }
@@ -778,7 +783,7 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = c("Derecha" = color_derecha, 
                                    "Izquierda" = color_izquierda,
@@ -850,7 +855,7 @@ server <- function(input, output, session) {
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
-      coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
+      coord_radial(expand = FALSE, rotate_angle = F, theta = "x",
                    start = 1.06, inner.radius = 0.4) +
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
       theme_void()
@@ -873,7 +878,7 @@ server <- function(input, output, session) {
     # browser()
     # dev.new()
     datos_montos |> 
-      mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", trim = T) |> paste0("\n", "millones")) |> 
+      mutate(cifra = n |> round(digits = 0) |> signif(4) |> format(big.mark = ".", decimal.mark = ",", trim = T) |> paste0("\n", "millones")) |> 
       ggplot(aes(x = n, y = factor(1), fill = sector)) +
       geom_col(width = 1, color = "white", linewidth = 0) +
       # texto interior
@@ -1096,6 +1101,8 @@ server <- function(input, output, session) {
   
   # crear columna de match entre comunas
   corrupcion_comunas_conteo_join <- reactive({
+    req(scroll$inicio)
+    
     corrupcion_comunas_conteo() |> 
       mutate(comuna = case_match(comuna, 
                                  "Puerto Natales" ~ "Natales",
@@ -1109,6 +1116,7 @@ server <- function(input, output, session) {
   
   # mapa con datos de todo chile
   corrupcion_comunas_mapa <- reactive({
+    req(scroll$inicio)
     # crear columna de match entre comunas
     mapa_pais_join <- mapa_pais |>
       mutate(comuna_match = tolower(nombre_comuna))
@@ -1126,7 +1134,7 @@ server <- function(input, output, session) {
       mutate(monto = ifelse(is.na(monto), 0, monto),
              caso_t = ifelse(n == 1, "caso", "casos"),
              casos_t = glue("{paste0('_', unlist(casos), '_', collapse = '; ')}"),
-             monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
+             monto_t = scales::comma(monto, big.mark = ".", decimal.mark = ",", suffix = " millones", scale = 1e-6, accuracy = 1),
              monto_t = ifelse(monto == 0, "Sin información", monto_t)) |> 
       mutate(etiqueta = markdown(glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}")))
     
@@ -1137,6 +1145,8 @@ server <- function(input, output, session) {
   
   # mapa con datos de la región metropolitana
   corrupcion_comunas_rm_mapa <- reactive({
+    req(scroll$inicio)
+    
     corrupcion_comunas_conteo_join() |> 
       unnest(c(montos, responsables, casos, delitos, años)) |> 
       left_join(mapa_filtrado_urbano,
@@ -1146,7 +1156,7 @@ server <- function(input, output, session) {
       filter(!is.na(codigo_comuna)) |> 
       # corrupcion_comunas_rm_mapa |> select(1:7) |> 
       rowwise() |> 
-      mutate(monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
+      mutate(monto_t = scales::comma(monto, big.mark = ".", decimal.mark = ",", suffix = " millones", scale = 1e-6, accuracy = 1),
              etiqueta = case_when(is.na(delitos) ~ markdown(glue("**{comuna}**: {casos} ({años})\n\n{monto_t}")),
                                   !is.na(delitos) ~ markdown(glue("**{comuna}**: {casos} ({años})\n\n{monto_t}\n\n_{delitos}_")))
       )
@@ -1155,6 +1165,10 @@ server <- function(input, output, session) {
   
   ## mapa chile ----
   mapa_corrupcion_chile <- reactive({
+    req(scroll$inicio)
+    
+    message("mapa chile")
+    
     mapa <- corrupcion_comunas_mapa() |> 
       ggplot() +
       geom_sf(data = mapa_region, aes(geometry = geometry), 
@@ -1171,7 +1185,7 @@ server <- function(input, output, session) {
       coord_sf(xlim = c(-76, -66)) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                         range = c(3, 13),
-                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = "."))+
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ",",))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(1, .6)) +
       guides(alpha = guide_none(),
@@ -1226,6 +1240,10 @@ server <- function(input, output, session) {
   
   ## mapa rm ----
   mapa_corrupcion_rm <- reactive({
+    req(scroll$inicio)
+    
+    message("mapa rm")
+    
     corrupcion_comunas_rm_mapa() |> 
       filter(!is.na(montos)) |> 
       ggplot(aes(geometry = geometry)) +
@@ -1245,7 +1263,7 @@ server <- function(input, output, session) {
       coord_sf(xlim = c(-70.81, -70.44213), ylim = c(-33.66, -33.31), expand = TRUE) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                         range = c(4, 15),
-                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = "."))+
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ",",))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(1, .6)) +
       guides(alpha = guide_none(),
