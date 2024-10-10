@@ -10,7 +10,7 @@ plan(multisession)
 # source("tablas/tabla_municipios.R")
 
 scripts <- c("graficos/graficos_torta.R",
-             "mapas/graficar_mapas.R",
+             "mapas/mapa_corrupcion_rm.R",
              "graficos/grafico_montos_pelotas.R",
              "tablas/tabla_casos_corrupcion.R",
              "tablas/tabla_municipios.R")
@@ -30,3 +30,5 @@ file.copy(c("graficos/grafico_torta_montos_sector.png",
             "tablas/tabla_corrupcion_municipalidades_chile.png",
             "tablas/tabla_corrupcion_municipalidades_rm.png"),
           "app/www/graficos", overwrite = TRUE)
+
+file.remove("Rplots.pdf") # no sé de dónde sale, jaja
