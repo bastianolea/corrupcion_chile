@@ -98,21 +98,7 @@ corrupcion_comunas_mapa <- left_join(corrupcion_comunas_conteo_join,
 corrupcion_comunas_mapa |> glimpse()
 
 
-mapa <- corrupcion_comunas_mapa |> 
-  ggplot() +
-  geom_sf(data = mapa_region, aes(geometry = geometry)) +
-  geom_sf_interactive(aes(geometry = punto,
-                          size = monto, alpha = monto,
-                          data_id = comuna, 
-                          tooltip = etiqueta)) +
-  coord_sf(xlim = c(-76, -66)) +
-  scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                    range = c(3, 13),
-                    labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = "."))+
-  scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                     range = c(.7, .4)) +
-  guides(alpha = guide_none(),
-         size = guide_none())
+
 
 # calcular coordenadas de corte para dividir chile en 3
 limite_sup = 17.5 # coordenada y del extremo norte de chile
@@ -160,6 +146,8 @@ mapa_filtrado_urbano_2 <- mapa_filtrado_urbano |>
 
 # readr::write_rds(mapa_filtrado_urbano_2,
 #                  "mapas/mapa_rm_urbano_2.rds")
+
+
 
 corrupcion_comunas_rm_mapa <- corrupcion_comunas_conteo_join |> 
   unnest(c(montos, responsables, casos, delitos, años)) |> 

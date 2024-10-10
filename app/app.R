@@ -4,26 +4,33 @@ library(shinycssloaders)
 library(shinyjs) |> suppressPackageStartupMessages()
 
 library(dplyr) |> suppressPackageStartupMessages()
-library(ggplot2)
+library(tidyr)
 library(stringr)
 library(forcats)
+library(readr)
 library(glue)
+
+library(ggplot2)
+library(ggiraph)
+library(sf)
 library(gt)
 library(scales)
-library(readr)
 
 #temas
 library(thematic)
 library(showtext)
 library(bslib) |> suppressPackageStartupMessages()
-
 library(ragg)
-options(shiny.useragg = TRUE)
 
 source("colores.R")
 
+options(shiny.useragg = TRUE)
 thematic_shiny(font = "auto", 
                bg = color_fondo, fg = color_texto, accent = color_destacado)
+# tipografías para ragg/sysfonts
+sysfonts::font_add_google("IBM Plex Mono", "IBM Plex Mono", db_cache = TRUE)
+showtext_auto()
+
 
 #opciones
 options(scipen = 99999)
@@ -39,6 +46,11 @@ corrupcion_escalados <- read_rds("corrupcion_datos_escalados.rds")
 cep_corrupcion <- read_rds("cep_corrupcion.rds")
 cpi_corrupcion <- read_rds("corruption_perception_index_chile.rds")
 precios <- read_rds("precios_objetos.rds")
+
+mapa_pais <- read_rds("mapa_pais.rds")
+mapa_region <- read_rds("mapa_region.rds")
+mapa_filtrado_urbano <- read_rds("mapa_rm_urbano.rds")
+
 
 #funciones ----
 source("funciones.R")
@@ -73,6 +85,8 @@ ui <- fluidPage(
   css("
                        h1 { font-size: 180%; font-weight: bold; }
                        h2 { margin-top: 24px; font-size: 150%; font-weight: bold; }
+                       h4 { font-style: italic; font-size: 120%; }
+                       h5 { font-style: italic; font-size: 90%; opacity: .5; }
                        "),
   
   css("a { 
@@ -260,6 +274,53 @@ ui <- fluidPage(
                                  "graficos/grafico_torta_montos_sector.png")
     )
   ),
+  
+  ### mapas ----
+  fluidRow(
+    hr(),
+    h2("Mapa de corrupción por comunas"),
+    p("Visualizaciones georeferenciadas de los casos de corrupción que se corresponden con una comuna o región del país en específico. Cada punto representa una comuna del país donde existen o existieron casos de corrupción, y su tamaño representa el monto sumado de los casos de corrupción de la comuna. Seleccione un punto para ver la información de los casos de dicha comuna."),
+    column(4, style = "margin-top: 8px;",
+           h5("Zona norte"),
+           girafeOutput("mapa_interactivo_norte") |> withSpinner(color = color_destacado, type = 8)
+    ),
+    column(4, style = "margin-top: 8px;",
+           h5("Zona centro"),
+           girafeOutput("mapa_interactivo_centro") |> withSpinner(color = color_destacado, type = 8)
+    ),
+    column(4, style = "margin-top: 8px;",
+           h5("Zona sur"),
+           girafeOutput("mapa_interactivo_sur") |> withSpinner(color = color_destacado, type = 8)
+    )
+  ),
+  fluidRow(
+    # column(12, style = "margin-top: 18px;",
+    #        h4("Corrupción en Santiago"),
+    #        p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso de corrupción. Seleccione un punto para ver la información del caso."),
+    #        
+    #        div(style = "max-width: 500px; margin: auto;",
+    #            girafeOutput("mapa_interactivo_rm") |> withSpinner(color = color_destacado, type = 8)
+    #        )
+    # )
+    column(12, style = "margin-top: 18px;",
+    ),
+    column(6,
+           h4("Corrupción en la Región Metropolitana"),
+           p("Casos de corrupción en comunas de la Región Metropoltiana. Cada punto representa una comuna."),
+           div(style = "max-width: 500px; margin: auto; margin-top: -20px;",
+               girafeOutput("mapa_interactivo_centro_zoom") |> withSpinner(color = color_destacado, type = 8)
+           )
+           
+    ),
+    column(6,
+           h4("Corrupción en Santiago"),
+           p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso."),
+           div(style = "max-width: 500px; margin: auto;",
+               girafeOutput("mapa_interactivo_rm") |> withSpinner(color = color_destacado, type = 8)
+           )
+    ),
+  ),
+  
   
   ### gráficos barras comparativos ----
   fluidRow(
@@ -537,7 +598,22 @@ server <- function(input, output, session) {
   })
   
   
-  #ancho de ventana ----
+  
+  ## datos comunas (mapa) ----
+  corrupcion_comunas_conteo <- reactive({
+    corrupcion_años() |> 
+      group_by(comuna) |> 
+      summarize(n = n(),
+                casos = list(caso),
+                responsables = list(responsable),
+                montos = list(monto),
+                monto = sum(monto),
+                delitos = list(delitos),
+                años = list(año)
+      )
+  })
+  
+  # ancho de ventana ----
   ancho <- reactive(input$dimension[1]) |> bindEvent(input$dimension)
   ancho_ventana <- ancho |> debounce(500)
   
@@ -545,7 +621,7 @@ server <- function(input, output, session) {
   #   ancho_ventana()
   #   })
   
-  #scroll ----
+  # scroll
   # guardar posición de desplazamiento como input
   observeEvent(input$y_offset, {
     runjs("Shiny.setInputValue('y_offset', window.pageYOffset);")
@@ -845,7 +921,7 @@ server <- function(input, output, session) {
       mutate(caso = forcats::fct_reorder(caso, monto))
     
     
-    # gráfico sector ----
+    # gráfico sector
     datos_fundaciones |> 
       ggplot(aes(y = caso, x = monto, fill = sector)) +
       geom_col(width = 0.5) +
@@ -896,7 +972,7 @@ server <- function(input, output, session) {
     }
   })
   
-  #grafico
+  # grafico
   output$grafico_barras_comparativo <- renderPlot({
     
     escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10, 
@@ -927,7 +1003,7 @@ server <- function(input, output, session) {
     
     escala_y_barras_horizontales <- scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…"))
     
-    ## barras sector ----
+    ## barras sector 
     if (input$selector_barras_comparativo == "Sector político") {
       
       if (input$top_20_barras_comparativo == TRUE) {
@@ -955,7 +1031,7 @@ server <- function(input, output, session) {
         labs(fill = "Sector político",
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
-      ## barras fundaciones ----
+      ## barras fundaciones
     } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
       
       if (input$top_20_barras_comparativo == TRUE) {
@@ -978,7 +1054,7 @@ server <- function(input, output, session) {
         labs(fill = "Tipo de caso",
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
-      ## barras sector vs fundaciones ----
+      ## barras sector vs fundaciones
     } else if (input$selector_barras_comparativo == "Sector político versus fundaciones") {
       
       datos <- datos_barras() |> 
@@ -1011,6 +1087,181 @@ server <- function(input, output, session) {
     }
     plot(p)
   }, res = resolucion)
+  
+  
+  
+  # mapas ----
+  
+  ## datos mapas ----
+  
+  # crear columna de match entre comunas
+  corrupcion_comunas_conteo_join <- reactive({
+    corrupcion_comunas_conteo() |> 
+      mutate(comuna = case_match(comuna, 
+                                 "Puerto Natales" ~ "Natales",
+                                 "Atacama" ~ "Copiapó",
+                                 "Biobío" ~ "Concepción",
+                                 "La Araucanía" ~ "Temuco",
+                                 .default = comuna)) |> 
+      mutate(comuna_match = tolower(comuna),
+             comuna_match = stringi::stri_trans_general(comuna_match, "latin-ascii"))
+  })
+  
+  # mapa con datos de todo chile
+  corrupcion_comunas_mapa <- reactive({
+    # crear columna de match entre comunas
+    mapa_pais_join <- mapa_pais |>
+      mutate(comuna_match = tolower(nombre_comuna))
+    
+    # unir datos con mapa
+    corrupcion_comunas_mapa <- left_join(corrupcion_comunas_conteo_join(),
+                                         mapa_pais_join,
+                                         by = "comuna_match")
+    
+    # crear puntos y etiquetas
+    corrupcion_comunas_mapa_2 <- corrupcion_comunas_mapa |> 
+      mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE)) |> 
+      # etiquetas
+      rowwise() |> 
+      mutate(monto = ifelse(is.na(monto), 0, monto),
+             caso_t = ifelse(n == 1, "caso", "casos"),
+             casos_t = glue("{paste0('_', unlist(casos), '_', collapse = '; ')}"),
+             monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
+             monto_t = ifelse(monto == 0, "Sin información", monto_t)) |> 
+      mutate(etiqueta = markdown(glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}")))
+    
+    return(corrupcion_comunas_mapa_2)
+  })
+  
+  
+  
+  # mapa con datos de la región metropolitana
+  corrupcion_comunas_rm_mapa <- reactive({
+    corrupcion_comunas_conteo_join() |> 
+      unnest(c(montos, responsables, casos, delitos, años)) |> 
+      left_join(mapa_filtrado_urbano,
+                by = "comuna_match") |> 
+      mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE),
+             punto_jitter = punto |> st_jitter(amount = 0.015)) |> 
+      filter(!is.na(codigo_comuna)) |> 
+      # corrupcion_comunas_rm_mapa |> select(1:7) |> 
+      rowwise() |> 
+      mutate(monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
+             etiqueta = case_when(is.na(delitos) ~ markdown(glue("**{comuna}**: {casos} ({años})\n\n{monto_t}")),
+                                  !is.na(delitos) ~ markdown(glue("**{comuna}**: {casos} ({años})\n\n{monto_t}\n\n_{delitos}_")))
+      )
+  })
+  
+  
+  ## mapa chile ----
+  mapa_corrupcion_chile <- reactive({
+    mapa <- corrupcion_comunas_mapa() |> 
+      ggplot() +
+      geom_sf(data = mapa_region, aes(geometry = geometry), 
+              fill = color_barras,
+              color = color_fondo2, alpha = 0.6) +
+      # puntos
+      geom_sf_interactive(aes(geometry = punto,
+                              size = monto, alpha = monto,
+                              data_id = comuna, 
+                              tooltip = etiqueta),
+                          color = color_complementario) +
+      # borde de puntos
+      geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
+      coord_sf(xlim = c(-76, -66)) +
+      scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                        range = c(3, 13),
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = "."))+
+      scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                         range = c(1, .6)) +
+      guides(alpha = guide_none(),
+             size = guide_none()) +
+      theme(axis.text = element_blank(), axis.ticks = element_blank())
+  }) |> suppressWarnings()
+  
+  ### zonas ----
+  # calcular coordenadas de corte para dividir chile en 3
+  limite_sup = 17.5 # coordenada y del extremo norte de chile
+  limite_inf = 56.1 # coordenada y del extremo sur de chile
+  rango = limite_inf-limite_sup # cantidad de grados entre norte y sur
+  partes = 3
+  alto_y = rango/partes # altura que debiera tener cada una de las partes del mapa
+  
+  inicios_y <- c(limite_sup, limite_sup + alto_y, limite_sup + alto_y*2)
+  finales_y <- inicios_y + alto_y
+  
+  # norte
+  mapa_norte <- reactive({
+    mapa_corrupcion_chile() +
+      coord_sf(xlim = c(-76, -66),
+               ylim = c(-inicios_y[1], -finales_y[1]),
+               expand = F)
+  })
+  
+  # centro
+  mapa_centro <- reactive({
+    mapa_corrupcion_chile() +
+      coord_sf(xlim = c(-76, -66),
+               ylim = c(-inicios_y[2], -finales_y[2]), 
+               expand = F)
+  })
+  
+  # rm
+  mapa_rm_zoom <- reactive({
+    mapa_corrupcion_chile() +
+    # geom_sf(data = mapa_pais, aes(geometry = geometry), fill = NA, alpha = .1) +
+    coord_sf(xlim = c(-72.1, -69.7),
+             ylim = c(-32.7, -34.3),
+             expand = F)
+  })
+  
+  # sur
+  mapa_sur <- reactive({
+    mapa_corrupcion_chile() +
+      coord_sf(xlim = c(-76, -66),
+               ylim = c(-inicios_y[3], -finales_y[3]), 
+               expand = F)
+  })
+  
+  
+  ## mapa rm ----
+  mapa_corrupcion_rm <- reactive({
+    corrupcion_comunas_rm_mapa() |> 
+      filter(!is.na(montos)) |> 
+      ggplot(aes(geometry = geometry)) +
+      # fondo
+      geom_sf(data = mapa_filtrado_urbano,
+              aes(geometry = geometry),
+              fill = color_barras,
+              color = color_fondo2, alpha = 0.6) +
+      # puntos
+      geom_sf_interactive(aes(geometry = punto_jitter, 
+                              size = montos, alpha = montos,
+                              data_id = casos, 
+                              tooltip = etiqueta),
+                          color = color_complementario) +
+      # bordes
+      geom_sf(aes(geometry = punto_jitter, size = montos), shape = 1, color = color_fondo2, alpha = .4) +
+      coord_sf(xlim = c(-70.81, -70.44213), ylim = c(-33.66, -33.31), expand = TRUE) +
+      scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                        range = c(4, 15),
+                        labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = "."))+
+      scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                         range = c(1, .6)) +
+      guides(alpha = guide_none(),
+             size = guide_none()) +
+      theme(axis.text = element_blank(), axis.ticks = element_blank())
+  })
+  
+  
+  
+  ## interactivos ----
+  
+  output$mapa_interactivo_norte <- renderGirafe(mapa_norte() |> girafear())
+  output$mapa_interactivo_centro <- renderGirafe(mapa_centro() |> girafear())
+  output$mapa_interactivo_centro_zoom <- renderGirafe(mapa_rm_zoom() |> girafear(alto = 7, ancho = 9))
+  output$mapa_interactivo_sur <- renderGirafe(mapa_sur() |> girafear())
+  output$mapa_interactivo_rm <- renderGirafe(mapa_corrupcion_rm() |> girafear(alto = 6))
   
   
   
