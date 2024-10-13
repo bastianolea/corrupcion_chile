@@ -735,8 +735,8 @@ server <- function(input, output, session) {
       labs(y = "Índice de percepción\nde la corrupción", x = NULL)
   }, res = resolucion)
   
-  
-  #gráfico torta sector ----
+  # gráficos torta ----
+  ## gráfico torta sector ----
   output$torta_sector <- renderPlot({
     req(nrow(corrupcion_años()) > 0)
     
@@ -788,7 +788,7 @@ server <- function(input, output, session) {
       theme_void()
   }, res = resolucion)
   
-  #gráfico torta partido ----
+  ## gráfico torta partido ----
   output$torta_partido <- renderPlot({
     
     datos_partidos <- corrupcion_años() |> 
@@ -858,7 +858,7 @@ server <- function(input, output, session) {
   
   
   
-  # gráfico torta montos ----
+  ## gráfico torta montos ----
   output$torta_montos <- renderPlot({
     # browser()
     datos_montos <- corrupcion_años() |> 
@@ -881,13 +881,15 @@ server <- function(input, output, session) {
                 angle = 90, hjust = 0.5, size = 3.6, fontface = "bold", color = "white") + 
       # texto exterior
       geom_text(aes(label = ifelse(sector == "Derecha", cifra, ""), 
-                    y = 2.1, color = sector), color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), angle = 90, fontface = "bold") + 
+                    y = 2.1, color = sector), color = color_texto, 
+                angle = 90,
+                lineheight = 0.9, position = position_stack(vjust = 0.5), angle = 90, fontface = "bold") + 
       geom_text(aes(label = ifelse(sector != "Derecha", cifra, ""), 
                     y = 1.7, color = sector), color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), hjust = 0, angle = 90, fontface = "bold") + 
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
       coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
-                   start = 1.65, inner.radius = 0.4) +
+                   start = 1.62, inner.radius = 0.4) +
       scale_fill_manual(values = c("Derecha" = color_derecha, 
                                    "Izquierda" = color_izquierda,
                                    "Centro" = color_neutro), aesthetics = c("fill", "color")) +
@@ -1960,6 +1962,7 @@ server <- function(input, output, session) {
       select(-link_fuente)
     
     # browser()
+    
     
     
     datos |> 
