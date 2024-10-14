@@ -808,7 +808,8 @@ server <- function(input, output, session) {
       arrange(desc(n)) |> 
       mutate(p = n/sum(n)) |> 
       rowwise() |> 
-      mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
+      # mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
+      mutate(partido_reduc = if_else(p <= 0.03, "Otros", partido),
              partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |> 
       group_by(partido_reduc) |>
       summarize(n = sum(n),
@@ -843,7 +844,7 @@ server <- function(input, output, session) {
     # gráfico nuevo
     datos |>
       ggplot(aes(x = n, y = factor(1), fill = partido)) +
-      geom_col(width = 1) +
+      geom_col(width = 1, color = color_fondo, linewidth = 0.3) +
       geom_text(aes(label = partido), position = position_stack(vjust = 0.5),
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = "white") + 
       geom_text(aes(label = percent(p, accuracy = 1), y = 0.25, color = partido), position = position_stack(vjust = 0.5),
