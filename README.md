@@ -94,3 +94,11 @@ Diseñado y programado en R por Bastián Olea Herrera. Magíster en Sociología,
 https://bastian.olea.biz
 
 bastianolea@gmail.com
+
+
+
+
+----
+
+_Agradecimientos:_
+- Miguel Oyarzo
