@@ -24,7 +24,7 @@ Este visualizador compila datos abiertos sobre este tema país, y produce gráfi
 ----
 
 ### Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos
-![Tabla de casos de corrupción donde implicados tengan afiliación a partidos políticos](tablas/tabla_corrupcion_partidos_chile.png)
+![Tabla de casos de corrupción en municipios donde implicados tengan afiliación a partidos políticos](tablas/tabla_corrupcion_partidos_chile.png)
 
 ----
 

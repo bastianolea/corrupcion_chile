@@ -88,7 +88,8 @@ datos_casos_partido <- corrupcion |>
   arrange(desc(n)) |> 
   mutate(p = n/sum(n)) |> 
   rowwise() |> 
-  mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
+  # mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
+  mutate(partido_reduc = if_else(p <= 0.03, "Otros", partido),
          partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |> 
   group_by(partido_reduc) |>
   summarize(n = sum(n),
@@ -104,8 +105,8 @@ torta_casos_partido <- datos_casos_partido |>
             angle = 90, hjust = 0.5, fontface = "bold") + 
   scale_y_discrete(guide = "none", name = NULL) +
   guides(fill = "none", color = "none") +
-  coord_radial(expand = FALSE, rotate_angle = TRUE, theta = "x",
-               start = 0.72, 
+  coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
+               start = 0.7, 
                inner.radius = 0.4) +
   scale_fill_manual(values = degradado_verde(length(datos_casos_partido$partido)), aesthetics = c("fill", "color")) +
   theme_void() +
