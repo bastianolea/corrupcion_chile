@@ -12,7 +12,8 @@ corrupcion <- readRDS("app/corrupcion_datos.rds")
 cut_comunas <- read.csv2("datos/comunas_chile_cut.csv")
 
 corrupcion_municipios <- corrupcion |> 
-  filter(alcalde == "Alcaldías") |> 
+  # filter(alcalde == "Alcaldías") |> 
+  filter(posicion %in% c("Alcalde", "Alcaldesa", "Municipio", "Municipalidad", "Funcionario municipal")) |> 
   left_join(cut_comunas)
 
 options(scipen = 99999)
@@ -105,12 +106,12 @@ for (opcion in c("chile", "rm")) {
   
   # guardar ----
   
-  #guardar tabla como imagen
-  tabla_municipios |> 
+  # guardar tabla como imagen
+  tabla_municipios |>
     gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, "_", today(), ".png"),
            vwidth = 840)
-  
-  tabla_municipios |> 
+
+  tabla_municipios |>
     gtsave(filename = paste0("tablas/tabla_corrupcion_municipalidades_", opcion, ".png"),
            vwidth = 840)
 }
@@ -154,12 +155,14 @@ corrupcion_municipios |>
 
 porcentaje_muni_rm_derecha <- corrupcion_municipios |>
   filter(region == "Metropolitana de Santiago") |>
+  # si un municipio se repite, usar el dato más reciente
+  arrange(comuna, desc(año)) |> 
+  distinct(comuna, .keep_all = TRUE) |> 
+  # contar casos por sector
   count(sector) |> arrange(desc(n)) |> 
   mutate(p = n/sum(n)*100) |> 
   filter(sector == "Derecha") |> 
   pull(p) |> round(1)
-
-
 
 casos_muni_udi <- corrupcion_municipios |> 
   count(partido) |> filter(partido == "UDI") |> pull(n)
@@ -167,7 +170,13 @@ casos_muni_udi <- corrupcion_municipios |>
 casos_muni_rn <- corrupcion_municipios |> 
   count(partido) |> filter(partido == "RN") |> pull(n)
 
-porcentaje_muni_derecha <- corrupcion_municipios |> count(sector) |> 
+porcentaje_muni_derecha <- corrupcion_municipios |> 
+  # si un municipio se repite, usar el dato más reciente
+  arrange(comuna, desc(año)) |> 
+  distinct(comuna, .keep_all = TRUE) |> 
+  # conteo
+  count(sector) |> 
+  # filter(sector != "Ninguno") |> 
   mutate(p = n/sum(n)*100) |> filter(sector == "Derecha") |> pull(p) |> round(1)
 
 glue("En casos de municipalidades, la derecha lidera con {casos_muni_udi} municipios UDI y {casos_muni_rn} municipios RN. Un {porcentaje_muni_derecha}% de los casos de corrupción municipal en el país son de derecha.")
