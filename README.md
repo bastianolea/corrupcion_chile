@@ -2,9 +2,11 @@
 
 [Aplicación web](https://bastianoleah.shinyapps.io/corrupcion_chile/) que permite visualizar datos sobre los casos más relevantes de corrupción en Chile.
 
-La corrupción ha copado los medios comunicacionales en los últimos meses. Sin embargo, la información que deciden presentar u omitir, y el modo mismo en que la exponen, es generalmente tendencioso. Por eso, el objetivo de este visualizador es presentar visualmente los datos de casos de corrupción en el país, especificando sus responsables y sectores políticos, para transparentar la información completa.
+Este repositorio compila datos abiertos sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile.
 
-Este visualizador compila datos abiertos sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile.
+Los casos de corrupción incluidos son aquellos donde se involucre perjuicio económico a recursos públicos, sector público, o al fisco en general. 
+
+Los datos son recopilados manualmente, y se obtienen desde fuentes periodísticas. El criterio de inclusión para cada caso es que existan fuentes confiables de prensa que indiquen la existencia de una investigación, o al menos de evidencia plausible de posible corrupción; o bien, una sentencia o condena. 
 
 
 ## Casos de corrupción por monto
@@ -103,3 +105,10 @@ bastianolea@gmail.com
 _Agradecimientos:_
 - Miguel Oyarzo, por sus comentarios, contribución de datos nuevos e ideas
 - Rodrigo Rettig, por sus contribución de datos nuevos y difusión
+
+
+----
+
+_Citar:_
+
+Olea H., B. (2024). Corrupción en Chile. Obtenido desde https://github.com/bastianolea/corrupcion_chile
