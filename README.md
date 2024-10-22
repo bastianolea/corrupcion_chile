@@ -6,7 +6,7 @@ Este repositorio compila datos abiertos sobre este tema país, y produce gráfic
 
 Los casos de corrupción incluidos son aquellos donde se involucre perjuicio económico a recursos públicos, sector público, o al fisco en general. 
 
-Los datos son recopilados manualmente, y se obtienen desde fuentes periodísticas. El criterio de inclusión para cada caso es que existan fuentes confiables de prensa que indiquen la existencia de una investigación, o al menos de evidencia plausible de posible corrupción; o bien, una sentencia o condena. 
+Los datos son recopilados manualmente, y se obtienen desde fuentes periodísticas. El criterio de inclusión para cada caso es que existan fuentes confiables de prensa que indiquen la existencia de una investigación, evidencia plausible de posible corrupción, o bien una sentencia o condena. 
 
 
 ## Casos de corrupción por monto
@@ -112,3 +112,5 @@ _Agradecimientos:_
 _Citar:_
 
 Olea H., B. (2024). Corrupción en Chile. Obtenido desde https://github.com/bastianolea/corrupcion_chile
+
+https://osf.io/xmnbd/
