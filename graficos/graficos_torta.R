@@ -47,7 +47,7 @@ torta_casos_sector <- datos_casos_sector |>
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
                # start = 0.8, 
-               start = 1.17, 
+               start = 1.2, 
                inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,

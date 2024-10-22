@@ -101,4 +101,5 @@ bastianolea@gmail.com
 ----
 
 _Agradecimientos:_
-- Miguel Oyarzo
+- Miguel Oyarzo, por sus comentarios, contribución de datos nuevos e ideas
+- Rodrigo Rettig, por sus contribución de datos nuevos y difusión

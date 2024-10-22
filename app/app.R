@@ -259,7 +259,7 @@ ui <- fluidPage(
            h2("Montos totales de casos de corrupción por sector político"),
            p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
            
-           div(style = "max-width: 600px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
+           div(style = "max-width: 700px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
                plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
            ),
            
