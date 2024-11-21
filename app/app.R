@@ -300,16 +300,20 @@ ui <- fluidPage(
     column(12, style = "margin-top: 18px;",
     ),
     column(6,
+           div(style = "min-height: 90px;",
            h4("Corrupción en la Región Metropolitana"),
-           p("Casos de corrupción en comunas de la Región Metropoltiana. Cada punto representa una comuna."),
-           div(style = "max-width: 500px; margin: auto; margin-top: -20px;",
+           p("Casos de corrupción en comunas de la Región Metropoltiana. Cada punto representa una comuna.")
+           ),
+           div(style = "max-width: 500px; margin: auto;",
                girafeOutput("mapa_interactivo_centro_zoom") |> withSpinner(color = color_destacado, type = 8)
            )
            
     ),
     column(6,
+           div(style = "min-height: 90px;",
            h4("Corrupción en Santiago"),
-           p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso."),
+           p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso.")
+           ),
            div(style = "max-width: 500px; margin: auto;",
                girafeOutput("mapa_interactivo_rm") |> withSpinner(color = color_destacado, type = 8)
            )
@@ -1173,6 +1177,7 @@ server <- function(input, output, session) {
     message("rendering mapa chile...")
     
     corrupcion_comunas_mapa() |> 
+      st_set_geometry(corrupcion_comunas_mapa()$geometry) |> 
       ggplot() +
       geom_sf(data = mapa_region(), aes(geometry = geometry), 
               fill = color_barras,
@@ -1220,7 +1225,7 @@ server <- function(input, output, session) {
   mapa_centro <- reactive({
     req(scroll$inicio)
     mapa_corrupcion_chile() +
-      coord_sf(xlim = c(-76, -66),
+      coord_sf(xlim = c(-76-0.7, -66+0.7), #sumar porque a medida que se baja al sur, el mapa se hace angosto
                ylim = c(-inicios_y[2], -finales_y[2]), 
                expand = F)
   })
@@ -1239,7 +1244,7 @@ server <- function(input, output, session) {
   mapa_sur <- reactive({
     req(scroll$inicio)
     mapa_corrupcion_chile() +
-      coord_sf(xlim = c(-76, -66),
+      coord_sf(xlim = c(-76-1.7, -65.6+1.7),
                ylim = c(-inicios_y[3], -finales_y[3]), 
                expand = F)
   })
@@ -1252,7 +1257,9 @@ server <- function(input, output, session) {
     message("rendering mapa rm...")
     
     corrupcion_comunas_rm_mapa() |> 
+      st_set_geometry(corrupcion_comunas_rm_mapa()$geometry) |> 
       filter(!is.na(montos)) |> 
+      
       ggplot(aes(geometry = geometry)) +
       # fondo
       geom_sf(data = mapa_filtrado_urbano(),
