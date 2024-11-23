@@ -28,7 +28,17 @@ options(shiny.useragg = TRUE)
 thematic_shiny(font = "auto", 
                bg = color_fondo, fg = color_texto, accent = color_destacado)
 # tipografías para ragg/sysfonts
-sysfonts::font_add_google("IBM Plex Mono", "IBM Plex Mono", db_cache = TRUE)
+# sysfonts::font_add_google("IBM Plex Mono", "IBM Plex Mono", db_cache = TRUE)
+
+# cargar tipografía local (descargada con gfonts)
+# gfonts::setup_font(id = "ibm-plex-mono", output_dir = "app/www/") # instalar tipografía localmente
+# gfonts::use_font("ibm-plex-mono", "www/css/ibm-plex-mono.css"),
+
+sysfonts::font_add("IBM Plex Mono",
+                   regular = "www/fonts/ibm-plex-mono-v19-latin-regular.ttf",
+                   bold = "www/fonts/ibm-plex-mono-v19-latin-600.ttf",
+                   italic = "www/fonts/ibm-plex-mono-v19-latin-italic.ttf",
+                   bolditalic = "www/fonts/ibm-plex-mono-v19-latin-600italic.ttf")
 showtext_auto()
 
 
@@ -62,11 +72,25 @@ ui <- fluidPage(
   
   theme = bslib::bs_theme(
     bg = color_fondo, fg = color_texto, primary = color_destacado,
-    base_font = font_link(
-      "IBM Plex Mono",
-      href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap"
-    )
+    # base_font = font_link(
+    #   "IBM Plex Mono",
+    #   href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+    # )
   ),
+  
+  ## tipografías ----
+  # tipografía para textos html
+  # https://forum.posit.co/t/simplest-way-to-get-local-fonts-in-your-shiny-app/148326/2
+  
+  # gfonts::setup_font(id = "ibm-plex-mono", output_dir = "app/www/") # instalar tipografía localmente
+  # gfonts::use_font("ibm-plex-mono", "www/css/open-sans.css"),
+  
+  tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "css/ibm-plex-mono.css")),
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/ibm-plex-mono.css"),
+    tags$style("* {font-family:'IBM Plex Mono' !important;}")
+  ),
+  
   
   useShinyjs(),
   
@@ -332,7 +356,7 @@ ui <- fluidPage(
                                          label = em("Excluir casos extremos"), value = TRUE),
            
            shinyWidgets::awesomeCheckbox("top_20_barras_comparativo", 
-                                         label = em("Limitar a 20 casos"), value = TRUE),
+                                         label = em("Limitar a 15 casos"), value = TRUE),
            
            shinyWidgets::pickerInput("selector_barras_comparativo", 
                                      label = em("Criterio de separación:"),
@@ -1016,10 +1040,10 @@ server <- function(input, output, session) {
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos_barras() |> 
           group_by(sector) |> 
-          slice_max(n = 20, order_by = monto)
+          slice_max(n = 15, order_by = monto)
       } else {
         datos <- datos_barras() |> 
-          slice_max(n = 40, order_by = monto)
+          slice_max(n = 30, order_by = monto)
       }
       
       p <- datos |> 
@@ -1044,9 +1068,10 @@ server <- function(input, output, session) {
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos_barras() |> 
           group_by(caso_fundaciones) |> 
-          slice_max(n = 20, order_by = monto)
+          slice_max(n = 15, order_by = monto)
       } else {
-        datos <- datos_barras()
+        datos <- datos_barras() |> 
+          slice_max(n = 30, order_by = monto)
       }
       
       p <- datos |> 
@@ -1073,9 +1098,10 @@ server <- function(input, output, session) {
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos |> 
           group_by(fundaciones_sector) |> 
-          slice_max(n = 20, order_by = monto)
+          slice_max(n = 15, order_by = monto)
       } else {
-        datos <- datos
+        datos <- datos |> 
+          slice_max(n = 30, order_by = monto)
       }
       
       p <- datos |> 
