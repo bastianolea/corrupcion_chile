@@ -27,6 +27,7 @@ source("colores.R")
 options(shiny.useragg = TRUE)
 thematic_shiny(font = "auto", 
                bg = color_fondo, fg = color_texto, accent = color_destacado)
+
 # tipografías para ragg/sysfonts
 # sysfonts::font_add_google("IBM Plex Mono", "IBM Plex Mono", db_cache = TRUE)
 
@@ -126,7 +127,7 @@ ui <- fluidPage(
           style = "margin-bottom: 8px; font-size: 90%;"),
         
         div(style = "font-size: 90%;",
-            markdown("[_Bastián Olea Herrera_](https://bastian.olea.biz)")
+            markdown("[_Bastián Olea Herrera_](https://bastianolea.rbind.io)")
         ),
         
         div(style = "opacity: .5; font-size: 80%; margin-top: -6px; margin-bottom: 8px;",
@@ -527,7 +528,7 @@ ui <- fluidPage(
   fluidRow(
     column(12, style = "padding: 28px;",
            hr(),
-           markdown("Desarrollado y programado por [Bastián Olea Herrera.](https://bastian.olea.biz)"),
+           markdown("Desarrollado y programado por [Bastián Olea Herrera.](https://bastianolea.rbind.io)"),
            
            markdown("Puedes explorar mis otras [aplicaciones interactivas sobre datos sociales en mi portafolio.](https://bastianolea.github.io/shiny_apps/)"),
            
@@ -535,7 +536,7 @@ ui <- fluidPage(
            
            div(style = "opacity: 0.4; font-size: 80%;",
                markdown("Los datos de este visualizador son compilados manualmente. Si quieres complementar los datos existentes, ayudar con correcciones, agregar casos nuevos, o hacer cualquier comentario,
-             puedes encontrar los datos en el [repositorio](https://github.com/bastianolea/corrupcion_chile), o bien, [contactarme.](http://bastian.olea.biz)")
+             puedes encontrar los datos en el [repositorio](https://github.com/bastianolea/corrupcion_chile), o bien, [contactarme.](https://bastianolea.rbind.io/contact)")
            ),
            
            #### cafecito ----

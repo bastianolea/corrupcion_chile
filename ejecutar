@@ -1,8 +1,0 @@
-nohup R -e 'shiny::runApp("~/R/corrupcion_chile/app", port = 4064)'#
-
-nohup R -e 'browseURL("http://127.0.0.1:4064")'
-
-# chmod +x ~/R/corrupcion_chile/ejecutar
-
-# kill -9 $(lsof -ti:4064)
-# system("kill -9 $(lsof -ti:4064)")
