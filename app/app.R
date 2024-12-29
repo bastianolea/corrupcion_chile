@@ -253,9 +253,12 @@ ui <- fluidPage(
                    "cuyo responsable o responsables principales pertenecen a un determinado sector político")
            )
            ),
-           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
-               plotOutput("torta_sector") |> withSpinner(color = color_destacado, type = 8)
-           ),
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 400px;",
+                   div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
+                       plotOutput("torta_sector") |> withSpinner(color = color_destacado, type = 8)
+                   )
+               )),
            
            boton_descarga_imagen("Descargar gráfico", 
                                  "graficos/grafico_torta_sector.png")
@@ -268,9 +271,12 @@ ui <- fluidPage(
                    "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
            )
            ),
-           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
-               plotOutput("torta_partido") |> withSpinner(color = color_destacado, type = 8)
-           ),
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 400px;",
+                   div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
+                       plotOutput("torta_partido") |> withSpinner(color = color_destacado, type = 8)
+                   )
+               )),
            boton_descarga_imagen("Descargar gráfico", 
                                  "graficos/grafico_torta_partido.png")
     )
@@ -284,9 +290,12 @@ ui <- fluidPage(
            h2("Montos totales de casos de corrupción por sector político"),
            p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
            
-           div(style = "max-width: 700px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
-               plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
-           ),
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 400px;",
+                   div(style = "max-width: 700px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
+                       plotOutput("torta_montos", height = 400) |> withSpinner(color = color_destacado, type = 8)
+                   )
+               )),
            
            boton_descarga_imagen("Descargar gráfico", 
                                  "graficos/grafico_torta_montos_sector.png")
@@ -326,8 +335,8 @@ ui <- fluidPage(
     ),
     column(6,
            div(style = "min-height: 90px;",
-           h4("Corrupción en la Región Metropolitana"),
-           p("Casos de corrupción en comunas de la Región Metropoltiana. Cada punto representa una comuna.")
+               h4("Corrupción en la Región Metropolitana"),
+               p("Casos de corrupción en comunas de la Región Metropoltiana. Cada punto representa una comuna.")
            ),
            div(style = "max-width: 500px; margin: auto;",
                girafeOutput("mapa_interactivo_centro_zoom") |> withSpinner(color = color_destacado, type = 8)
@@ -336,8 +345,8 @@ ui <- fluidPage(
     ),
     column(6,
            div(style = "min-height: 90px;",
-           h4("Corrupción en Santiago"),
-           p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso.")
+               h4("Corrupción en Santiago"),
+               p("Casos de corrupción en la zona urbana de Santiago. Cada punto representa un caso.")
            ),
            div(style = "max-width: 500px; margin: auto;",
                girafeOutput("mapa_interactivo_rm") |> withSpinner(color = color_destacado, type = 8)
@@ -346,7 +355,7 @@ ui <- fluidPage(
   ),
   
   
-  ### gráficos barras comparativos ----
+  ### barras comparativos ----
   fluidRow(
     column(12,
            hr(),
@@ -367,7 +376,10 @@ ui <- fluidPage(
                                      inline = T, width = "fit"
            ),
            
-           plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(color = color_destacado, type = 8),
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 500px;",
+                   plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(color = color_destacado, type = 8),
+               )),
            
            boton_descarga_imagen("Descargar gráfico", 
                                  "graficos/grafico_corrupcion_montos_sector.png")
@@ -405,7 +417,10 @@ ui <- fluidPage(
            hr(),
            h2("Fundaciones involucradas o investigadas por corrupción"),
            
-           plotOutput("grafico_fundaciones", height = 500) |> withSpinner(color = color_destacado, type = 8),
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 500px;",
+                   plotOutput("grafico_fundaciones", height = 500) |> withSpinner(color = color_destacado, type = 8)
+               )),
            
            p("Tabla con todos los casos de corrupción que involucran a fundaciones, dentro del marco del Caso Convenios."),
            
@@ -443,17 +458,20 @@ ui <- fluidPage(
     ),
     column(12, align = "center", 
            #style = "height: 900px;",
-           div(
-             style = "min-height: 900px; width: 800px;",
-             # min-width: 830px; max-width: 1024px;",
-             htmlOutput("ui_montos", fill = TRUE) |> 
-               withSpinner(color = color_destacado, type = 8, proxy.height = 400),
-             # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
-             
-             boton_descarga_imagen("Descargar gráfico", 
-                                   "graficos/grafico_corrupcion_montos_sector.png"),
-             
-             hr()
+           div(style = "overflow-x: scroll;",
+               div(style = "min-width: 400px;",
+                   div(
+                     style = "min-height: 900px; width: 800px;",
+                     # min-width: 830px; max-width: 1024px;",
+                     htmlOutput("ui_montos", fill = TRUE) |> 
+                       withSpinner(color = color_destacado, type = 8, proxy.height = 400),
+                     # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner(color = color_destacado, type = 8)
+                   )),
+               
+               boton_descarga_imagen("Descargar gráfico", 
+                                     "graficos/grafico_corrupcion_montos_sector.png"),
+               
+               hr()
            )
     )
   ),
@@ -541,12 +559,12 @@ ui <- fluidPage(
            
            #### cafecito ----
            div(
-             style = "max-width: 380px; margin: auto; padding: 28px",
+             style = "max-width: 480px; margin: auto; padding: 28px",
              
              tags$style(HTML(".cafecito:hover {opacity: 75%; transition: 0.3s; color: black !important;} .cafecito a:hover {color: black}")),
              
              div(class = "cafecito",
-                 style = "transform:scale(0.7);",
+                 style = "transform:scale(0.6);",
                  tags$body(HTML('<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="bastimapache" data-color="#FFDD00" data-emoji=""  data-font="Bree" data-text="Regálame un cafecito" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>'))
              )
            ),
@@ -689,8 +707,9 @@ server <- function(input, output, session) {
     corrupcion_años() |> 
       count(año) |> 
       ggplot(aes(año, n)) +
-      geom_col(width = 0.6) +
-      geom_text(aes(label = n, y = n-0.25), vjust = 1, color = color_enlaces,
+      geom_col(width = 0.6, alpha = .9) +
+      geom_text(aes(label = n, y = n-0.25), vjust = 1, 
+                color = color_enlaces,
                 size = opt_texto_geom) +
       scale_y_continuous(#breaks = 1:20, 
         expand = expansion(c(0, 0.1))) +
@@ -1120,7 +1139,7 @@ server <- function(input, output, session) {
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
     }
     plot(p)
-  }, res = resolucion)
+  }, res = resolucion*0.9)
   
   
   
