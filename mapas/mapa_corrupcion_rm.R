@@ -20,7 +20,7 @@ corrupcion <- readRDS("app/corrupcion_datos.rds") |>
 
 cut_comunas <- read.csv2("datos/comunas_chile_cut.csv")
 
-calles_principales <- readr::read_rds("mapas/osm_calles_principales.rds")
+# calles_principales <- readr::read_rds("mapas/osm_calles_principales.rds")
 estructuras <- readr::read_rds("mapas/osm_estructuras.rds")
 mapa <- readr::read_rds("mapas/mapa_comunas.rds")
 mapa_urbano <- readr::read_rds("mapas/mapa_rm_urbano.rds")
@@ -43,7 +43,7 @@ color_ninguno = "#662953"|> lighten(0.3)
 # recortar mapas para que solo sean las de dentro de la región
 estructuras_region <- st_intersection(estructuras$osm_polygons, region)
 # rios_region <- st_intersection(rios$osm_lines, region)
-calles_region <- st_intersection(calles_principales$osm_lines, region)
+# calles_region <- st_intersection(calles_principales$osm_lines, region)
 
 # areas_pobladas <- st_read("mapas/Areas_Pobladas/")
 # areas_pobladas$geometry
@@ -53,31 +53,31 @@ calles_region <- st_intersection(calles_principales$osm_lines, region)
 # areas_pobladas_region <- st_intersection(areas_pobladas_2$geometry, region)
 
 # primer mapa ----
-ggplot() +
-  #mapa regional
-  geom_sf(data = mapa, 
-          aes(geometry = geometry),
-          fill = color_oscuro, col = color_fondo, 
-          alpha = 0.2) +
-  #urbano
-  geom_sf(data = mapa_urbano,
-          aes(geometry = geometry),
-          fill = color_oscuro, color = color_oscuro, alpha = 0.5) +
-  #carreteras
-  geom_sf(data = calles_region |> filter(highway %in% c("motorway")),
-          color = color_negro, size = .1, alpha = 0.4) +
-  geom_sf(data = calles_region |> filter(highway %in% c("primary")),
-          color = color_negro, size = .1, alpha = 0.2) +
-  # estructruras
-  geom_sf(data = estructuras_region,
-          fill = color_estructuras, color = NA, alpha = 0) +
-  #borde comunas
-  geom_sf(data = mapa, 
-          aes(geometry = geometry),
-          fill = NA, col = color_fondo, alpha = 1, linewidth = .3) +
-  #temas
-  theme_void() +
-  theme(plot.background = element_rect(fill = color_fondo, color = color_fondo), panel.background = element_rect(fill = color_fondo, color = color_fondo))
+# ggplot() +
+#   #mapa regional
+#   geom_sf(data = mapa, 
+#           aes(geometry = geometry),
+#           fill = color_oscuro, col = color_fondo, 
+#           alpha = 0.2) +
+#   #urbano
+#   geom_sf(data = mapa_urbano,
+#           aes(geometry = geometry),
+#           fill = color_oscuro, color = color_oscuro, alpha = 0.5) +
+#   #carreteras
+#   geom_sf(data = calles_region |> filter(highway %in% c("motorway")),
+#           color = color_negro, size = .1, alpha = 0.4) +
+#   geom_sf(data = calles_region |> filter(highway %in% c("primary")),
+#           color = color_negro, size = .1, alpha = 0.2) +
+#   # estructruras
+#   geom_sf(data = estructuras_region,
+#           fill = color_estructuras, color = NA, alpha = 0) +
+#   #borde comunas
+#   geom_sf(data = mapa, 
+#           aes(geometry = geometry),
+#           fill = NA, col = color_fondo, alpha = 1, linewidth = .3) +
+#   #temas
+#   theme_void() +
+#   theme(plot.background = element_rect(fill = color_fondo, color = color_fondo), panel.background = element_rect(fill = color_fondo, color = color_fondo))
 
 
 
@@ -166,7 +166,10 @@ mapa_datos <- mapa_filtrado_urbano |>
   mutate(alcaldes_sector = if_else(is.na(alcaldes_sector), "Sin casos conocidos", alcaldes_sector)) |> 
   group_by(comuna) |> 
   slice_max(año) |> 
-  mutate(etiqueta = glue("{comuna} ({partido})"),
+  distinct() |> 
+  mutate(etiqueta = ifelse(partido != "Ninguno", 
+                           glue("{comuna} ({partido})"),
+                           glue("{comuna}")),
          etiqueta = if_else(is.na(partido), NA, etiqueta))
 
 # mapa_datos |> 
