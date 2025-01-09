@@ -57,6 +57,7 @@ corrupcion_escalados <- read_rds("corrupcion_datos_escalados.rds")
 cep_corrupcion <- read_rds("cep_corrupcion.rds")
 cpi_corrupcion <- read_rds("corruption_perception_index_chile.rds")
 precios <- read_rds("precios_objetos.rds")
+año_actual <- format(Sys.Date(), "%Y") |> as.numeric()
 
 #funciones ----
 source("funciones.R")
@@ -169,15 +170,15 @@ ui <- fluidPage(
            #             min = min(corrupcion$año, na.rm=T),
            #             max = max(corrupcion$año, na.rm=T), 
            #             dragRange = F,
-           #             value = c(2010, 2024), width = "100%"
+           #             value = c(2010, año_actual), width = "100%"
            # ),
            
            div(style = "margin-top: 12px;display: inline-block;",
                pickerInput("desde", label = "Desde",
-                           choices = 2010:2024, selected = 2010, 
+                           choices = 2010:año_actual, selected = 2010, 
                            multiple = F, inline = T),
                pickerInput("hasta", label = "Hasta",
-                           choices = 2010:2024, selected = 2024,
+                           choices = 2010:año_actual, selected = año_actual,
                            multiple = F, inline = T)
            )
     )
