@@ -10,7 +10,7 @@ library(tidyr)
 library(stringr)
 library(forcats)
 library(readr)
-# library(glue)
+library(glue)
 
 library(ggplot2)
 library(sf)
@@ -18,6 +18,7 @@ library(thematic)
 library(scales)
 library(ggiraph)
 library(gt)
+library(plotly)
 
 library(sysfonts)
 library(showtext)
@@ -45,13 +46,13 @@ sysfonts::font_add("IBM Plex Mono",
                    bold = "www/fonts/ibm-plex-mono-v19-latin-600.ttf",
                    italic = "www/fonts/ibm-plex-mono-v19-latin-italic.ttf",
                    bolditalic = "www/fonts/ibm-plex-mono-v19-latin-600italic.ttf")
-# showtext_auto()
+# showtext_auto() # esto echa a perder la resolución de los gráficos
 
 # tamaños
 escala = 1.4
 opt_texto_geom = 3
 opt_texto_plot = 8
-opt_texto_axis = 6
+opt_texto_axis = 7
 opt_puntos_geom = 4
 opt_lineas_geom = 1
 
@@ -66,8 +67,7 @@ tema_corrupcion <- theme(text = element_text(family = "IBM Plex Mono", color = c
         panel.grid = element_line(color = color_fondo))
 
 # opciones ----
-# options(scipen = 99999)
-
+options(scipen = 99999)
 options(spinner.type = 8, spinner.color = color_destacado)
 library(ragg)
 options(shiny.useragg = TRUE)
@@ -322,17 +322,20 @@ ui <- page_fluid(
         column(4, style = "margin-top: 8px;",
                h5("Zona norte"),
                # girafeOutput("mapa_interactivo_norte") |> withSpinner()
-               plotOutput("mapa_norte") |> withSpinner()
+               # plotOutput("mapa_norte") |> withSpinner()
+               plotlyOutput("mapa_interactivo_norte") |> withSpinner()
         ),
         column(4, style = "margin-top: 8px;",
                h5("Zona centro"),
                # girafeOutput("mapa_interactivo_centro") |> withSpinner()
-               plotOutput("mapa_centro") |> withSpinner()
+               # plotOutput("mapa_centro") |> withSpinner()
+               plotlyOutput("mapa_interactivo_centro") |> withSpinner()
         ),
         column(4, style = "margin-top: 8px;",
                h5("Zona sur"),
                # girafeOutput("mapa_interactivo_sur") |> withSpinner()
-               plotOutput("mapa_sur") |> withSpinner()
+               # plotOutput("mapa_sur") |> withSpinner()
+               plotlyOutput("mapa_interactivo_sur") |> withSpinner()
         )
       ),
 
@@ -355,7 +358,8 @@ ui <- page_fluid(
                ),
                div(style = "max-width: 500px; margin: auto;",
                    # girafeOutput("mapa_interactivo_centro_zoom") |> withSpinner()
-                   plotOutput("mapa_centro_zoom") |> withSpinner()
+                   # plotOutput("mapa_centro_zoom") |> withSpinner()
+                   plotlyOutput("mapa_interactivo_centro_zoom") |> withSpinner()
                )
 
         ),
@@ -366,7 +370,8 @@ ui <- page_fluid(
                ),
                div(style = "max-width: 500px; margin: auto;",
                    # girafeOutput("mapa_interactivo_rm") |> withSpinner()
-                   plotOutput("mapa_rm") |> withSpinner()
+                   # plotOutput("mapa_rm") |> withSpinner()
+                   plotlyOutput("mapa_interactivo_rm") |> withSpinner()
                )
         ),
       ),
@@ -965,7 +970,8 @@ server <- function(input, output, session) {
   ## datos mapas ----
 
   mapa_pais <- reactive(read_rds("mapa_pais.rds"))
-  mapa_region <- reactive(read_rds("mapa_region.rds"))
+  mapa_region <- reactive(read_rds("mapa_region.rds") |> 
+                            mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")))
   mapa_filtrado_urbano <- reactive(read_rds("mapa_rm_urbano.rds"))
 # scroll <- list(inicio = TRUE)
 
@@ -984,6 +990,7 @@ server <- function(input, output, session) {
              comuna_match = stringi::stri_trans_general(comuna_match, "latin-ascii"))
   })
 
+  
   # mapa con datos de todo chile
   corrupcion_comunas_mapa <- reactive({
     # req(scroll$inicio)
@@ -1001,12 +1008,20 @@ server <- function(input, output, session) {
       mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE)) |>
       # etiquetas
       rowwise() |>
+      # mutate(monto = ifelse(is.na(monto), 0, monto),
+      #        caso_t = ifelse(n == 1, "caso", "casos"),
+      #        casos_t = paste0('_', unlist(casos), '_', collapse = '; '),
+      #        monto_t = comma(monto, big.mark = ".", decimal.mark = ",", suffix = " millones", scale = 1e-6, accuracy = 1),
+      #        monto_t = ifelse(monto == 0, "Sin información", monto_t)) |>
+      # mutate(etiqueta = markdown(paste0("**", comuna, ":** ", n, " ", caso_t, "\n\n**Monto total:** ", monto_t, "\n\n**Casos:** ", casos_t)))
       mutate(monto = ifelse(is.na(monto), 0, monto),
              caso_t = ifelse(n == 1, "caso", "casos"),
-             casos_t = paste0('_', unlist(casos), '_', collapse = '; '),
-             monto_t = comma(monto, big.mark = ".", decimal.mark = ",", suffix = " millones", scale = 1e-6, accuracy = 1),
-             monto_t = ifelse(monto == 0, "Sin información", monto_t)) |>
-      mutate(etiqueta = markdown(paste0("**", comuna, ":** ", n, " ", caso_t, "\n\n**Monto total:** ", monto_t, "\n\n**Casos:** ", casos_t)))
+             casos_t = glue("{paste0(unlist(casos), collapse = ';\n')}"),
+             monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
+             monto_t = ifelse(monto == 0, "Sin información", monto_t)) |> 
+      # mutate(etiqueta = glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}"))
+      mutate(etiqueta = glue("{comuna}: {n} {caso_t}\nMonto total: {monto_t}\n\n{str_wrap(casos_t, 30)}")) |> 
+      ungroup()
 
     return(corrupcion_comunas_mapa_2)
   })
@@ -1017,6 +1032,7 @@ server <- function(input, output, session) {
   corrupcion_comunas_rm_mapa <- reactive({
     # req(scroll$inicio)
 
+    # browser()
     corrupcion_comunas_conteo_join() |>
       unnest(c(montos, responsables, casos, delitos, años)) |>
       left_join(mapa_filtrado_urbano(),
@@ -1027,41 +1043,52 @@ server <- function(input, output, session) {
       # corrupcion_comunas_rm_mapa |> select(1:7) |>
       rowwise() |>
       mutate(monto_t = scales::comma(monto, big.mark = ".", decimal.mark = ",", suffix = " millones", scale = 1e-6, accuracy = 1),
-             etiqueta = case_when(is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t)),
-                                  !is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t, "\n\n_", delitos, "_")))
-      )
+             # caso_t = ifelse(n == 1, "caso", "casos"),
+             caso_t = str_wrap(glue("{comuna}: {casos} ({años})"), 30),
+             # etiqueta1 = case_when(is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t)),
+                                  # !is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t, "\n\n_", delitos, "_")))
+      ) |> 
+      mutate(etiqueta = case_when(is.na(delitos) ~ glue("{caso_t}\n{monto_t}"),
+                                  !is.na(delitos) ~ glue("{caso_t}\n{monto_t}\n{str_wrap(delitos, 30)}"))) |> 
+      ungroup()
   })
 
 
   ## mapa chile ----
   mapa_corrupcion_chile <- reactive({
     # req(scroll$inicio)
-
+# browser()
+    
     message("rendering mapa chile...")
 
     corrupcion_comunas_mapa() |>
       st_set_geometry(corrupcion_comunas_mapa()$geometry) |>
       ggplot() +
+      aes(text = etiqueta) +
+      # geografía
       geom_sf(data = mapa_region(), aes(geometry = geometry),
               fill = color_barras,
-              color = color_fondo2, alpha = 0.6) +
+              linewidth = 0.3, #nuevo
+              color = color_fondo2, alpha = 0.6,
+              inherit.aes = F) +
       # puntos
-      geom_sf_interactive(aes(geometry = punto,
+      geom_sf(aes(geometry = punto,
                               size = monto, alpha = monto,
                               data_id = comuna,
                               tooltip = etiqueta),
                           color = color_complementario) +
       # borde de puntos
-      geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
+      # geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
       coord_sf(xlim = c(-76, -66)) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                        range = c(3, 13),
+                        range = c(2, 10),
                         labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                         range = c(1, .6)) +
+                         range = c(0.8, .5)) +
       guides(alpha = guide_none(),
              size = guide_none()) +
       tema_corrupcion +
+      theme(panel.grid = element_line(linewidth = 0.2)) +
       theme(axis.text = element_blank(), axis.ticks = element_blank())
   })
 
@@ -1080,7 +1107,8 @@ server <- function(input, output, session) {
   mapa_norte <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
-      coord_sf(xlim = c(-76, -66),
+      coord_sf(#xlim = c(-76, -66),
+               xlim = c(-76-1.1, -66+1.1), # más espacio por plotly
                ylim = c(-inicios_y[1], -finales_y[1]),
                expand = F)
   })
@@ -1089,7 +1117,8 @@ server <- function(input, output, session) {
   mapa_centro <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
-      coord_sf(xlim = c(-76-0.7, -66+0.7), #sumar porque a medida que se baja al sur, el mapa se hace angosto
+      coord_sf(#xlim = c(-76-0.7, -66+0.7), #sumar porque a medida que se baja al sur, el mapa se hace angosto
+        xlim = c(-76-1.4, -66+1.4), # más espacio por plotly
                ylim = c(-inicios_y[2], -finales_y[2]),
                expand = F)
   })
@@ -1108,7 +1137,8 @@ server <- function(input, output, session) {
   mapa_sur <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
-      coord_sf(xlim = c(-76-1.7, -65.6+1.7),
+      coord_sf(#xlim = c(-76-1.7, -65.6+1.7),
+        xlim = c(-76-3.2, -65.6+3.2), # más espacio por plotly
                ylim = c(-inicios_y[3], -finales_y[3]),
                expand = F)
   })
@@ -1123,30 +1153,35 @@ server <- function(input, output, session) {
     corrupcion_comunas_rm_mapa() |>
       st_set_geometry(corrupcion_comunas_rm_mapa()$geometry) |>
       filter(!is.na(montos)) |>
-
       ggplot(aes(geometry = geometry)) +
+      aes(text = etiqueta) +
       # fondo
       geom_sf(data = mapa_filtrado_urbano(),
               aes(geometry = geometry),
               fill = color_barras,
-              color = color_fondo2, alpha = 0.6) +
+              color = color_fondo2, alpha = 0.6,
+              linewidth = 0.3, #nuevo
+              inherit.aes = F) +
       # puntos
-      geom_sf_interactive(aes(geometry = punto_jitter,
+      geom_sf(aes(geometry = punto_jitter,
                               size = montos, alpha = montos,
                               data_id = casos,
                               tooltip = etiqueta),
                           color = color_complementario) +
       # bordes
-      geom_sf(aes(geometry = punto_jitter, size = montos), shape = 1, color = color_fondo2, alpha = .4) +
-      coord_sf(xlim = c(-70.81, -70.44213), ylim = c(-33.66, -33.31), expand = TRUE) +
+      # geom_sf(aes(geometry = punto_jitter, size = montos), shape = 1, color = color_fondo2, alpha = .4) +
+      coord_sf(#xlim = c(-70.81, -70.44213), 
+               xlim = c(-70.81-0.06, -70.44+0.06), # más espacio por plotly
+               ylim = c(-33.66-0.01, -33.31+0.01), expand = FALSE) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                        range = c(4, 15),
+                        range = c(1, 10),
                         labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                         range = c(1, .6)) +
+                         range = c(.8, .5)) +
       guides(alpha = guide_none(),
              size = guide_none()) +
       tema_corrupcion +
+      theme(panel.grid = element_line(linewidth = 0.2)) +
       theme(axis.text = element_blank(), axis.ticks = element_blank())
   })
 
@@ -1167,6 +1202,35 @@ server <- function(input, output, session) {
   # output$mapa_interactivo_sur <- renderGirafe(mapa_sur() |> girafear())
   # output$mapa_interactivo_rm <- renderGirafe(mapa_corrupcion_rm() |> girafear(alto = 6))
 
+  
+  plotlyar <- function(mapa, alto = 8, ancho = 7) {
+    mapa |> 
+      ggplotly(tooltip = "text",
+               dynamicTicks = F,
+               # width = ancho,
+               # height = alto
+               ) |> 
+      style(hoverlabel = list(bgcolor = color_fondo2,
+                              bordercolor = color_fondo2,
+                              font = list(family = "Monaco", color  = color_texto),
+                              align = "left"
+                              )
+      ) |> 
+      config(displayModeBar = FALSE) |> 
+      layout(xaxis = list(fixedrange = TRUE)) |> 
+      layout(yaxis = list(fixedrange = TRUE)) #|> 
+      # layout(plot_bgcolor=color_fondo) # quita el fondo pero el del gráfico también 
+    # autorange = TRUE
+      # layout(margin = list(l = 0))
+  }
+  
+  output$mapa_interactivo_norte <- renderPlotly(mapa_norte())
+  output$mapa_interactivo_norte <- renderPlotly(mapa_norte() |> plotlyar())
+  output$mapa_interactivo_centro <- renderPlotly(mapa_centro() |> plotlyar())
+  output$mapa_interactivo_centro_zoom <- renderPlotly(mapa_rm_zoom() |> plotlyar(alto = 7, ancho = 9))
+  output$mapa_interactivo_sur <- renderPlotly(mapa_sur() |> plotlyar())
+  output$mapa_interactivo_rm <- renderPlotly(mapa_corrupcion_rm() |> plotlyar(alto = 6))
+  
 
 
   
@@ -1307,8 +1371,9 @@ server <- function(input, output, session) {
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
     }
     plot(p)
-  }, res = resolucion*0.9)
+  }, res = resolucion)
 
+  
   # grafico fundaciones ----
   output$grafico_fundaciones <- renderPlot({
     datos_fundaciones <- corrupcion_años() |>
@@ -1332,7 +1397,7 @@ server <- function(input, output, session) {
       geom_text(aes(label = scales::comma(monto,
                                           prefix = " ", suffix = " mill.", big.mark = ".", decimal.mark = ",",
                                           scale = 1e-6)),
-                hjust = 0, size = opt_texto_geom, show.legend = FALSE) +
+                hjust = 0, size = opt_texto_geom*0.8, show.legend = FALSE) +
       scale_fill_manual(values = c("Derecha" = color_derecha,
                                    "Izquierda" = color_izquierda,
                                    "Otros" = color_destacado)) +
@@ -1355,7 +1420,7 @@ server <- function(input, output, session) {
             plot.title = element_text(size = opt_texto_plot),
             legend.text = element_text(size = opt_texto_plot, margin = margin(l = 2, r = 4))
       )
-  }, res = resolucion*0.9)
+  }, res = resolucion)
   
   
   #—----

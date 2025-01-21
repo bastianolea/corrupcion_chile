@@ -81,6 +81,8 @@ corrupcion_comunas_conteo_join <- corrupcion_comunas_conteo |>
 mapa_pais_join <- mapa_pais |>
   mutate(comuna_match = tolower(nombre_comuna))
 
+
+## datos para el gráfico ----
 corrupcion_comunas_mapa <- left_join(corrupcion_comunas_conteo_join,
                                      mapa_pais_join,
                                      by = "comuna_match") |> 
@@ -89,17 +91,44 @@ corrupcion_comunas_mapa <- left_join(corrupcion_comunas_conteo_join,
   rowwise() |> 
   mutate(monto = ifelse(is.na(monto), 0, monto),
          caso_t = ifelse(n == 1, "caso", "casos"),
-         casos_t = glue("{paste0('_', unlist(casos), '_', collapse = '; ')}"),
+         casos_t = glue("{paste0(unlist(casos), collapse = ';\n')}"),
          monto_t = scales::comma(monto, big.mark = ".", suffix = " millones", scale = 1e-6, accuracy = 1),
          monto_t = ifelse(monto == 0, "Sin información", monto_t)) |> 
-  mutate(etiqueta = markdown(glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}")))
+  # mutate(etiqueta = glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}"))
+  mutate(etiqueta = glue("{comuna}: {n} {caso_t}\nMonto total: {monto_t}\n\n{casos_t}"))
 
 
 corrupcion_comunas_mapa |> glimpse()
 
 
+mapa <- corrupcion_comunas_mapa |>
+  # mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")) |> 
+  ggplot() +
+  aes(text = etiqueta) +
+  geom_sf(data = mapa_region |> 
+            mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")), aes(geometry = geometry),
+          fill = color_barras,
+          color = color_fondo2, alpha = 0.6,
+          inherit.aes = F) +
+  # puntos
+  geom_sf(aes(geometry = punto,
+              size = monto, alpha = monto,
+              text = etiqueta),
+          color = color_complementario) +
+  # borde de puntos
+  geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
+  coord_sf(xlim = c(-76, -66)) +
+  scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                    range = c(3, 13),
+                    labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
+  scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                     range = c(1, .6)) +
+  guides(alpha = guide_none(),
+         size = guide_none()) +
+  # tema_corrupcion +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
 
-
+# cortar zonas ----
 # calcular coordenadas de corte para dividir chile en 3
 limite_sup = 17.5 # coordenada y del extremo norte de chile
 limite_inf = 56.1 # coordenada y del extremo sur de chile
@@ -207,4 +236,74 @@ mapa_sur |> girafear()
 mapa_rm |> girafear()
 
 
+## plotly ----
+# install.packages("plotly")
+library(plotly)
 
+mapa_norte +
+  geom_text(aes(label = texto)) |> 
+  plotly::ggplotly(tooltip = c("text"))
+
+plotly::ggplotly()
+
+
+
+corrupcion_comunas_mapa |>
+  ungroup() |> 
+  # mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")) |> 
+  # mutate(etiqueta = as.character(etiqueta)) |> 
+  ggplot() +
+  geom_sf(data = mapa_region |> 
+            mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")), 
+          aes(geometry = geometry),
+          fill = color_barras,
+          color = color_fondo2, alpha = 0.6,
+          inherit.aes = F) +
+  aes(text = etiqueta) +
+  # puntos
+  geom_sf(aes(geometry = punto,
+              size = monto, 
+              alpha = monto
+              ),
+          color = color_complementario) +
+  # borde de puntos
+  # geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
+  coord_sf(xlim = c(-76, -66)) +
+  scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                    range = c(3, 13),
+                    labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
+  scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
+                     range = c(1, .6)) +
+  guides(alpha = guide_none(),
+         size = guide_none()) +
+  # tema_corrupcion +
+  theme(axis.text = element_blank(), axis.ticks = element_blank()) -> mapa2
+
+
+mapa2
+
+corrupcion_comunas_mapa |> 
+  ungroup() |> 
+  slice(4) |> pull(etiqueta)
+
+
+mapa2 |> 
+  ggplotly(tooltip = "text") |> 
+  style(hoverlabel = list(bgcolor = color_fondo2,
+                          bordercolor = color_fondo2,
+                          font = list(family = "Monaco", color  = color_texto),
+                          align = "left",
+                          max_width = 200
+  )
+  )
+
+
+mapa_norte |> 
+  ggplotly(tooltip = "text") |> 
+  style(hoverlabel = list(bgcolor = color_fondo2,
+                          bordercolor = color_fondo2,
+                          font = list(family = "Monaco", color  = color_texto),
+                          align = "left",
+                          max_width = 200
+  )
+  )
