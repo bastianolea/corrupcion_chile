@@ -26,7 +26,7 @@ color_fundaciones = "#D39552" #"#c88d2c" |> lighten(0.2)
 color_na = "grey80"
 
 titulo = "Casos de corrupción en Chile"
-subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos políticos, ordenados por monto, de 2014 a 2024
+subtitulo = glue("Lista de casos de corrupción donde estén implicados partidos políticos, ordenados por monto, de 2014 a 2025
                              
                                 _Sólo se incluyen los 30 mayores casos. Última actualización de datos:_ {format(today(), '%d/%m/%Y')}")
 
@@ -104,6 +104,7 @@ tabla_corrupcion_partidos
 
 
 # guardar ----
+options(chromote.headless = "new")
 
 #guardar tabla como imagen
 tabla_corrupcion_partidos |> 

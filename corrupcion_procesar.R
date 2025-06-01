@@ -21,6 +21,10 @@ corrupcion <- corrupcion_0 |>
   rename(año = ano) |> 
   #excluir casos sin fuentes
   filter(!is.na(fuente1) & fuente1 != "") |> 
+  # excluir casos absueltos
+  filter(is.na(conclusion) | !conclusion %in% c("absuelta", "absuelto")) |> 
+  # excluir casos con información insuficiente
+  filter(!(is.na(monto) & is.na(responsable))) |> 
   #convertir monto a numérico
   mutate(monto = str_remove_all(monto, "\\."),
          monto = as.numeric(monto)) |> 
@@ -31,7 +35,7 @@ corrupcion <- corrupcion_0 |>
   #variables nuevas para visualizador
   mutate(partido = ifelse(partido == "" | is.na(partido), "Ninguno", partido),
          caso_fundaciones = ifelse(!is.na(fundacion), "Caso fundaciones", "Otros casos"),
-         alcalde = ifelse(posicion %in% c("Alcalde", "Municipio"), "Alcaldías", "Otros casos"),
+         alcalde = ifelse(posicion %in% c("Alcalde", "Alcaldesa", "Municipio"), "Alcaldías", "Otros casos"),
          alcalde = replace_na(alcalde, "Otros casos"),
          perjudicado = ifelse(perjudicado == "" | is.na(perjudicado), "Otros", perjudicado),
   ) |> 
@@ -40,8 +44,12 @@ corrupcion <- corrupcion_0 |>
   mutate(sector = replace_na(sector, "Ninguno"),
          partido = replace_na(partido, "Ninguno"),
          delitos = str_to_sentence(delitos)
-         )
+         ) |> 
+  # variable de texto para búsquedas
+  mutate(texto = paste(caso, responsable, partido, sector, fundacion, posicion, comuna, delitos),
+         texto = tolower(texto))
 
+# corrupcion |> tail()
 # corrupcion |> count(fundacion, caso_fundaciones)
 
 ## guardar ----

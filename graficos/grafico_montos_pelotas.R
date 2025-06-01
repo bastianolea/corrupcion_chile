@@ -248,7 +248,7 @@ for (variable_color in variables_posibles) {
                                     "Ninguno" = color_neutro)) +
       labs(color = "Sector político") +
       guides(colour = guide_legend(override.aes = list(size = 5))) +
-      labs(subtitle = glue("Casos según sector político y ordenados por monto, de 2014 a 2024"))
+      labs(subtitle = glue("Casos según sector político y ordenados por monto, de 2014 a 2025"))
   }
   
   

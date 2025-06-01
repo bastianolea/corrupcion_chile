@@ -158,35 +158,35 @@ ui <- page_fluid(
       ## intro ----
       div(
         div(style = "margin-top: -26px;",
-               
-               markdown("Se denomina **Corrupción** al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
+            
+            markdown("Se denomina **Corrupción** al aprovechamiento del poder político y/o económico en pos de beneficios personales o ilegítimos.
              Agentes del Estado, políticos o empresarios suelen ser sus perpetradores, debido a sus posiciones privilegiadas, capacidad de negociación y redes de contactos."),
-               
-               markdown("La corrupción ha copado los medios comunicacionales en los últimos meses. Sin embargo, la información que los medios deciden presentar u omitir, y el modo mismo en que la exponen, es generalmente tendencioso."),
-               
-               markdown("Este visualizador compila [datos abiertos](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile, especificando montos, responsables y sus sectores políticos."),
-               
-               hr()
-               
-               
+            
+            markdown("La corrupción ha copado los medios comunicacionales en los últimos meses. Sin embargo, la información que los medios deciden presentar u omitir, y el modo mismo en que la exponen, es generalmente tendencioso."),
+            
+            markdown("Este visualizador compila [datos abiertos](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) sobre este tema país, y produce gráficos que permiten analizar cómo y desde dónde ha operado la corrupción en Chile, especificando montos, responsables y sus sectores políticos."),
+            
+            hr()
+            
+            
         )
       ),
       
       div(style = "width: 100%;",
-        div(style = "padding: 20px; padding-top: 0px; padding-bottom: 0px;
+          div(style = "padding: 20px; padding-top: 0px; padding-bottom: 0px;
            max-width: 450px; margin: auto;",
-               
-               em("Selecciona un rango de años:"),
-               
-               div(style = "margin-top: 12px;display: inline-block;",
-                   pickerInput("desde", label = "Desde",
-                               choices = 2010:año_actual, selected = 2010, 
-                               multiple = F, inline = T),
-                   pickerInput("hasta", label = "Hasta",
-                               choices = 2010:año_actual, selected = año_actual,
-                               multiple = F, inline = T)
-               )
-        )
+              
+              em("Selecciona un rango de años:"),
+              
+              div(style = "margin-top: 12px;display: inline-block;",
+                  pickerInput("desde", label = "Desde",
+                              choices = 2010:año_actual, selected = 2010, 
+                              multiple = F, inline = T),
+                  pickerInput("hasta", label = "Hasta",
+                              choices = 2010:año_actual, selected = año_actual,
+                              multiple = F, inline = T)
+              )
+          )
       ),
       
       ## body ----
@@ -212,7 +212,7 @@ ui <- page_fluid(
       div(
         hr(),
         h2("Percepción de la corrupción"),
-
+        
         # ¿Cuáles son los tres problemas a los que debería dedicar mayor esfuerzo en solucionar el gobierno?
         p("Datos de la encuesta CEP que indican el porcentaje de la población nacional encuestada
              que considera la",  strong("corrupción como uno de los temas principales"), "que el Gobierno debiese solucionar."),
@@ -223,7 +223,7 @@ ui <- page_fluid(
                                   inline = T, width = "fit"
         ),
         plotOutput("grafico_cep", height = 400) |> withSpinner(),
-
+        
         div(style = "font-size: 80%; margin: 18px; opacity: 0.5;",
             p(em("Datos para este gráfico obtenidos usando el",
                  tags$a("Graficador CEP,",
@@ -233,7 +233,7 @@ ui <- page_fluid(
         )
         # )
       ),
-
+      
       ###grafico cpi  ----
       # fluidRow(
       #   column(12,
@@ -244,76 +244,76 @@ ui <- page_fluid(
           "es un ranking de 180 países sobre los niveles percibidos de corrupción en el sector público, que usa una escala de 0 a 100, donde 0 es altamente corrupto."),
         p("En su última medición, correspondiente al año 2023, el índice indica que",
           strong("la corrupción en Chile aumentó,"), "bajando de 67 a 66 puntos."),
-
+        
         plotOutput("grafico_cpi", height = 400) |> withSpinner(),
-
+        
         hr()
         # )
       ),
-
+      
       ####graficos torta ----
       # div(style = css(width = "100%", overflow = "scroll"),
       layout_columns(col_widths = c(6, 6),
-        div(style = "margin-bottom: -30px; width: 100%;",
-
-               h2("Casos de corrupción por sector político"),
-               em(p("Porcentaje de casos entre",
-                    em(textOutput("rango_años_torta1", inline = T),
-                       "cuyo responsable o responsables principales pertenecen a un determinado sector político")
-               )
-               ),
-               div(#style = "overflow-x: scroll;",
-                   # div(style = "min-width: 400px;",
-                       # div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
+                     div(style = "margin-bottom: -30px; width: 100%;",
+                         
+                         h2("Casos de corrupción por sector político"),
+                         em(p("Porcentaje de casos entre",
+                              em(textOutput("rango_años_torta1", inline = T),
+                                 "cuyo responsable o responsables principales pertenecen a un determinado sector político")
+                         )
+                         ),
+                         div(#style = "overflow-x: scroll;",
+                           # div(style = "min-width: 400px;",
+                           # div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
                            plotOutput("torta_sector") |> withSpinner()
-                       # )
-                   # )
-            ),
-
-               boton_descarga_imagen("Descargar gráfico",
-                                     "graficos/grafico_torta_sector.png")
-        ),
-        div(style = "margin-bottom: -30px;  min-width: 400px;",
-
-               h2("Casos de corrupción por partido político"),
-               em(p("Porcentaje de casos entre",
-                    em(textOutput("rango_años_torta2", inline = T),
-                       "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
-               )
-               ),
-               div(#style = "overflow-x: scroll;",
-                   # div(style = "min-width: 400px;",
-                       div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
-                           plotOutput("torta_partido") |> withSpinner()
-                       )
-                   # )
-            ),
-               boton_descarga_imagen("Descargar gráfico",
-                                     "graficos/grafico_torta_partido.png")
-        )
-      # )
+                           # )
+                           # )
+                         ),
+                         
+                         boton_descarga_imagen("Descargar gráfico",
+                                               "graficos/grafico_torta_sector.png")
+                     ),
+                     div(style = "margin-bottom: -30px;  min-width: 400px;",
+                         
+                         h2("Casos de corrupción por partido político"),
+                         em(p("Porcentaje de casos entre",
+                              em(textOutput("rango_años_torta2", inline = T),
+                                 "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
+                         )
+                         ),
+                         div(#style = "overflow-x: scroll;",
+                           # div(style = "min-width: 400px;",
+                           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
+                               plotOutput("torta_partido") |> withSpinner()
+                           )
+                           # )
+                         ),
+                         boton_descarga_imagen("Descargar gráfico",
+                                               "graficos/grafico_torta_partido.png")
+                     )
+                     # )
       ),
-
-
+      
+      
       #### gráfico torta montos ----
       fluidRow(
         column(12,
                hr(),
                h2("Montos totales de casos de corrupción por sector político"),
                p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
-
+               
                div(style = "overflow-x: scroll;",
                    div(style = "min-width: 400px;",
                        div(style = "max-width: 700px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
                            plotOutput("torta_montos", height = 400) |> withSpinner()
                        )
                    )),
-
+               
                boton_descarga_imagen("Descargar gráfico",
                                      "graficos/grafico_torta_montos_sector.png")
         )
       ),
-
+      
       ### mapas ----
       fluidRow(
         hr(),
@@ -338,8 +338,8 @@ ui <- page_fluid(
                plotlyOutput("mapa_interactivo_sur") |> withSpinner()
         )
       ),
-
-
+      
+      
       fluidRow(
         # column(12, style = "margin-top: 18px;",
         #        h4("Corrupción en Santiago"),
@@ -361,7 +361,7 @@ ui <- page_fluid(
                    # plotOutput("mapa_centro_zoom") |> withSpinner()
                    plotlyOutput("mapa_interactivo_centro_zoom") |> withSpinner()
                )
-
+               
         ),
         column(6,
                div(style = "min-height: 90px;",
@@ -375,21 +375,21 @@ ui <- page_fluid(
                )
         ),
       ),
-
-
+      
+      
       ### barras comparativos ----
       fluidRow(
         column(12,
                hr(),
                h2("Comparación de casos"),
                p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha."), #Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
-
+               
                shinyWidgets::awesomeCheckbox("checkbox_outliers_barras_comparativo",
                                              label = em("Excluir casos extremos"), value = TRUE),
-
+               
                shinyWidgets::awesomeCheckbox("top_20_barras_comparativo",
                                              label = em("Limitar a 15 casos"), value = TRUE),
-
+               
                shinyWidgets::pickerInput("selector_barras_comparativo",
                                          label = em("Criterio de separación:"),
                                          choices = c("Sector político", "Caso Convenios o fundaciones", "Sector político versus fundaciones"),
@@ -397,73 +397,79 @@ ui <- page_fluid(
                                          multiple = F,
                                          inline = T, width = "fit"
                ),
-
+               
                div(style = "overflow-x: scroll;",
                    div(style = "min-width: 500px;",
                        plotOutput("grafico_barras_comparativo", height = 900) |> withSpinner(),
                    )),
-
+               
                boton_descarga_imagen("Descargar gráfico",
                                      "graficos/grafico_corrupcion_montos_sector.png")
         )
       ),
-
+      
       ### tabla alcaldías ----
       fluidRow(
         column(12,
                hr(),
                h2("Alcaldes y municipios implicados en casos de corrupción"),
                p("Tabla con todos los casos de corrupción que conciernen a municipios o alcaldías de Chile."),
-
+               
                shinyWidgets::pickerInput("sector_alcaldias",
                                          label = em("Sector político:"),
                                          choices = c("Todos", "Derecha", "Izquierda"),
                                          selected = "Todos", multiple = F,
                                          inline = T, width = "fit"
                ),
-
+               
                div(style = "padding-left: 18px; padding-right: 18px;",
+                   
+                   textInput("tabla_busqueda_alcaldias",
+                             label = "Buscar casos", 
+                             placeholder = "Escriba un municipio, alcalde, caso, partido, delito, etc.",
+                             width = "80%"),
+                   
                    div(style = "max-height: 600px; overflow-y: scroll;",
                        gt_output("tabla_alcaldías") |> withSpinner()
                    ),
-
+                   
                    boton_descarga_imagen("Descargar tabla como imagen",
                                          "graficos/tabla_corrupcion_municipalidades_chile.png")
                )
         )
       ),
-
+      
       ### tabla fundaciones ----
       fluidRow(
         column(12,
                hr(),
                h2("Fundaciones involucradas o investigadas por corrupción"),
-
+               
                div(style = "overflow-x: scroll;",
                    div(style = "min-width: 500px;",
                        plotOutput("grafico_fundaciones", height = 500) |> withSpinner()
                    )),
-
+               
                p("Tabla con todos los casos de corrupción que involucran a fundaciones, dentro del marco del Caso Convenios."),
-
+               
                div(style = "padding-left: 18px; padding-right: 18px;",
                    div(style = "max-height: 600px; overflow-y: scroll;",
                        gt_output("tabla_fundaciones") |> withSpinner()
                    ),
-
+                   
                    boton_descarga_imagen("Descargar gráfico",
                                          "graficos/grafico_corrupcion_montos_caso_fundaciones.png")
                )
         )
       ),
-
-
+      
+      
       ###grafico montos ----
       fluidRow(
         column(12,
                hr(),
                h2("Comparación de montos de los mayores casos de corrupción"),
-
+               
                pickerInput("variable_color", label = em("Distinguir casos de corrupción por variable:"),
                            choices = c("No" = "ninguno",
                                        "Sector político" = "sector",
@@ -489,47 +495,47 @@ ui <- page_fluid(
                            withSpinner(color = color_destacado, type = 8, proxy.height = 400),
                          # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner()
                        )
-                       ),
-
+                   ),
+                   
                    boton_descarga_imagen("Descargar gráfico",
                                          "graficos/grafico_corrupcion_montos_sector.png"),
-
+                   
                    hr()
                )
         )
       ),
-
-
+      
+      
       ### comparación de objetos ----
       fluidRow(
         column(12,
                h2("¿A qué equivale el monto...?"),
-
-
+               
+               
                p("Las cifras de los casos de corrupción suelen ser muy elevadas, lo que hace difícil entender de cuánto dinero estamos hablando.
                  ¿Qué mejor que convertir los montos en su equivalente en cosas tangibles que podrían haberse financiado con la misma plata?"),
                p("Selecciona un caso de corrupción, y luego una medida para obtener su equivalencia en objetos de forma gráfica."),
-
+               
                p("Por ejemplo,
                  ¿cuántas radiopatrullas de Carabineros podrían haberse comprado con la plata del municipio de Maipú?
                  ¿Cuántas viviendas sociales se podrían haber construido con la plata del Pacogate?"),
-
+               
                div(style = "max-width: 500px;",
                    pickerInput("caso_elegido_comparar",
                                label = em("Seleccione un caso de corrupción:"),
                                choices = NULL, multiple = F, width = "100%"
                    ),
-
+                   
                    pickerInput("selector_comparar",
                                label = em("Elija una medida para la equivalencia:"),
                                choices = precios$objeto, width = "100%", multiple = F),
-
+                   
                    # div(style = "margin-top: 24px;",
                    #     p(em("Presiona el botón para obtener el gráfico:"), style = "margin-bottom: 10px;"),
                    #     actionButton("comparar", "comparar monto", width = "100%")
                    # )
                ),
-
+               
                ### texto
                uiOutput("comparar_info", fill = TRUE),
         ),
@@ -541,60 +547,65 @@ ui <- page_fluid(
                ),
         )
       ),
-
-
+      
+      
       ### tabla todos los casos ----
       fluidRow(
         column(12,
                hr(),
                h2("Recopilación de todos los casos de corrupción en Chile"),
-
+               
                markdown("Finalmente, esta tabla transparenta todos los datos recopilados por esta plataforma, que alimentan el resto de visualizaciones. Puedes acceder a estos datos en formato Excel en el [repositorio de GitHub de este proyecto.](https://github.com/bastianolea/corrupcion_chile/tree/main/datos) Si encuentras errores o deseas hacer una corrección, [no dudes en contactarme.](https://twitter.com/bastimapache)"),
-
+               
                boton_descarga_imagen("Descargar gráfico",
                                      "graficos/tabla_corrupcion_partidos_chile.png"),
-
+               
                div(style = "padding-left: 18px; padding-right: 18px;",
+                   textInput("tabla_busqueda",
+                             label = "Buscar casos", 
+                             placeholder = "Escriba un caso, partido, municipio, delito, etc.",
+                             width = "80%"),
+                   
                    div(style = "max-height: 900px; overflow-y: scroll;",
                        gt_output("tabla_casos")
                    )
                )
         )
       ),
-
-
-
-
+      
+      
+      
+      
       ### firma ----
       fluidRow(
         column(12, style = "padding: 28px;",
                hr(),
                markdown("Desarrollado y programado por [Bastián Olea Herrera.](https://bastianolea.rbind.io)"),
-
+               
                markdown("Puedes explorar mis otras [aplicaciones interactivas sobre datos sociales en mi portafolio.](https://bastianolea.github.io/shiny_apps/)"),
-
+               
                markdown("Código de fuente de esta app y del procesamiento de los datos [disponible en GitHub.](https://github.com/bastianolea/corrupcion_chile)"),
-
+               
                div(style = "opacity: 0.4; font-size: 80%;",
                    markdown("Los datos de este visualizador son compilados manualmente. Si quieres complementar los datos existentes, ayudar con correcciones, agregar casos nuevos, o hacer cualquier comentario,
              puedes encontrar los datos en el [repositorio](https://github.com/bastianolea/corrupcion_chile), o bien, [contactarme.](https://bastianolea.rbind.io/contact)")
                ),
-
+               
                #### cafecito ----
                div(
                  style = "max-width: 480px; margin: auto; padding: 28px",
-
+                 
                  tags$style(HTML(".cafecito:hover {opacity: 75%; transition: 0.3s; color: black !important;} .cafecito a:hover {color: black}")),
-
+                 
                  div(class = "cafecito",
                      style = "transform:scale(0.6);",
                      tags$body(HTML('<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="bastimapache" data-color="#FFDD00" data-emoji=""  data-font="Bree" data-text="Regálame un cafecito" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>'))
                  )
                ),
-
-
+               
+               
                # div(style = "height: 40px")
-
+               
         )
       )
       
@@ -682,10 +693,10 @@ server <- function(input, output, session) {
   # ancho de ventana ----
   ancho <- reactive(input$dimension_ventana[1]) |> bindEvent(input$dimension_ventana)
   ancho_ventana <- ancho |> debounce(500)
-
+  
   output$dimension <- renderText({
     ancho_ventana()
-    })
+  })
   
   # scroll ----
   # scroll <- list(inicio = TRUE, abajo = TRUE) # falso
@@ -694,7 +705,7 @@ server <- function(input, output, session) {
   #   runjs("Shiny.setInputValue('posicion', window.pageYOffset);")
   # })
   posicion_scroll <- reactive(input$posicion_y) |> bindEvent(input$posicion_y)
-
+  
   # observe({
   #   message("input$posicion_y: ", input$posicion_y)
   # })
@@ -711,22 +722,22 @@ server <- function(input, output, session) {
       return(0)
     }
   })
-
+  
   # hacer que el input solo se actualice 500 milisegundos después de terminar el scrolling
   vertical_position <- vertical |> debounce(200)
-
+  
   observe({
     message("vertical scroll position debounced: ", vertical_position())
   })
-
+  
   #si el scrolling supera este valor (pixeles de desplazamiento vertical), entonces se cargarán los gráficos grandes
   scroll <- reactiveValues(abajo = FALSE, inicio = FALSE)
-
+  
   observeEvent(vertical_position(), {
     if (vertical_position() > 500) {
       scroll$inicio <- TRUE
     }
-
+    
     if (vertical_position() > 1800) {
       scroll$abajo <- TRUE
     }
@@ -755,15 +766,15 @@ server <- function(input, output, session) {
     
     # browser()
   }, res = resolucion)
-
+  
   #gráfico cep puntos percepcion ----
   output$grafico_cep <- renderPlot({
-
+    
     datos_cep <- cep_corrupcion |>
       filter(variable %in% input$cep) |>
       filter(año >= año_min(),
              año <= año_max())
-
+    
     if (length(input$cep) > 1) {
       p <- datos_cep |>
         ggplot(aes(as.Date(fecha), y = porcentaje, color = variable))
@@ -787,16 +798,16 @@ server <- function(input, output, session) {
             legend.title = element_blank(),
             legend.margin = margin(t = 0, b = -3))
   }, res = resolucion)
-
+  
   #gráfico cpi puntos ----
-
+  
   output$grafico_cpi <- renderPlot({
     # browser()
-
+    
     cpi <- cpi_corrupcion |>
       filter(año >= año_min(),
              año <= año_max())
-
+    
     cpi |>
       ggplot(aes(año, cpi)) +
       geom_line(linewidth = opt_lineas_geom, alpha = .4) +
@@ -815,18 +826,18 @@ server <- function(input, output, session) {
         axis.title.y = element_text(size = opt_texto_plot, margin = margin(r=6), face = "italic")) +
       labs(y = "Índice de percepción\nde la corrupción", x = NULL)
   }, res = resolucion)
-
+  
   # gráficos torta ----
   ## gráfico torta sector ----
   output$torta_sector <- renderPlot({
     req(nrow(corrupcion_años()) > 0)
-
+    
     # browser()
     datos <- corrupcion_años() |>
       count(sector) |>
       arrange(desc(sector)) |>
       mutate(p = n/sum(n))
-
+    
     # gráfico nuevo
     datos |>
       ggplot(aes(x = n, y = factor(1), fill = sector)) +
@@ -846,10 +857,10 @@ server <- function(input, output, session) {
                         aesthetics = c("fill", "color")) +
       theme_void()
   }, res = resolucion)
-
+  
   ## gráfico torta partido ----
   output$torta_partido <- renderPlot({
-
+    
     datos_partidos <- corrupcion_años() |>
       count(partido) |>
       tidyr::separate(partido, into = c("partido1", "partido2", "partido3"), sep = ", ") |>
@@ -857,7 +868,7 @@ server <- function(input, output, session) {
       filter(!is.na(partido) & partido != "") |>
       select(-name) |>
       tidyr::uncount(weights = n)
-
+    
     # browser()
     # si un partido solo sale una vez, mandarlo a "otros"
     datos_partidos_reduc <- datos_partidos |>
@@ -873,13 +884,13 @@ server <- function(input, output, session) {
       group_by(partido_reduc) |>
       summarize(n = sum(n),
                 p = sum(p))
-
+    
     datos <- datos_partidos_reduc |>
       # count(partido) |>
       rename(partido = partido_reduc)
     # mutate(prop = n / sum(n) *100) %>%
     # mutate(ypos = cumsum(prop)- 0.5 * prop)
-
+    
     # browser()
     #
     # dev.new()
@@ -899,7 +910,7 @@ server <- function(input, output, session) {
     #   scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
     #   theme(legend.position="none") +
     #   theme(plot.margin = unit(rep(-0.5, 4), "cm"))
-
+    
     # gráfico nuevo
     datos |>
       ggplot(aes(x = n, y = factor(1), fill = partido)) +
@@ -915,9 +926,9 @@ server <- function(input, output, session) {
       scale_fill_manual(values = degradado_verde(length(datos$partido)), aesthetics = c("fill", "color")) +
       theme_void()
   }, res = resolucion)
-
-
-
+  
+  
+  
   ## gráfico torta montos ----
   output$torta_montos <- renderPlot({
     # browser()
@@ -929,7 +940,7 @@ server <- function(input, output, session) {
       mutate(p = n/sum(n),
              n = n/1000000) |>
       mutate(sector = as.factor(sector))
-
+    
     # browser()
     # dev.new()
     datos_montos |>
@@ -961,24 +972,24 @@ server <- function(input, output, session) {
             plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
             plot.caption = element_text(lineheight = 1.2, margin = margin(t = -10, r = 6, b = 6))) +
       theme(plot.margin = margin(t = -60, b = -60))
-
-
+    
+    
   }, res = resolucion)
-
+  
   # mapas ----
-
+  
   ## datos mapas ----
-
+  
   mapa_pais <- reactive(read_rds("mapa_pais.rds"))
   mapa_region <- reactive(read_rds("mapa_region.rds") |> 
                             mutate(geometry = sf::st_cast(geometry, "MULTIPOLYGON")))
   mapa_filtrado_urbano <- reactive(read_rds("mapa_rm_urbano.rds"))
-# scroll <- list(inicio = TRUE)
-
+  # scroll <- list(inicio = TRUE)
+  
   # crear columna de match entre comunas
   corrupcion_comunas_conteo_join <- reactive({
     # req(scroll$inicio)
-
+    
     corrupcion_comunas_conteo() |>
       mutate(comuna = case_match(comuna,
                                  "Puerto Natales" ~ "Natales",
@@ -989,7 +1000,7 @@ server <- function(input, output, session) {
       mutate(comuna_match = tolower(comuna),
              comuna_match = stringi::stri_trans_general(comuna_match, "latin-ascii"))
   })
-
+  
   
   # mapa con datos de todo chile
   corrupcion_comunas_mapa <- reactive({
@@ -997,12 +1008,12 @@ server <- function(input, output, session) {
     # crear columna de match entre comunas
     mapa_pais_join <- mapa_pais() |>
       mutate(comuna_match = tolower(nombre_comuna))
-
+    
     # unir datos con mapa
     corrupcion_comunas_mapa <- left_join(corrupcion_comunas_conteo_join(),
                                          mapa_pais_join,
                                          by = "comuna_match")
-
+    
     # crear puntos y etiquetas
     corrupcion_comunas_mapa_2 <- corrupcion_comunas_mapa |>
       mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE)) |>
@@ -1022,16 +1033,16 @@ server <- function(input, output, session) {
       # mutate(etiqueta = glue("**{comuna}:** {n} {caso_t}\n\n**Monto total:** {monto_t}\n\n**Casos:** {casos_t}"))
       mutate(etiqueta = glue("{comuna}: {n} {caso_t}\nMonto total: {monto_t}\n\n{str_wrap(casos_t, 30)}")) |> 
       ungroup()
-
+    
     return(corrupcion_comunas_mapa_2)
   })
-
-
-
+  
+  
+  
   # mapa con datos de la región metropolitana
   corrupcion_comunas_rm_mapa <- reactive({
     # req(scroll$inicio)
-
+    
     # browser()
     corrupcion_comunas_conteo_join() |>
       unnest(c(montos, responsables, casos, delitos, años)) |>
@@ -1046,21 +1057,21 @@ server <- function(input, output, session) {
              # caso_t = ifelse(n == 1, "caso", "casos"),
              caso_t = str_wrap(glue("{comuna}: {casos} ({años})"), 30),
              # etiqueta1 = case_when(is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t)),
-                                  # !is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t, "\n\n_", delitos, "_")))
+             # !is.na(delitos) ~ markdown(paste0("**", comuna, "**: ", casos, " (", años, ")\n\n", monto_t, "\n\n_", delitos, "_")))
       ) |> 
       mutate(etiqueta = case_when(is.na(delitos) ~ glue("{caso_t}\n{monto_t}"),
                                   !is.na(delitos) ~ glue("{caso_t}\n{monto_t}\n{str_wrap(delitos, 30)}"))) |> 
       ungroup()
   })
-
-
+  
+  
   ## mapa chile ----
   mapa_corrupcion_chile <- reactive({
     # req(scroll$inicio)
-# browser()
+    # browser()
     
     message("rendering mapa chile...")
-
+    
     corrupcion_comunas_mapa() |>
       st_set_geometry(corrupcion_comunas_mapa()$geometry) |>
       ggplot() +
@@ -1073,15 +1084,15 @@ server <- function(input, output, session) {
               inherit.aes = F) +
       # puntos
       geom_sf(aes(geometry = punto,
-                              size = monto, alpha = monto,
-                              data_id = comuna,
-                              tooltip = etiqueta),
-                          color = color_complementario) +
+                  size = monto, alpha = monto,
+                  data_id = comuna,
+                  tooltip = etiqueta),
+              color = color_complementario) +
       # borde de puntos
       # geom_sf(aes(geometry = punto, size = monto), shape = 1, color = color_fondo2, alpha = .4) +
       coord_sf(xlim = c(-76, -66)) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                        range = c(2, 10),
+                        range = c(1, 9),
                         labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(0.8, .5)) +
@@ -1091,7 +1102,7 @@ server <- function(input, output, session) {
       theme(panel.grid = element_line(linewidth = 0.2)) +
       theme(axis.text = element_blank(), axis.ticks = element_blank())
   })
-
+  
   ### zonas ----
   # calcular coordenadas de corte para dividir chile en 3
   limite_sup = 17.5 # coordenada y del extremo norte de chile
@@ -1099,30 +1110,30 @@ server <- function(input, output, session) {
   rango = limite_inf-limite_sup # cantidad de grados entre norte y sur
   partes = 3
   alto_y = rango/partes # altura que debiera tener cada una de las partes del mapa
-
+  
   inicios_y <- c(limite_sup, limite_sup + alto_y, limite_sup + alto_y*2)
   finales_y <- inicios_y + alto_y
-
+  
   # norte
   mapa_norte <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(#xlim = c(-76, -66),
-               xlim = c(-76-1.1, -66+1.1), # más espacio por plotly
-               ylim = c(-inicios_y[1], -finales_y[1]),
-               expand = F)
+        xlim = c(-76-1.1, -66+1.1), # más espacio por plotly
+        ylim = c(-inicios_y[1], -finales_y[1]),
+        expand = F)
   })
-
+  
   # centro
   mapa_centro <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(#xlim = c(-76-0.7, -66+0.7), #sumar porque a medida que se baja al sur, el mapa se hace angosto
         xlim = c(-76-1.4, -66+1.4), # más espacio por plotly
-               ylim = c(-inicios_y[2], -finales_y[2]),
-               expand = F)
+        ylim = c(-inicios_y[2], -finales_y[2]),
+        expand = F)
   })
-
+  
   # rm
   mapa_rm_zoom <- reactive({
     # req(scroll$inicio)
@@ -1132,24 +1143,24 @@ server <- function(input, output, session) {
                ylim = c(-32.7, -34.3),
                expand = F)
   })
-
+  
   # sur
   mapa_sur <- reactive({
     # req(scroll$inicio)
     mapa_corrupcion_chile() +
       coord_sf(#xlim = c(-76-1.7, -65.6+1.7),
         xlim = c(-76-3.2, -65.6+3.2), # más espacio por plotly
-               ylim = c(-inicios_y[3], -finales_y[3]),
-               expand = F)
+        ylim = c(-inicios_y[3], -finales_y[3]),
+        expand = F)
   })
-
-
+  
+  
   ## mapa rm ----
   mapa_corrupcion_rm <- reactive({
     # req(scroll$inicio)
-
+    
     message("rendering mapa rm...")
-
+    
     corrupcion_comunas_rm_mapa() |>
       st_set_geometry(corrupcion_comunas_rm_mapa()$geometry) |>
       filter(!is.na(montos)) |>
@@ -1164,17 +1175,17 @@ server <- function(input, output, session) {
               inherit.aes = F) +
       # puntos
       geom_sf(aes(geometry = punto_jitter,
-                              size = montos, alpha = montos,
-                              data_id = casos,
-                              tooltip = etiqueta),
-                          color = color_complementario) +
+                  size = montos, alpha = montos,
+                  data_id = casos,
+                  tooltip = etiqueta),
+              color = color_complementario) +
       # bordes
       # geom_sf(aes(geometry = punto_jitter, size = montos), shape = 1, color = color_fondo2, alpha = .4) +
       coord_sf(#xlim = c(-70.81, -70.44213), 
-               xlim = c(-70.81-0.06, -70.44+0.06), # más espacio por plotly
-               ylim = c(-33.66-0.01, -33.31+0.01), expand = FALSE) +
+        xlim = c(-70.81-0.06, -70.44+0.06), # más espacio por plotly
+        ylim = c(-33.66-0.01, -33.31+0.01), expand = FALSE) +
       scale_size_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
-                        range = c(1, 10),
+                        range = c(1, 9),
                         labels = scales::label_comma(scale = 1e-6, suffix = " millones", big.mark = ".", decimal.mark = ","))+
       scale_alpha_binned(breaks = c(0, 100*1e6, 1000*1e6, 10000*1e6, 100000*1e6),
                          range = c(.8, .5)) +
@@ -1184,9 +1195,9 @@ server <- function(input, output, session) {
       theme(panel.grid = element_line(linewidth = 0.2)) +
       theme(axis.text = element_blank(), axis.ticks = element_blank())
   })
-
-
-
+  
+  
+  
   ## interactivos ----
   output$mapa_norte <- renderPlot(mapa_norte())
   output$mapa_centro <- renderPlot(mapa_centro())
@@ -1201,7 +1212,7 @@ server <- function(input, output, session) {
   # output$mapa_interactivo_centro_zoom <- renderGirafe(mapa_rm_zoom() |> girafear(alto = 7, ancho = 9))
   # output$mapa_interactivo_sur <- renderGirafe(mapa_sur() |> girafear())
   # output$mapa_interactivo_rm <- renderGirafe(mapa_corrupcion_rm() |> girafear(alto = 6))
-
+  
   
   plotlyar <- function(mapa, alto = 8, ancho = 7) {
     mapa |> 
@@ -1209,19 +1220,19 @@ server <- function(input, output, session) {
                dynamicTicks = F,
                # width = ancho,
                # height = alto
-               ) |> 
+      ) |> 
       style(hoverlabel = list(bgcolor = color_fondo2,
                               bordercolor = color_fondo2,
                               font = list(family = "Monaco", color  = color_texto),
                               align = "left"
-                              )
+      )
       ) |> 
       config(displayModeBar = FALSE) |> 
       layout(xaxis = list(fixedrange = TRUE)) |> 
       layout(yaxis = list(fixedrange = TRUE)) #|> 
-      # layout(plot_bgcolor=color_fondo) # quita el fondo pero el del gráfico también 
+    # layout(plot_bgcolor=color_fondo) # quita el fondo pero el del gráfico también 
     # autorange = TRUE
-      # layout(margin = list(l = 0))
+    # layout(margin = list(l = 0))
   }
   
   output$mapa_interactivo_norte <- renderPlotly(mapa_norte())
@@ -1231,11 +1242,11 @@ server <- function(input, output, session) {
   output$mapa_interactivo_sur <- renderPlotly(mapa_sur() |> plotlyar())
   output$mapa_interactivo_rm <- renderPlotly(mapa_corrupcion_rm() |> plotlyar(alto = 6))
   
-
-
   
-
-
+  
+  
+  
+  
   # gráfico barras comparativo ----
   datos_barras <- reactive({
     # browser()
@@ -1244,7 +1255,7 @@ server <- function(input, output, session) {
       # filter(responsable != "Virginia Reginato" | is.na(responsable)) |>
       # filter(responsable != "Cathy Barriga" | is.na(responsable)) |>
       mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros"))
-
+    
     # browser()
     if (input$checkbox_outliers_barras_comparativo == TRUE) {
       datos_filtrados <- datos |>
@@ -1254,18 +1265,18 @@ server <- function(input, output, session) {
       datos_filtrados <- datos
     }
   })
-
+  
   # grafico
   output$grafico_barras_comparativo <- renderPlot({
-
+    
     escala_barras_horizontales <- scale_x_continuous(#n.breaks = 10,
       expand = expansion(c(0, 0.01)),
       # limits = c(1e-9, NA),
       # labels = unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
       labels = unit_format(unit = "mil mill.", big.mark = ".", decimal.mark = ",", scale = 1e-9))
-
+    
     ancho_barras = 0.5
-
+    
     tema_barras_horizontales <- theme(text = element_text(family = "IBM Plex Mono"),
                                       axis.title = element_blank(),
                                       axis.ticks.y = element_blank(),
@@ -1281,14 +1292,14 @@ server <- function(input, output, session) {
                                       axis.text.y = element_text(size = opt_texto_axis*1.1, face = "bold"),
                                       strip.text = element_text(hjust = 0, size = opt_texto_axis, face = "bold"),
                                       legend.title = element_text(face = "bold", size = opt_texto_plot, margin = margin(r = 4))
-
+                                      
     )
-
+    
     escala_y_barras_horizontales <- scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…"))
-
+    
     ## barras sector
     if (input$selector_barras_comparativo == "Sector político") {
-
+      
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos_barras() |>
           group_by(sector) |>
@@ -1297,7 +1308,7 @@ server <- function(input, output, session) {
         datos <- datos_barras() |>
           slice_max(n = 30, order_by = monto)
       }
-
+      
       p <- datos |>
         filter(sector != "Otros") |>
         ggplot(aes(y = caso, x = monto, fill = sector)) +
@@ -1313,10 +1324,10 @@ server <- function(input, output, session) {
                                      "Otros" = color_destacado)) +
         labs(fill = "Sector político",
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
-
+      
       ## barras fundaciones
     } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
-
+      
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos_barras() |>
           group_by(caso_fundaciones) |>
@@ -1325,7 +1336,7 @@ server <- function(input, output, session) {
         datos <- datos_barras() |>
           slice_max(n = 30, order_by = monto)
       }
-
+      
       p <- datos |>
         ggplot(aes(y = caso, x = monto, fill = caso_fundaciones)) +
         geom_col(width = ancho_barras) +
@@ -1337,16 +1348,16 @@ server <- function(input, output, session) {
                                      "Otros casos" = color_destacado)) +
         labs(fill = "Tipo de caso",
              title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
-
+      
       ## barras sector vs fundaciones
     } else if (input$selector_barras_comparativo == "Sector político versus fundaciones") {
-
+      
       datos <- datos_barras() |>
         mutate(fundaciones_sector = case_when(caso_fundaciones == "Caso fundaciones" ~ "Fundaciones",
                                               sector == "Derecha" ~ "Derecha",
                                               sector == "Izquierda" ~ "Izquierda",
                                               .default = "Otros"))
-
+      
       if (input$top_20_barras_comparativo == TRUE) {
         datos <- datos |>
           group_by(fundaciones_sector) |>
@@ -1355,7 +1366,7 @@ server <- function(input, output, session) {
         datos <- datos |>
           slice_max(n = 30, order_by = monto)
       }
-
+      
       p <- datos |>
         ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
         geom_col(width = ancho_barras) +
@@ -1372,7 +1383,7 @@ server <- function(input, output, session) {
     }
     plot(p)
   }, res = resolucion)
-
+  
   
   # grafico fundaciones ----
   output$grafico_fundaciones <- renderPlot({
@@ -1424,11 +1435,11 @@ server <- function(input, output, session) {
   
   
   #—----
-
+  
   # gráfico montos divididos ----
   alto_grafico_montos <- reactive({
     req(scroll$abajo)
-
+    
     casos = length(unique(corrupcion_escalado()$caso))
     # message("casos en gráfico montos: ", casos)
     # alto = 58 * casos
@@ -1436,11 +1447,11 @@ server <- function(input, output, session) {
     message("gráfico montos: alto gráfico montos: ", alto)
     return(alto)
   })
-
+  
   #etiquetas de texto para los millones
   monto_etiqueta <- reactive({
     req(scroll$abajo)
-
+    
     corrupcion_escalado() |>
       group_by(caso) |>
       filter(monto_escalera == monto_escalado) |>
@@ -1452,16 +1463,16 @@ server <- function(input, output, session) {
              #                         monto_etiqueta)
       )
   })
-
+  
   ## gráfico ----
   output$grafico_montos <- renderPlot({
     req(nrow(corrupcion_escalado()) > 0)
     req(monto_etiqueta())
     req(alto_grafico_montos())
     req(scroll$abajo) # req(vertical_position() > 2000)
-
+    
     message("rendering gráfico montos...")
-
+    
     ### opciones
     expansion_y = 0.5 #espacio entre borde de cada faceta de cada caso y sus valores
     expansion_x = 0.1 #espacio entre valor máximo y borde derecho del gráfico
@@ -1472,7 +1483,7 @@ server <- function(input, output, session) {
     corte_etiqueta_casos = 32 #caracteres antes del corte de línea de etiquetas y
     espaciado_etiquetas_x = 0.03 #espacio entre etiquetas eje y y puntos
     espaciado_etiquetas_millones = 0.8 #espacio entre ultimo punto y etiqueta de montos
-
+    
     # browser()
     grafico <- corrupcion_escalado() |>
       ggplot(aes(x = monto_escalera, y = division_monto_etiqueta,
@@ -1509,103 +1520,103 @@ server <- function(input, output, session) {
       theme(legend.position = "top", legend.direction = "horizontal",
             legend.margin = margin(t = 0, b = -3),
             legend.text = element_text(family = "IBM Plex Mono", size = 10))
-
+    
     #sin escala si no se divide el gráfico por colores
     if (input$variable_color == "ninguno") {
       grafico <- grafico +
         scale_color_manual(values = color_destacado) +
         theme(legend.position = "none")
     }
-
+    
     #si color es por sector político
     if (input$variable_color == "sector") {
       grafico <- grafico +
         scale_color_manual(values = c("Derecha" = color_derecha, "Izquierda" = color_izquierda,
                                       "Ninguno" = color_destacado))
     }
-
+    
     plot(grafico)
   }, height = reactive(alto_grafico_montos()),
   res = 72) #|>
   # bindCache(input$variable_color, año_min(), año_max())
-
-
-
+  
+  
+  
   # output$div_montos <- renderUI({
   #   # browser()
   #   alto <- 64 * length(unique(corrupcion_escalado()$caso))
   #   output <- plotOutput("grafico_montos", width = 800, height = alto)
   #   return(output)
   # })
-
+  
   ## ui montos ----
   output$ui_montos <- renderUI({
     req(nrow(corrupcion_escalado()) > 0)
     req(monto_etiqueta())
     req(alto_grafico_montos())
-
+    
     message("rendering ui gráfico montos...")
-
+    
     # plotOutput("grafico_comparacion",
     plotOutput("grafico_montos", width = 900,
                height = alto_grafico_montos()) |> withSpinner()
   })
-
-
-
+  
+  
+  
   #—----
-
+  
   # gráfico comparación de objetos ----
-
-
+  
+  
   observeEvent(año_min() | año_max(), {
     updatePickerInput(session, "caso_elegido_comparar",
                       choices = unique(as.character(corrupcion_años()$caso)),
                       selected = "Alcaldesa de Maipú (Cathy Barriga)"
     )
   })
-
+  
   ## objeto elegido ----
   #objeto por comparar seleccionado
   comparar <- reactive({
     req(scroll$abajo)
-
+    
     message("")
     message("objeto: ", input$selector_comparar)
     precios |> filter(objeto == input$selector_comparar)
   })
-
+  
   #monto del caso seleccionado
   comparar_monto <- reactive({
     req(scroll$abajo)
     req(input$caso_elegido_comparar)
-
+    
     monto <- corrupcion_años() |>
       filter(caso == input$caso_elegido_comparar) |>
       pull(monto)
-
+    
     # message("monto del caso elegido: ", monto)
     monto
   })
-
+  
   ## conversión monto a objetos ----
   #cantidad de objetos a lo que equivale el monto del caso
   cantidad_objetos <- reactive({
     req(scroll$abajo)
-
+    
     cantidad <- as.integer(comparar_monto()/comparar()$precio)
     cantidad <- ifelse(cantidad == 0, 1, cantidad)
-
+    
     message("gráfico comparación: cantidad de objetos: ", cantidad)
     cantidad
   })
-
+  
   ## textos e imagen ----
   output$comparar_monto <- renderText({
     monto <- format(comparar_monto(), big.mark = ".", decimal.mark = ",")
     paste0("$", monto)
   })
-
+  
   # output$comparar_precio_intro <- renderText({
   #   browser()
   #   if (comparar()$unidad == 1) {
@@ -1614,10 +1625,10 @@ server <- function(input, output, session) {
   #     texto = glue("precio de referencia por {} unidades: "
   #                  }
   #   })
-
+  
   output$comparar_precio <- renderText({
     req(scroll$abajo)
-
+    
     if (comparar()$unidad == 1) {
       precio <- format(comparar()$precio, big.mark = ".", decimal.mark = ",")
       precio <- paste0("$", precio)
@@ -1627,43 +1638,43 @@ server <- function(input, output, session) {
     }
     return(precio)
   })
-
+  
   output$comparar_objeto_2 <- output$comparar_objeto <- renderText(input$selector_comparar)
-
+  
   output$comparar_n_objetos <- renderText({
     #objetos que ya vienen dimensionados (toneladas, containers) y por ende son 1 a pesar de contener más del mismo objeto
     if (input$selector_comparar %in% c("toneladas de palta", "container lleno de completos italianos",
                                        "container lleno de pizzas familiares")) {
       objetos = format(cantidad_objetos(), big.mark = ".", decimal.mark = ",")
-
+      
       #objetos que vienen en paquetes, por ejemplo 100 mil centellas, 200 computadores
     } else {
       objetos = format(cantidad_objetos()*comparar()$unidad, big.mark = ".", decimal.mark = ",")
     }
     return(objetos)
   })
-
+  
   output$comparar_unidad <- renderText({
     unidad <- comparar()$unidad
-
+    
     #singular o plural
     texto <- ifelse(unidad > 1, paste(format(unidad, big.mark = ".", decimal.mark = ","), "unidades"), paste(unidad, "unidad"))
     #por si es solo 1 objeto
     texto <- ifelse(cantidad_objetos() == 1, "menos de 1 unidad", texto)
-
+    
     return(texto)
   })
-
+  
   output$comparar_caso_seleccionado <- renderText(input$caso_elegido_comparar)
-
+  
   ### párrafo e imagen comparacion ----
-
+  
   output$comparar_info <- renderUI({
     req(comparar())
-
+    
     div(style = "margin-top:34px; padding: 8px;",
         column(12,
-
+               
                #imagen a la izquierda
                div(style = "width: 100px; margin-left: 24px;",
                    # uiOutput("comparar_objeto_imagen"),
@@ -1672,9 +1683,9 @@ server <- function(input, output, session) {
                      width = "100%",
                      style = "margin-left: auto; margin-right: 0;
                  filter: invert(84%) sepia(8%) saturate(1115%) hue-rotate(97deg) brightness(85%) contrast(88%);")
-
+                   
                ),
-
+               
                #texto a la derecha
                div(style = "min-height: 120px; margin-left: 162px; margin-top: -100px; margin-bottom: 24px; max-width: 500px;",
                    # uiOutput("comparar_objeto_parrafo")
@@ -1682,13 +1693,13 @@ server <- function(input, output, session) {
                      p("El monto de", textOutput("comparar_monto", inline = T), "del caso de corrupción",
                        em(input$caso_elegido_comparar),
                        "es aproximadamente equivalente a ", strong(textOutput("comparar_n_objetos", inline = T), textOutput("comparar_objeto", inline = T))),
-
+                     
                      p("precio unitario de referencia: ",
                        # textOutput("comparar_precio_intro", inline = T),
                        textOutput("comparar_precio", inline = T), style = "font-size: 75%; opacity: 0.6;"),
                    )
                ),
-
+               
                #explicación abajo
                div(
                  p("En esta visualización,", strong("cada punto"),
@@ -1703,11 +1714,11 @@ server <- function(input, output, session) {
         )
     )
   })
-
+  
   ## cantidad de objetos divida por 10 ----
   cantidad <- reactive({
     req(scroll$abajo)
-
+    
     # cantidad <- cantidad_objetos()/10
     cantidad <- cantidad_objetos()
     cantidad <- ifelse(cantidad < 1, 1, cantidad)
@@ -1715,11 +1726,11 @@ server <- function(input, output, session) {
     message("gráfico comparación: cantidad de objetos 2: ", cantidad)
     cantidad
   })
-
+  
   ## medidas ----
   #horizontal
   puntos_ancho <- reactive(40) #cantidad de puntos por cada fila
-
+  
   ## medida vertical
   medida_grafico <- reactive({
     req(scroll$abajo)
@@ -1732,14 +1743,14 @@ server <- function(input, output, session) {
     # message("medida final del gráfico: ", medida)
     # medida
     # browser()
-
+    
     #si en ancho_ventana() pixeles muestro 150, entonces necesito mostrar 150 x cada ancho_ventana() hasta cumplir el largo
     # medida = (cantidad()/puntos_ancho()) * 12 #ancho_ventana()
-
+    
     #filas necesarias
     cantidad_filas <- ceiling(cantidad()/puntos_ancho())
     message("gráfico comparación: cantidad de filas: ", cantidad_filas)
-
+    
     #pixeles de ancho que ocupa cada punto horizontal
     pixeles_por_punto <- ancho_ventana()/puntos_ancho()
     #pixeles que se necesitarían hacia abajo con la cantidad de filas que van a haber
@@ -1756,46 +1767,46 @@ server <- function(input, output, session) {
     message("gráfico comparación: largo del gráfico: ", medida)
     medida
   })
-
+  
   ### matriz ----
   datos_comparar <- reactive({
     cantidad <- as.integer(cantidad())
     # cantidad = 200
     # browser()
-
+    
     # matriz <- matrix(1:cantidad,
     #                  nrow = cantidad/puntos_ancho(), ncol = puntos_ancho()) |>
     #   as_tibble() |>
     #   tidyr::pivot_longer(cols = everything()) |>
     #   mutate(name = stringr::str_remove(name, "V"),
     #          name = as.integer(name))
-
+    
     # puntos_ancho = 80 #cantidad de columnas de ancho de la visualización
-
+    
     puntos_largo = as.integer(cantidad/puntos_ancho()) #cantidad de filas hacia abajo de puntos
-
+    
     #crear una matriz con la cantidad de puntos posible multiplicando la cantidad de puntos de ancho
     matriz <- matrix(1:puntos_largo,
                      nrow = puntos_largo, ncol = puntos_ancho())
-
+    
     matriz <- as.data.frame(matriz)
     names(matriz) <- 1:puntos_ancho()
-
+    
     #convertir matriz a formato largo para graficar
     matriz_2 <- matriz |>
       tidyr::pivot_longer(cols = everything()) |>
       mutate(name = as.integer(name))
-
+    
     #calcular si el multiplo del ancho da exacto la cantidad de puntos o no
     cantidad_graficada = puntos_ancho() * puntos_largo
-
+    
     if (cantidad_graficada != cantidad) {
       cantidad_faltante = cantidad - cantidad_graficada
       message("gráfico comparación: matriz comparación: faltaron ", cantidad_faltante, " puntos. agregando...")
-
+      
       #si faltan puntos para alcanzar la cifra, se agrega una sola fila con la cantidad de puntos (que es menor al ancho, siempre)
       puntos_faltantes <- tibble(value = 0, name = 1:cantidad_faltante)
-
+      
       matriz_3 <- matriz_2 |>
         bind_rows(puntos_faltantes)
     } else {
@@ -1803,7 +1814,7 @@ server <- function(input, output, session) {
     }
     matriz_3
   })
-
+  
   ### tamaño puntos ----
   tamaño_punto <- reactive({
     # cantidad_tamaño = (200/cantidad())
@@ -1818,25 +1829,25 @@ server <- function(input, output, session) {
     message("gráfico comparación: tamaño del punto: ", tamaño_punto)
     tamaño_punto
   })
-
+  
   ## gráfico comparación ----
   output$grafico_comparacion <- renderPlot({
     req(datos_comparar())
     req(medida_grafico())
     req(ancho_ventana())
     req(scroll$abajo) # req(vertical_position() > 2000)
-
+    
     message("rendering gráfico comparación...")
-
+    
     p <- datos_comparar() |>
       ggplot(aes(name, value)) +
       geom_point(size = tamaño_punto()+1, color = color_texto, shape = 15) +
       geom_point(size = tamaño_punto(), color = color_destacado, shape = 15)
-
+    
     # dev.new()
     # browser()
     # #cuadros rojos que indican cuánto es 100 o 1000
-
+    
     # margen = 0.5
     # p +
     #   annotate("rect", color = color_complementario, fill = NA,
@@ -1876,35 +1887,38 @@ server <- function(input, output, session) {
             plot.background = element_rect(fill = color_fondo),
             panel.background = element_rect(fill = color_fondo))
     p1
-
+    
   }, height = reactive(medida_grafico()),
   #width = reactive(medida_grafico())
   # width = ancho_comparacion
   )
-
-
-
+  
+  
+  
   ## ui comparacion ----
   #porque el gráfico tiene que poder ampliarse verticalmente
   output$ui_comparacion <- renderUI({
     req(datos_comparar())
     req(medida_grafico())
-
+    
     # message("rendering ui gráfico comparacion...")
-
+    
     plotOutput("grafico_comparacion",
                # width = ancho_comparacion,
                height = medida_grafico()) |> withSpinner(proxy.height = 400,
                                                          color = color_destacado, type = 8)
   })
-
-
+  
+  
   #—----
   # tablas ----
-
+  
   ## tabla alcaldías ----
+  input_tabla_busqueda_alcaldias <- reactive(input$tabla_busqueda_alcaldias)
+  input_tabla_busqueda_alcaldias_d <- input_tabla_busqueda_alcaldias |> debounce(millis = 300)
+  
   output$tabla_alcaldías <- render_gt({
-
+    
     if (input$sector_alcaldias == "Todos") {
       filtro_sector <- c("Derecha", "Izquierda", "Ninguno")
     } else {
@@ -1912,11 +1926,21 @@ server <- function(input, output, session) {
       # filtro_sector <- "Derecha"
       # filtro_sector <- "Izquierda"
     }
-
+    
+    # buscador en tabla
+    busqueda <- input_tabla_busqueda_alcaldias_d() |> tolower()
+    datos <- corrupcion_años() |> 
+      filter(alcalde == "Alcaldías")
+    
+    # filtrar búsqueda
+    if (nchar(input_tabla_busqueda_alcaldias_d()) > 1) {
+      datos <- datos |> 
+        filter(str_detect(texto, busqueda)) 
+    }
+    
     # browser()
-
-    datos <- corrupcion_años() |>
-      filter(alcalde == "Alcaldías") |>
+    
+    datos <- datos |>
       filter(sector %in% filtro_sector) |>
       select(comuna, responsable,
              sector, partido,
@@ -1934,8 +1958,8 @@ server <- function(input, output, session) {
       select(-starts_with("fuente")) |>
       mutate(fuente = purrr::map(link_fuente, gt::md)) |>
       select(-link_fuente)
-
-
+    
+    
     datos |>
       gt() |>
       cols_align(columns = where(is.numeric),
@@ -1951,17 +1975,23 @@ server <- function(input, output, session) {
       # tab_style(locations = cells_body(columns = fuente),
       #           style = list(
       #             cell_text(color = color_detalle2))) |>
-      data_color(columns = c(sector),
-                 method = "factor",
-                 domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T,
-                 levels = c("Derecha", "Izquierda", "Ninguno"),
-                 palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Ninguno" = color_fondo)
-      ) |>
+      # data_color(columns = c(sector),
+      #            method = "factor",
+      #            domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T,
+      #            levels = c("Derecha", "Izquierda", "Ninguno"),
+      #            palette = c("Derecha" = color_derecha, "Izquierda" = color_izquierda, "Ninguno" = color_fondo)
+      # ) |>
       # data_color(columns = c(sector),
       #            method = "factor", apply_to = "text",
       #            domain = c("Derecha", "Izquierda", "Ninguno"), ordered = T,
       #            levels = c("Izquierda", "Derecha", "Ninguno"),
       #            palette = c("white", "white", color_texto)) |>
+      tab_style(style = list(cell_fill(color = color_derecha),
+                             cell_text(color = "white")),
+                locations = cells_body(columns = sector, rows = sector == "Derecha")) |> 
+      tab_style(style = list(cell_fill(color = color_izquierda),
+                             cell_text(color = "white")),
+                locations = cells_body(columns = sector, rows = sector == "Izquierda")) |> 
       #color partido
       data_color(columns = c(partido, sector),
                  method = "factor", apply_to = "text",
@@ -1985,11 +2015,11 @@ server <- function(input, output, session) {
                   table.background.color = color_fondo,
                   table.font.names = "IBM Plex Mono")
   })
-
+  
   ## tabla fundaciones ----
   output$tabla_fundaciones <- render_gt({
     # browser()
-
+    
     datos <- corrupcion_años() |>
       filter(!is.na(fundacion)) |>
       select(fundacion, comuna,  partido, sector, monto, año,
@@ -2004,7 +2034,7 @@ server <- function(input, output, session) {
       select(-starts_with("fuente")) |>
       mutate(fuente = purrr::map(link_fuente, gt::md)) |>
       select(-link_fuente)
-
+    
     datos |>
       gt() |>
       cols_align(columns = where(is.numeric), align = "right") |>
@@ -2047,16 +2077,30 @@ server <- function(input, output, session) {
                   table.background.color = color_fondo,
                   table.font.names = "IBM Plex Mono")
   })
-
-
+  
+  
   ## tabla todo ----
+  input_tabla_busqueda <- reactive(input$tabla_busqueda)
+  input_tabla_busqueda_d <- input_tabla_busqueda |> debounce(millis = 300)
+  
   output$tabla_casos <- render_gt({
     req(scroll$abajo)
-
+    
     message("rendering tabla de todo...")
     # browser()
-
-    datos <- corrupcion_años() |>
+    
+    # buscador en tabla
+    busqueda <- input_tabla_busqueda_d() |> tolower()
+    datos <- corrupcion_años()
+    
+    # filtrar búsqueda
+    if (nchar(input_tabla_busqueda_d()) > 1) {
+      datos <- datos |> 
+        filter(str_detect(texto, busqueda)) 
+    }
+    
+    # datos para tabla
+    datos <- datos |>
       select(caso, monto,
              responsable,
              partido, sector, fundacion,
@@ -2081,11 +2125,11 @@ server <- function(input, output, session) {
       # print(n=Inf)
       mutate(fuente = purrr::map(link_fuente, gt::md)) |>
       select(-link_fuente)
-
+    
     # browser()
-
-
-
+    
+    
+    
     datos |>
       # celdas sin datos
       mutate(responsable = ifelse(is.na(responsable), "Caso no individualizado", responsable),
@@ -2101,15 +2145,21 @@ server <- function(input, output, session) {
                 style = list(
                   cell_fill(color = color_detalle),
                   cell_text(style = "italic"))) |>
-      #color sector político
-      data_color(columns = c(sector),
-                 method = "factor", apply_to = "fill",
-                 levels = c("Izquierda", "Derecha", "Centro", "Ninguno"),
-                 palette = c(color_izquierda, color_derecha, color_fondo, color_fondo)) |>
-      data_color(columns = c(sector),
-                 method = "factor", apply_to = "text",
-                 levels = c("Izquierda", "Derecha", "Centro", "Ninguno"),
-                 palette = c("white", "white", color_texto, color_texto)) |>
+      # #color sector político
+      # data_color(columns = c(sector),
+      #            method = "factor", apply_to = "fill",
+      #            levels = c("Izquierda", "Derecha", "Centro", "Ninguno"),
+      #            palette = c(color_izquierda, color_derecha, color_fondo, color_fondo)) |>
+      # data_color(columns = c(sector),
+      #            method = "factor", apply_to = "text",
+      #            levels = c("Izquierda", "Derecha", "Centro", "Ninguno"),
+      #            palette = c("white", "white", color_texto, color_texto)) |>
+      tab_style(style = list(cell_fill(color = color_derecha),
+                             cell_text(color = "white")),
+                locations = cells_body(columns = sector, rows = sector == "Derecha")) |> 
+      tab_style(style = list(cell_fill(color = color_izquierda),
+                             cell_text(color = "white")),
+                locations = cells_body(columns = sector, rows = sector == "Izquierda")) |> 
       #color partido
       data_color(columns = c(partido, sector),
                  method = "factor", apply_to = "text",

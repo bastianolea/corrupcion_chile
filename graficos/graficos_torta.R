@@ -47,14 +47,14 @@ torta_casos_sector <- datos_casos_sector |>
   guides(fill = "none", color = "none") +
   coord_radial(expand = FALSE, rotate.angle = TRUE, theta = "x",
                # start = 0.8, 
-               start = 1.2, 
+               start = 1.32, # ajustar manualmente!
                inner.radius = 0.4) +
   scale_fill_manual(values = c("Derecha" = color_derecha, 
                                "Izquierda" = color_izquierda,
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
   theme_void() +
   labs(title = "Casos de corrupción en Chile", 
-       subtitle = "Casos según sector político, de 2014 a 2024",
+       subtitle = "Casos según sector político, desde 2014 a 2025",
        caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
   theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
         plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
@@ -111,7 +111,7 @@ torta_casos_partido <- datos_casos_partido |>
   scale_fill_manual(values = degradado_verde(length(datos_casos_partido$partido)), aesthetics = c("fill", "color")) +
   theme_void() +
   labs(title = "Casos de corrupción en Chile", 
-       subtitle = "Casos según partido político, de 2014 a 2024",
+       subtitle = "Casos según partido político, de 2014 a 2025",
        caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
   theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
         plot.subtitle = element_text(margin = margin(l= 10, b =-20)),
@@ -162,7 +162,7 @@ torta_montos_sector <- datos_montos_sector |>
                                "Centro" = color_neutro), aesthetics = c("fill", "color")) +
   theme_void() +
   labs(title = "Casos de corrupción en Chile", 
-       subtitle = "Montos totales defraudados según sector político, de 2014 a 2024",
+       subtitle = "Montos totales defraudados según sector político, de 2014 a 2025",
        caption = "Fuente: Visualizador de datos de corrupción: https://bastianoleah.shinyapps.io/corrupcion_chile\nDatos disponibles en https://github.com/bastianolea/corrupcion_chile") +
   theme(plot.title = element_text(margin = margin(t = 6, l = 10, b = 6)),
         plot.subtitle = element_text(margin = margin(l= 10, b =-20)),

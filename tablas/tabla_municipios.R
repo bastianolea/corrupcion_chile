@@ -105,6 +105,7 @@ for (opcion in c("chile", "rm")) {
   
   
   # guardar ----
+  options(chromote.headless = "new")
   
   # guardar tabla como imagen
   tabla_municipios |>
