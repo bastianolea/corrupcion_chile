@@ -5,7 +5,7 @@ account: bastianoleah
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11049199
-bundleId: 10378573
+bundleId: 11328514
 url: https://bastianoleah.shinyapps.io/corrupcion_chile/
 version: 1
 asMultiple: FALSE
