@@ -542,7 +542,7 @@ ui <- page_fluid(
         #### grafico puntos comparación ----
         column(12, align = "center",
                div(style = "min-width: 420px;
-                        max-width: 1080px;",
+                        max-width: 1080px; text-align: left; padding: 10px;",
                    uiOutput("ui_comparacion", fill = "container") |> withSpinner(proxy.height = 400, color = color_destacado, type = 8)
                ),
         )
@@ -1724,191 +1724,207 @@ server <- function(input, output, session) {
     cantidad <- ifelse(cantidad < 1, 1, cantidad)
     # cantidad = 500
     message("gráfico comparación: cantidad de objetos 2: ", cantidad)
-    cantidad
+    return(cantidad)
   })
-  
-  ## medidas ----
-  #horizontal
-  puntos_ancho <- reactive(40) #cantidad de puntos por cada fila
-  
-  ## medida vertical
-  medida_grafico <- reactive({
-    req(scroll$abajo)
-    message("ancho ventana: ", ancho_ventana())
-    # medida <- cantidad()*6
-    # message("medida inicial del gráfico: ", medida)
-    # medida <- ifelse(medida < 500, 500, medida)
-    # medida <- ifelse(medida >= 50000, 49999, medida)
-    # medida <- ifelse(cantidad_objetos() < 10, 100, medida)
-    # message("medida final del gráfico: ", medida)
-    # medida
-    # browser()
-    
-    #si en ancho_ventana() pixeles muestro 150, entonces necesito mostrar 150 x cada ancho_ventana() hasta cumplir el largo
-    # medida = (cantidad()/puntos_ancho()) * 12 #ancho_ventana()
-    
-    #filas necesarias
-    cantidad_filas <- ceiling(cantidad()/puntos_ancho())
-    message("gráfico comparación: cantidad de filas: ", cantidad_filas)
-    
-    #pixeles de ancho que ocupa cada punto horizontal
-    pixeles_por_punto <- ancho_ventana()/puntos_ancho()
-    #pixeles que se necesitarían hacia abajo con la cantidad de filas que van a haber
-    medida = as.integer(pixeles_por_punto * cantidad_filas)
-    # if (cantidad_filas > puntos_ancho()) {
-    #   medida = ifelse(medida < 420, 420, medida) #ancho mínimo
-    # }
-    if (cantidad_filas < 1) {
-      medida = ceiling(pixeles_por_punto)
-    }
-    if (medida >= 50000) {
-      medida = 49000
-    }
-    message("gráfico comparación: largo del gráfico: ", medida)
-    medida
-  })
-  
-  ### matriz ----
-  datos_comparar <- reactive({
-    cantidad <- as.integer(cantidad())
-    # cantidad = 200
-    # browser()
-    
-    # matriz <- matrix(1:cantidad,
-    #                  nrow = cantidad/puntos_ancho(), ncol = puntos_ancho()) |>
-    #   as_tibble() |>
-    #   tidyr::pivot_longer(cols = everything()) |>
-    #   mutate(name = stringr::str_remove(name, "V"),
-    #          name = as.integer(name))
-    
-    # puntos_ancho = 80 #cantidad de columnas de ancho de la visualización
-    
-    puntos_largo = as.integer(cantidad/puntos_ancho()) #cantidad de filas hacia abajo de puntos
-    
-    #crear una matriz con la cantidad de puntos posible multiplicando la cantidad de puntos de ancho
-    matriz <- matrix(1:puntos_largo,
-                     nrow = puntos_largo, ncol = puntos_ancho())
-    
-    matriz <- as.data.frame(matriz)
-    names(matriz) <- 1:puntos_ancho()
-    
-    #convertir matriz a formato largo para graficar
-    matriz_2 <- matriz |>
-      tidyr::pivot_longer(cols = everything()) |>
-      mutate(name = as.integer(name))
-    
-    #calcular si el multiplo del ancho da exacto la cantidad de puntos o no
-    cantidad_graficada = puntos_ancho() * puntos_largo
-    
-    if (cantidad_graficada != cantidad) {
-      cantidad_faltante = cantidad - cantidad_graficada
-      message("gráfico comparación: matriz comparación: faltaron ", cantidad_faltante, " puntos. agregando...")
-      
-      #si faltan puntos para alcanzar la cifra, se agrega una sola fila con la cantidad de puntos (que es menor al ancho, siempre)
-      puntos_faltantes <- tibble(value = 0, name = 1:cantidad_faltante)
-      
-      matriz_3 <- matriz_2 |>
-        bind_rows(puntos_faltantes)
-    } else {
-      matriz_3 <- matriz_2
-    }
-    matriz_3
-  })
-  
-  ### tamaño puntos ----
-  tamaño_punto <- reactive({
-    # cantidad_tamaño = (200/cantidad())
-    # cantidad_tamaño = ifelse(cantidad_objetos() <= 10, 10/cantidad(), cantidad_tamaño)
-    if (ancho_ventana() < 600) {
-      tamaño_punto = 2
-    } else if (ancho_ventana() < 900) {
-      tamaño_punto = 3
-    } else if (ancho_ventana() >= 900) {
-      tamaño_punto = 4
-    }
-    message("gráfico comparación: tamaño del punto: ", tamaño_punto)
-    tamaño_punto
-  })
-  
-  ## gráfico comparación ----
-  output$grafico_comparacion <- renderPlot({
-    req(datos_comparar())
-    req(medida_grafico())
-    req(ancho_ventana())
-    req(scroll$abajo) # req(vertical_position() > 2000)
-    
-    message("rendering gráfico comparación...")
-    
-    p <- datos_comparar() |>
-      ggplot(aes(name, value)) +
-      geom_point(size = tamaño_punto()+1, color = color_texto, shape = 15) +
-      geom_point(size = tamaño_punto(), color = color_destacado, shape = 15)
-    
-    # dev.new()
-    # browser()
-    # #cuadros rojos que indican cuánto es 100 o 1000
-    
-    # margen = 0.5
-    # p +
-    #   annotate("rect", color = color_complementario, fill = NA,
-    #                         xmin = 1-margen, xmax = 10+margen,
-    #                         ymin = max(datos_comparar()$value)-9-margen, ymax = max(datos_comparar()$value)+margen)
-    #
-    # p +
-    #   annotate("rect", color = color_complementario, fill = NA,
-    #            xmin = 1-margen, xmax = 10+margen,
-    #            ymin = max(datos_comparar()$value)-100-margen, ymax = max(datos_comparar()$value)+margen)
-    #
-    # if (cantidad() > 1000) {
-    #   margen = 0.5
-    #   p1 <- p +
-    #     annotate("rect", color = color_complementario, fill = NA,
-    #              xmin = 1-margen, xmax = 100+margen,
-    #              ymin = max(datos_comparar()$value)-100-margen, ymax = max(datos_comparar()$value)+margen)
-    #   # annotate("text", label = "1.000", size = 5, color = "red", alpha = 0.5, angle = 90, vjust = 0,
-    #   #          x = -1, y = max(datos_comparar()$value)-50)
-    # } else if (cantidad() > 100) {
-    #   margen = 0.5
-    #   p1 <- p +
-    #     annotate("rect", color = color_complementario, fill = NA,
-    #              xmin = 1-margen, xmax = 10+margen,
-    #              ymin = max(datos_comparar()$value)-9-margen, ymax = max(datos_comparar()$value)+margen)
-    #   # annotate("label", label = "100", size = 4, color = color_complementario,
-    #   #          label.size = 0, fill = color_fondo, label.padding = unit(0.3, "lines"), label.r = unit(0, "lines"),
-    #   #          alpha = 1, angle = 90, hjust = 0,
-    #   #          x = 10+margen, y = max(datos_comparar()$value)-5)
-    # } else {
-    #   p1 <- p
-    # }
-    p1 <- p +
-      coord_cartesian(expand = FALSE, clip = "off") +
-      theme_void() +
-      theme(plot.margin = unit(rep(5, 4), "mm"),
-            plot.background = element_rect(fill = color_fondo),
-            panel.background = element_rect(fill = color_fondo))
-    p1
-    
-  }, height = reactive(medida_grafico()),
-  #width = reactive(medida_grafico())
-  # width = ancho_comparacion
-  )
-  
+  # 
+  # ## medidas ----
+  # #horizontal
+  # puntos_ancho <- reactive(40) #cantidad de puntos por cada fila
+  # 
+  # ## medida vertical
+  # medida_grafico <- reactive({
+  #   req(scroll$abajo)
+  #   message("ancho ventana: ", ancho_ventana())
+  #   # medida <- cantidad()*6
+  #   # message("medida inicial del gráfico: ", medida)
+  #   # medida <- ifelse(medida < 500, 500, medida)
+  #   # medida <- ifelse(medida >= 50000, 49999, medida)
+  #   # medida <- ifelse(cantidad_objetos() < 10, 100, medida)
+  #   # message("medida final del gráfico: ", medida)
+  #   # medida
+  #   # browser()
+  #   
+  #   #si en ancho_ventana() pixeles muestro 150, entonces necesito mostrar 150 x cada ancho_ventana() hasta cumplir el largo
+  #   # medida = (cantidad()/puntos_ancho()) * 12 #ancho_ventana()
+  #   
+  #   #filas necesarias
+  #   cantidad_filas <- ceiling(cantidad()/puntos_ancho())
+  #   message("gráfico comparación: cantidad de filas: ", cantidad_filas)
+  #   
+  #   #pixeles de ancho que ocupa cada punto horizontal
+  #   pixeles_por_punto <- ancho_ventana()/puntos_ancho()
+  #   #pixeles que se necesitarían hacia abajo con la cantidad de filas que van a haber
+  #   medida = as.integer(pixeles_por_punto * cantidad_filas)
+  #   # if (cantidad_filas > puntos_ancho()) {
+  #   #   medida = ifelse(medida < 420, 420, medida) #ancho mínimo
+  #   # }
+  #   if (cantidad_filas < 1) {
+  #     medida = ceiling(pixeles_por_punto)
+  #   }
+  #   if (medida >= 50000) {
+  #     medida = 49000
+  #   }
+  #   message("gráfico comparación: largo del gráfico: ", medida)
+  #   medida
+  # })
+  # 
+  # ### matriz ----
+  # datos_comparar <- reactive({
+  #   cantidad <- as.integer(cantidad())
+  #   # cantidad = 200
+  #   # browser()
+  #   
+  #   # matriz <- matrix(1:cantidad,
+  #   #                  nrow = cantidad/puntos_ancho(), ncol = puntos_ancho()) |>
+  #   #   as_tibble() |>
+  #   #   tidyr::pivot_longer(cols = everything()) |>
+  #   #   mutate(name = stringr::str_remove(name, "V"),
+  #   #          name = as.integer(name))
+  #   
+  #   # puntos_ancho = 80 #cantidad de columnas de ancho de la visualización
+  #   
+  #   puntos_largo = as.integer(cantidad/puntos_ancho()) #cantidad de filas hacia abajo de puntos
+  #   
+  #   #crear una matriz con la cantidad de puntos posible multiplicando la cantidad de puntos de ancho
+  #   matriz <- matrix(1:puntos_largo,
+  #                    nrow = puntos_largo, ncol = puntos_ancho())
+  #   
+  #   matriz <- as.data.frame(matriz)
+  #   names(matriz) <- 1:puntos_ancho()
+  #   
+  #   #convertir matriz a formato largo para graficar
+  #   matriz_2 <- matriz |>
+  #     tidyr::pivot_longer(cols = everything()) |>
+  #     mutate(name = as.integer(name))
+  #   
+  #   #calcular si el multiplo del ancho da exacto la cantidad de puntos o no
+  #   cantidad_graficada = puntos_ancho() * puntos_largo
+  #   
+  #   if (cantidad_graficada != cantidad) {
+  #     cantidad_faltante = cantidad - cantidad_graficada
+  #     message("gráfico comparación: matriz comparación: faltaron ", cantidad_faltante, " puntos. agregando...")
+  #     
+  #     #si faltan puntos para alcanzar la cifra, se agrega una sola fila con la cantidad de puntos (que es menor al ancho, siempre)
+  #     puntos_faltantes <- tibble(value = 0, name = 1:cantidad_faltante)
+  #     
+  #     matriz_3 <- matriz_2 |>
+  #       bind_rows(puntos_faltantes)
+  #   } else {
+  #     matriz_3 <- matriz_2
+  #   }
+  #   matriz_3
+  # })
+  # 
+  # ### tamaño puntos ----
+  # tamaño_punto <- reactive({
+  #   # cantidad_tamaño = (200/cantidad())
+  #   # cantidad_tamaño = ifelse(cantidad_objetos() <= 10, 10/cantidad(), cantidad_tamaño)
+  #   if (ancho_ventana() < 600) {
+  #     tamaño_punto = 2
+  #   } else if (ancho_ventana() < 900) {
+  #     tamaño_punto = 3
+  #   } else if (ancho_ventana() >= 900) {
+  #     tamaño_punto = 4
+  #   }
+  #   message("gráfico comparación: tamaño del punto: ", tamaño_punto)
+  #   tamaño_punto
+  # })
+  # 
+  # ## gráfico comparación ----
+  # output$grafico_comparacion <- renderPlot({
+  #   req(datos_comparar())
+  #   req(medida_grafico())
+  #   req(ancho_ventana())
+  #   req(scroll$abajo) # req(vertical_position() > 2000)
+  #   
+  #   message("rendering gráfico comparación...")
+  #   
+  #   p <- datos_comparar() |>
+  #     ggplot(aes(name, value)) +
+  #     geom_point(size = tamaño_punto()+1, color = color_texto, shape = 15) +
+  #     geom_point(size = tamaño_punto(), color = color_destacado, shape = 15)
+  #   
+  #   # dev.new()
+  #   # browser()
+  #   # #cuadros rojos que indican cuánto es 100 o 1000
+  #   
+  #   # margen = 0.5
+  #   # p +
+  #   #   annotate("rect", color = color_complementario, fill = NA,
+  #   #                         xmin = 1-margen, xmax = 10+margen,
+  #   #                         ymin = max(datos_comparar()$value)-9-margen, ymax = max(datos_comparar()$value)+margen)
+  #   #
+  #   # p +
+  #   #   annotate("rect", color = color_complementario, fill = NA,
+  #   #            xmin = 1-margen, xmax = 10+margen,
+  #   #            ymin = max(datos_comparar()$value)-100-margen, ymax = max(datos_comparar()$value)+margen)
+  #   #
+  #   # if (cantidad() > 1000) {
+  #   #   margen = 0.5
+  #   #   p1 <- p +
+  #   #     annotate("rect", color = color_complementario, fill = NA,
+  #   #              xmin = 1-margen, xmax = 100+margen,
+  #   #              ymin = max(datos_comparar()$value)-100-margen, ymax = max(datos_comparar()$value)+margen)
+  #   #   # annotate("text", label = "1.000", size = 5, color = "red", alpha = 0.5, angle = 90, vjust = 0,
+  #   #   #          x = -1, y = max(datos_comparar()$value)-50)
+  #   # } else if (cantidad() > 100) {
+  #   #   margen = 0.5
+  #   #   p1 <- p +
+  #   #     annotate("rect", color = color_complementario, fill = NA,
+  #   #              xmin = 1-margen, xmax = 10+margen,
+  #   #              ymin = max(datos_comparar()$value)-9-margen, ymax = max(datos_comparar()$value)+margen)
+  #   #   # annotate("label", label = "100", size = 4, color = color_complementario,
+  #   #   #          label.size = 0, fill = color_fondo, label.padding = unit(0.3, "lines"), label.r = unit(0, "lines"),
+  #   #   #          alpha = 1, angle = 90, hjust = 0,
+  #   #   #          x = 10+margen, y = max(datos_comparar()$value)-5)
+  #   # } else {
+  #   #   p1 <- p
+  #   # }
+  #   p1 <- p +
+  #     coord_cartesian(expand = FALSE, clip = "off") +
+  #     theme_void() +
+  #     theme(plot.margin = unit(rep(5, 4), "mm"),
+  #           plot.background = element_rect(fill = color_fondo),
+  #           panel.background = element_rect(fill = color_fondo))
+  #   p1
+  #   
+  #   # browser()
+  # }, height = reactive(medida_grafico()),
+  # #width = reactive(medida_grafico())
+  # # width = ancho_comparacion
+  # )
+  # 
   
   
   ## ui comparacion ----
-  #porque el gráfico tiene que poder ampliarse verticalmente
-  output$ui_comparacion <- renderUI({
-    req(datos_comparar())
-    req(medida_grafico())
-    
-    # message("rendering ui gráfico comparacion...")
-    
-    plotOutput("grafico_comparacion",
-               # width = ancho_comparacion,
-               height = medida_grafico()) |> withSpinner(proxy.height = 400,
-                                                         color = color_destacado, type = 8)
-  })
+  # #porque el gráfico tiene que poder ampliarse verticalmente
+  # output$ui_comparacion <- renderUI({
+  #   req(datos_comparar())
+  #   req(medida_grafico())
+  #   
+  #   # message("rendering ui gráfico comparacion...")
+  #   
+  #   plotOutput("grafico_comparacion",
+  #              # width = ancho_comparacion,
+  #              height = medida_grafico()) |> withSpinner(proxy.height = 400,
+  #                                                        color = color_destacado, type = 8)
+  # })
   
+  
+  output$ui_comparacion <- renderUI({
+    
+    tamaño <- 8
+    
+    cuadrito <- div(style = paste0("display: inline-block; margin: 1px; 
+          padding: 0; height: ", tamaño, "px; width: ", tamaño, "px; 
+          border: solid 1px ", color_texto, ";
+          background-color:", color_destacado, ";")
+        )
+      
+    cuadritos <- rep(list(cuadrito), cantidad())
+    
+    tagList(cuadritos)
+  })
   
   #—----
   # tablas ----
