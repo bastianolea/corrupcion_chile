@@ -4,6 +4,7 @@ library(bslib) |> suppressPackageStartupMessages()
 library(shinyWidgets)
 library(shinycssloaders)
 library(shinyjs) |> suppressPackageStartupMessages()
+library(shinydisconnect)
 
 library(dplyr) |> suppressPackageStartupMessages()
 library(tidyr)
@@ -112,6 +113,14 @@ ui <- page_fluid(
   
   # función para obtener el ancho de ventana usando javascript
   js_get_window_width(),
+  
+  # desconexión ----
+  disconnectMessage(
+    text = "Se ha perdido la conexión. Recarga la página para volver a conectarte a la aplicación.",
+    refresh = "Recargar página",
+    background = color_fondo,
+    colour = color_texto,
+    refreshColour = color_enlaces),
   
   includeCSS("styles.css"),
   
