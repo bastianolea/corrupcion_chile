@@ -202,8 +202,11 @@ ui <- page_fluid(
                 "de este visualizador.")
         )),
         
-        plotOutput("grafico_años", height = 400) |> withSpinner()
-        # )
+        div(style = "overflow-x: scroll;",
+            div(style = "min-width: 600px;",
+                plotOutput("grafico_años", height = 400) |> withSpinner()
+            )
+        ),
       ),
       
       ###grafico cep ----
@@ -222,7 +225,12 @@ ui <- page_fluid(
                                   selected = "Corrupción", multiple = T,
                                   inline = T, width = "fit"
         ),
-        plotOutput("grafico_cep", height = 400) |> withSpinner(),
+        
+        div(style = "overflow-x: scroll;",
+            div(style = "min-width: 600px;",
+                plotOutput("grafico_cep", height = 400) |> withSpinner()
+            )
+        ),
         
         div(style = "font-size: 80%; margin: 18px; opacity: 0.5;",
             p(em("Datos para este gráfico obtenidos usando el",
@@ -234,9 +242,8 @@ ui <- page_fluid(
         # )
       ),
       
-      ###grafico cpi  ----
-      # fluidRow(
-      #   column(12,
+      ### grafico cpi  ----
+      
       div(
         p("El", strong("índice de percepción de la corrupción"), "de",
           tags$a("Transparency International",
@@ -245,13 +252,16 @@ ui <- page_fluid(
         p("En su última medición, correspondiente al año 2023, el índice indica que",
           strong("la corrupción en Chile aumentó,"), "bajando de 67 a 66 puntos."),
         
-        plotOutput("grafico_cpi", height = 400) |> withSpinner(),
+        div(style = "overflow-x: scroll;",
+            div(style = "min-width: 600px;",
+                plotOutput("grafico_cpi", height = 400) |> withSpinner()
+            )
+        ),
         
         hr()
-        # )
       ),
       
-      ####graficos torta ----
+      #### graficos torta ----
       # div(style = css(width = "100%", overflow = "scroll"),
       layout_columns(col_widths = c(6, 6),
                      div(style = "margin-bottom: -30px; width: 100%;",
@@ -262,18 +272,14 @@ ui <- page_fluid(
                                  "cuyo responsable o responsables principales pertenecen a un determinado sector político")
                          )
                          ),
-                         div(#style = "overflow-x: scroll;",
-                           # div(style = "min-width: 400px;",
-                           # div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
+                         div(
                            plotOutput("torta_sector") |> withSpinner()
-                           # )
-                           # )
                          ),
                          
                          boton_descarga_imagen("Descargar gráfico",
                                                "graficos/grafico_torta_sector.png")
                      ),
-                     div(style = "margin-bottom: -30px;  min-width: 400px;",
+                     div(style = "margin-bottom: -30px;",
                          
                          h2("Casos de corrupción por partido político"),
                          em(p("Porcentaje de casos entre",
@@ -281,12 +287,8 @@ ui <- page_fluid(
                                  "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
                          )
                          ),
-                         div(#style = "overflow-x: scroll;",
-                           # div(style = "min-width: 400px;",
-                           div(style = "min-width: 360px; margin: auto; margin-top: -20px;",
-                               plotOutput("torta_partido") |> withSpinner()
-                           )
-                           # )
+                         div(style = "margin: auto; margin-top: -20px;",
+                             plotOutput("torta_partido") |> withSpinner()
                          ),
                          boton_descarga_imagen("Descargar gráfico",
                                                "graficos/grafico_torta_partido.png")
@@ -300,14 +302,15 @@ ui <- page_fluid(
         column(12,
                hr(),
                h2("Montos totales de casos de corrupción por sector político"),
-               p("Una suma de los montos totales defraudados por los casos de corrupción de cada sector político arroja una visualización que permite comparar el impacto a las instituciones públicas."),
+               p("Suma de los montos totales defraudados por los casos de corrupción entre",
+                 em(textOutput("rango_años_torta3", inline = T)),
+                 "según cada sector político."),
                
                div(style = "overflow-x: scroll;",
-                   div(style = "min-width: 400px;",
-                       div(style = "max-width: 700px; margin: auto;", #style = "padding-top: -80px; padding-bottom: -30px;",
-                           plotOutput("torta_montos", height = 400) |> withSpinner()
-                       )
-                   )),
+                   div(style = "min-width: 600px; max-width: 700px; margin: auto;",
+                       plotOutput("torta_montos", height = 400) |> withSpinner()
+                   )
+               ),
                
                boton_descarga_imagen("Descargar gráfico",
                                      "graficos/grafico_torta_montos_sector.png")
@@ -382,20 +385,24 @@ ui <- page_fluid(
         column(12,
                hr(),
                h2("Comparación de casos"),
-               p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha."), #Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
                
-               shinyWidgets::awesomeCheckbox("checkbox_outliers_barras_comparativo",
-                                             label = em("Excluir casos extremos"), value = TRUE),
-               
-               shinyWidgets::awesomeCheckbox("top_20_barras_comparativo",
-                                             label = em("Limitar a 15 casos"), value = TRUE),
-               
-               shinyWidgets::pickerInput("selector_barras_comparativo",
-                                         label = em("Criterio de separación:"),
-                                         choices = c("Sector político", "Caso Convenios o fundaciones", "Sector político versus fundaciones"),
-                                         selected = "Caso Convenios o fundaciones", # selected = "Sector político",
-                                         multiple = F,
-                                         inline = T, width = "fit"
+               div(style = "overflow-x: scroll;",
+                   p("En este gráfico puedes ver los casos de corrupción, ordenados por monto, y separados por un criterio a tu elección: sector político, casos de fundaciones o convenios, o una comparación entre caso convenios y la derecha."), #Para hacer más legibles las comparaciones, se excluyen de acá casos extremadamente grandes, como los de Cathy Barriga (UDI) y Virginia Reginato (UDI)."),
+                   
+                   shinyWidgets::awesomeCheckbox("checkbox_outliers_barras_comparativo",
+                                                 label = em("Excluir casos extremos"), value = TRUE),
+                   
+                   # shinyWidgets::awesomeCheckbox("top_20_barras_comparativo",
+                   #                               label = em("Limitar a 15 casos"), value = TRUE),
+                   
+                   shinyWidgets::pickerInput("selector_barras_comparativo",
+                                             label = em("Criterio de separación:"),
+                                             choices = c("Sector político", "Caso Convenios o fundaciones", "Sector político versus fundaciones"),
+                                             # selected = "Caso Convenios o fundaciones", # selected = "Sector político",
+                                             selected = "Sector político versus fundaciones",
+                                             multiple = F,
+                                             inline = T, width = "fit"
+                   )
                ),
                
                div(style = "overflow-x: scroll;",
@@ -485,12 +492,11 @@ ui <- page_fluid(
                  "y los puntos son unidades ilustrativas para comparar visualmente las magnitudes.")
         ),
         column(12, align = "center",
-               #style = "height: 900px;",
                div(style = "overflow-x: scroll;",
                    div(style = "min-width: 400px;",
                        div(
                          style = "min-height: 900px; width: 800px;",
-                         # min-width: 830px; max-width: 1024px;",
+                         
                          htmlOutput("ui_montos", fill = TRUE) |>
                            withSpinner(color = color_destacado, type = 8, proxy.height = 400),
                          # plotOutput("grafico_montos", width = 900, fill = TRUE) |> withSpinner()
@@ -539,10 +545,11 @@ ui <- page_fluid(
                ### texto
                uiOutput("comparar_info", fill = TRUE),
         ),
+        
+        
         #### grafico puntos comparación ----
         column(12, align = "center",
-               div(style = "min-width: 420px;
-                        max-width: 1080px; text-align: left; padding: 10px;",
+               div(style = "max-width: 1080px; text-align: left; padding: 10px;",
                    uiOutput("ui_comparacion", fill = "container") |> withSpinner(proxy.height = 400, color = color_destacado, type = 8)
                ),
         )
@@ -648,7 +655,7 @@ server <- function(input, output, session) {
   })
   
   output$rango_años_barras <- renderText(rango_años())
-  output$rango_años_torta2 <- output$rango_años_torta1 <- renderText(rango_años())
+  output$rango_años_torta3 <- output$rango_años_torta2 <- output$rango_años_torta1 <- renderText(rango_años())
   output$rango_años_torta1 <- renderText(rango_años())
   output$rango_años_montos <- renderText(rango_años())
   
@@ -880,7 +887,9 @@ server <- function(input, output, session) {
       rowwise() |>
       # mutate(partido_reduc = if_else(p <= 0.055, "Otros", partido),
       mutate(partido_reduc = if_else(p <= 0.03, "Otros", partido),
-             partido_reduc = if_else(partido_reduc == "Independiente", "Ind.", partido_reduc)) |>
+             partido_reduc = case_when(partido_reduc == "Independiente" ~ "Ind.", 
+                                       partido_reduc == "Republicano" ~ "Rep.", 
+                                       TRUE ~ partido_reduc)) |>
       group_by(partido_reduc) |>
       summarize(n = sum(n),
                 p = sum(p))
@@ -918,7 +927,7 @@ server <- function(input, output, session) {
       geom_text(aes(label = partido), position = position_stack(vjust = 0.5),
                 hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = "white") +
       geom_text(aes(label = percent(p, accuracy = 1), y = 0.25, color = partido), position = position_stack(vjust = 0.5),
-                hjust = 0.5, size = opt_texto_geom, fontface = "bold", color = color_texto) +
+                hjust = 0.5, size = opt_texto_geom*0.9, fontface = "bold", color = color_texto) +
       scale_y_discrete(guide = "none", name = NULL) +
       guides(fill = "none", color = "none") +
       coord_radial(expand = FALSE, rotate.angle = F, theta = "x",
@@ -953,7 +962,7 @@ server <- function(input, output, session) {
       # texto exterior
       geom_text(aes(label = ifelse(sector == "Derecha", cifra, ""),
                     y = 2, color = sector), color = color_texto,
-                angle = 90, size = opt_texto_geom,
+                angle = 90, size = opt_texto_geom*0.9,
                 lineheight = 0.9, position = position_stack(vjust = 0.5), angle = 90, fontface = "bold") +
       geom_text(aes(label = ifelse(sector != "Derecha", cifra, ""),
                     y = 1.7, color = sector), size = opt_texto_geom, color = color_texto, lineheight = 0.9, position = position_stack(vjust = 0.5), hjust = 0, angle = 90, fontface = "bold") +
@@ -1273,7 +1282,9 @@ server <- function(input, output, session) {
       expand = expansion(c(0, 0.01)),
       # limits = c(1e-9, NA),
       # labels = unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",", scale = 1e-6))
-      labels = unit_format(unit = "mil mill.", big.mark = ".", decimal.mark = ",", scale = 1e-9))
+      # labels = unit_format(unit = "mil mill.", big.mark = ".", decimal.mark = ",", scale = 1e-9))
+      labels = unit_format(unit = "MM", big.mark = ".", decimal.mark = ",", scale = 1e-9)
+    )
     
     ancho_barras = 0.5
     
@@ -1288,8 +1299,10 @@ server <- function(input, output, session) {
                                       plot.title = element_text(size = opt_texto_plot, face = "bold.italic"),
                                       legend.text = element_text(size = opt_texto_plot, margin = margin(l = 4, r = 4)),
                                       # axis.text = element_text(size = opt_texto_axis*0.9, face = "italic"),
-                                      axis.text.x = element_text(size = opt_texto_axis*0.9, angle = 30, face = "italic", hjust = 1),
+                                      # axis.text.x = element_text(size = opt_texto_axis*0.9, angle = 30, face = "italic", hjust = 1),
+                                      axis.text.x = element_text(size = opt_texto_axis*0.9, face = "italic"),
                                       axis.text.y = element_text(size = opt_texto_axis*1.1, face = "bold"),
+                                      axis.title.x = element_text(size = opt_texto_plot, face = "italic"),
                                       strip.text = element_text(hjust = 0, size = opt_texto_axis, face = "bold"),
                                       legend.title = element_text(face = "bold", size = opt_texto_plot, margin = margin(r = 4))
                                       
@@ -1300,14 +1313,14 @@ server <- function(input, output, session) {
     ## barras sector
     if (input$selector_barras_comparativo == "Sector político") {
       
-      if (input$top_20_barras_comparativo == TRUE) {
-        datos <- datos_barras() |>
-          group_by(sector) |>
-          slice_max(n = 15, order_by = monto)
-      } else {
-        datos <- datos_barras() |>
-          slice_max(n = 30, order_by = monto)
-      }
+      # if (input$top_20_barras_comparativo == TRUE) {
+      #   datos <- datos_barras() |>
+      #     group_by(sector) |>
+      #     slice_max(n = 15, order_by = monto)
+      # } else {
+      datos <- datos_barras() |>
+        slice_max(n = 30, order_by = monto)
+      # }
       
       p <- datos |>
         filter(sector != "Otros") |>
@@ -1316,38 +1329,30 @@ server <- function(input, output, session) {
         # geom_vline(data = datos_barras |> group_by(sector) |> slice_max(monto) |> ungroup() |> select(-sector),
         #            aes(xintercept = monto)) +
         facet_grid(rows = vars(sector), scales = "free_y", space = "free_y", axes = "all") +
-        escala_barras_horizontales +
-        tema_barras_horizontales +
-        escala_y_barras_horizontales +
         scale_fill_manual(values = c("Derecha" = color_derecha,
                                      "Izquierda" = color_izquierda,
-                                     "Otros" = color_destacado)) +
-        labs(fill = "Sector político",
-             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
+                                     "Otros" = color_destacado))
+      # title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
       ## barras fundaciones
     } else if (input$selector_barras_comparativo == "Caso Convenios o fundaciones") {
       
-      if (input$top_20_barras_comparativo == TRUE) {
-        datos <- datos_barras() |>
-          group_by(caso_fundaciones) |>
-          slice_max(n = 15, order_by = monto)
-      } else {
-        datos <- datos_barras() |>
-          slice_max(n = 30, order_by = monto)
-      }
+      # if (input$top_20_barras_comparativo == TRUE) {
+      # datos <- datos_barras() |>
+      # group_by(caso_fundaciones) |>
+      # slice_max(n = 15, order_by = monto)
+      # } else {
+      datos <- datos_barras() |>
+        slice_max(n = 30, order_by = monto)
+      # }
       
       p <- datos |>
         ggplot(aes(y = caso, x = monto, fill = caso_fundaciones)) +
         geom_col(width = ancho_barras) +
         facet_grid(rows = vars(caso_fundaciones), scales = "free_y", space = "free_y", axes = "all") +
-        escala_barras_horizontales +
-        escala_y_barras_horizontales +
-        tema_barras_horizontales +
         scale_fill_manual(values = c("Caso fundaciones" = color_fundaciones,
-                                     "Otros casos" = color_destacado)) +
-        labs(fill = "Tipo de caso",
-             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
+                                     "Otros casos" = color_destacado))
+      # title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
       
       ## barras sector vs fundaciones
     } else if (input$selector_barras_comparativo == "Sector político versus fundaciones") {
@@ -1358,29 +1363,37 @@ server <- function(input, output, session) {
                                               sector == "Izquierda" ~ "Izquierda",
                                               .default = "Otros"))
       
-      if (input$top_20_barras_comparativo == TRUE) {
-        datos <- datos |>
-          group_by(fundaciones_sector) |>
-          slice_max(n = 15, order_by = monto)
-      } else {
-        datos <- datos |>
-          slice_max(n = 30, order_by = monto)
-      }
+      # if (input$top_20_barras_comparativo == TRUE) {
+      #   datos <- datos |>
+      #     group_by(fundaciones_sector) |>
+      #     slice_max(n = 15, order_by = monto)
+      # } else {
+      datos <- datos |>
+        slice_max(n = 30, order_by = monto)
+      # }
       
       p <- datos |>
         ggplot(aes(y = caso, x = monto, fill = fundaciones_sector)) +
         geom_col(width = ancho_barras) +
         facet_grid(rows = vars(fundaciones_sector), scales = "free_y", space = "free_y", axes = "all") +
-        escala_barras_horizontales +
-        escala_y_barras_horizontales +
-        tema_barras_horizontales +
         scale_fill_manual(values = c("Derecha" = color_derecha,
                                      "Fundaciones" = color_fundaciones,
                                      "Izquierda" = color_izquierda,
-                                     "Otros" = color_destacado)) +
-        labs(fill = "Tipo de caso",
-             title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
+                                     "Otros" = color_destacado))
+      # title = ifelse(input$top_20_barras_comparativo, "20 mayores casos de corrupción", ""))
     }
+    
+    p <- p +
+      escala_barras_horizontales +
+      escala_y_barras_horizontales +
+      tema_barras_horizontales +
+      theme(legend.justification = "left",
+            legend.location = "plot") +
+      labs(fill = NULL,
+           x = "Montos en miles de millones")
+    
+    # browser()
+    # dev.new()
     plot(p)
   }, res = resolucion)
   
@@ -1392,17 +1405,30 @@ server <- function(input, output, session) {
       filter(!is.na(fundacion)) |>
       filter(!is.na(monto)) |>
       mutate(sector = if_else(sector %in% c("Derecha", "Izquierda"), sector, "Otros")) |>
-      mutate(caso = str_remove(caso, "Caso Convenios\\:|Caso Convenios\\,|Caso Convenios"),
-             caso = str_remove(caso, "\\("),
-             caso = str_remove(caso, "\\)"),
-             caso = str_trim(caso),
-             caso = gsub("^([a-z])", "\\U\\1", caso, perl=TRUE) #primera letra a mayúscula
-      ) |>
+      # mutate(caso = str_remove(caso, "Caso Convenios\\:|Caso Convenios\\,|Caso Convenios"),
+      #        caso = str_remove(caso, "\\("),
+      #        caso = str_remove(caso, "\\)"),
+      #        caso = str_trim(caso),
+      #        caso = gsub("^([a-z])", "\\U\\1", caso, perl = TRUE) #primera letra a mayúscula
+      # ) |>
+      # mutate(caso = fundacion) |> 
+      mutate(caso = if_else(is.na(comuna),
+                            fundacion,
+                            paste0(fundacion, " (", comuna, ")"))) |>
+      group_by(caso) |>
+      mutate(n_casos = row_number()) |> 
+      ungroup() |> 
+      mutate(caso = if_else(n_casos > 1,
+                            paste(caso, n_casos),
+                            caso)) |>
       mutate(caso = forcats::fct_reorder(caso, monto))
+    # datos_fundaciones |> select(caso, fundacion, monto)
+    # browser()
     
     
     # gráfico sector
     datos_fundaciones |>
+      select(caso, monto, sector) |> 
       ggplot(aes(y = caso, x = monto, fill = sector)) +
       geom_col(width = 0.5) +
       geom_text(aes(label = scales::comma(monto,
@@ -1412,10 +1438,10 @@ server <- function(input, output, session) {
       scale_fill_manual(values = c("Derecha" = color_derecha,
                                    "Izquierda" = color_izquierda,
                                    "Otros" = color_destacado)) +
-      scale_x_continuous(n.breaks = 6, expand = expansion(c(0, 0.24)),
+      scale_x_continuous(n.breaks = 6, expand = expansion(c(0, 0.45)),
                          labels = scales::unit_format(unit = "mill.", big.mark = ".", decimal.mark = ",",
                                                       scale = 1e-6)) +
-      scale_y_discrete(labels = ~str_trunc(as.character(.x), 60, ellipsis = "…")) +
+      scale_y_discrete(labels = ~str_trunc(as.character(.x), 40, ellipsis = "…")) +
       labs(fill = "Sector político", y = "Fundaciones según su sector político") +
       theme(axis.title.y = element_text(size = opt_texto_plot, margin = margin(r=6), face = "italic"),
             legend.title = element_text(face = "bold", size = opt_texto_plot),
@@ -1430,7 +1456,10 @@ server <- function(input, output, session) {
             legend.margin = margin(b = -6),
             plot.title = element_text(size = opt_texto_plot),
             legend.text = element_text(size = opt_texto_plot, margin = margin(l = 2, r = 4))
-      )
+      ) +
+      theme(legend.justification = "left",
+            legend.location = "plot")
+    # dev.new() 
   }, res = resolucion)
   
   
@@ -1919,8 +1948,8 @@ server <- function(input, output, session) {
           padding: 0; height: ", tamaño, "px; width: ", tamaño, "px; 
           border: solid 1px ", color_texto, ";
           background-color:", color_destacado, ";")
-        )
-      
+    )
+    
     cuadritos <- rep(list(cuadrito), cantidad())
     
     tagList(cuadritos)
