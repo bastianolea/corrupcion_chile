@@ -113,16 +113,7 @@ ui <- page_fluid(
   # función para obtener el ancho de ventana usando javascript
   js_get_window_width(),
   
-  
-  tags$style(HTML("h1 { font-size: 180%; font-weight: bold; }
-       h2 { margin-top: 24px; font-size: 150%; font-weight: bold; }
-       h4 { font-style: italic; font-size: 120%; }
-       h5 { font-style: italic; font-size: 90%; opacity: .5; }
-       ")),
-  
-  tags$style(HTML("a { 
-      color:", color_enlaces, "; 
-      }")),
+  includeCSS("styles.css"),
   
   tags$style(HTML(".action-button {
                        background-color:", color_destacado, ";
@@ -272,8 +263,10 @@ ui <- page_fluid(
                                  "cuyo responsable o responsables principales pertenecen a un determinado sector político")
                          )
                          ),
-                         div(
-                           plotOutput("torta_sector") |> withSpinner()
+                         div(style = "overflow-x: scroll;",
+                             div(style = "min-width: 340px;",
+                                 plotOutput("torta_sector") |> withSpinner()
+                             )
                          ),
                          
                          boton_descarga_imagen("Descargar gráfico",
@@ -287,8 +280,11 @@ ui <- page_fluid(
                                  "cuyo responsable o responsables principales tienen o tuvieron afiliación política")
                          )
                          ),
-                         div(style = "margin: auto; margin-top: -20px;",
-                             plotOutput("torta_partido") |> withSpinner()
+                         # div(style = "margin: auto; margin-top: -20px;",
+                         div(style = "overflow-x: scroll; margin: auto; margin-top: -20px;",
+                             div(style = "min-width: 340px;",
+                                 plotOutput("torta_partido") |> withSpinner()
+                             )
                          ),
                          boton_descarga_imagen("Descargar gráfico",
                                                "graficos/grafico_torta_partido.png")

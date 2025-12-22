@@ -1,0 +1,34 @@
+h1 { font-size: 180%; font-weight: bold; }
+
+h2 { margin-top: 24px; font-size: 150%; font-weight: bold; }
+
+h4 { font-style: italic; font-size: 120%; }
+
+h5 { font-style: italic; font-size: 90%; opacity: .5; }
+
+a { 
+  color: #b1ddc7;
+  }
+      
+/* barras de desplazamiento/scroll */
+
+
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+  padding: 2px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #268053;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #b1ddc7;
+}
